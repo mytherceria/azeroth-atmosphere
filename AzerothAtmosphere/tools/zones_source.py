@@ -345,13 +345,16 @@ LAMP_OPEN = [(v, w, z, dawn, d) for v in (0, 10, 25) for w in (0, 1) for z in (0
              for dawn in (0, 1) for d in (1, 3, 6)]
 LAMP_ROCK = [(v, 0, -r, dawn, d) for v in (0, 25) for r in range(5, 105, 5) for dawn in (0, 1) for d in (1, 3, 6)]
 LAMP_STREET = (0, 0, 3, 0, 6)
-# Lamps the player has set by eye in game, which win over the rule: (Lamp Glow, Lamps in Mist, Lamp Distance).
+# Lamps the player has set by eye in game, which win over the rule.
 # Lamp Distance is how far into the fog a lamp still glows: a lamp is at full glow out to half of it and gone at
 # it, in hundredths of the game's own fog (comfy's 240 reaches 2.4 times that fog; 50, the least, half of it).
 # Duskwood's fog ends at about 100 yards, so 50 keeps a lamp whole to 25 yards and gone by 50: a torch lights
 # the fog around its guard without glowing at you from hundreds of feet off.
+# Lamp Reach (Azeroth Atmosphere's comfy) sizes each lamp's globe: a torch's glow fades to nothing at 17 yards,
+# and 30 percent of that is the 15 feet he asked for. Without that comfy the control is not there and is left be.
 LAMP_PICKS = {
-    "Duskwood": (40, 40, 50),   # Darkshire at night, the Night Watch's torches: "good" (30 Sep 2026); not far off
+    # Darkshire at night, the Night Watch's torches: "good"; not far off; a globe of about 15 feet (30 Sep 2026)
+    "Duskwood": dict(comfyLampGlow=40, comfyMistLamps=40, comfyLampDistance=50, comfyLampReach=30),
 }
 
 def lamp_glow(c, valley, wet, z, dawn, d):
@@ -436,7 +439,7 @@ def derive_v8(name):
     glow = 5 * round(min(20 * want / street, top) / 5.0)
     out["comfyLampGlow"] = int(max(5, glow if glow <= top else 5 * int(top / 5)))
     if name in LAMP_PICKS:   # set by eye in game: wins over the rule
-        out["comfyLampGlow"], out["comfyMistLamps"], out["comfyLampDistance"] = LAMP_PICKS[name]
+        out.update(LAMP_PICKS[name])
     # Night.
     if not has("indoor"):
         dark = 35
