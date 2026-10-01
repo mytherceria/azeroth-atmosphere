@@ -1,0 +1,7 @@
+## Interface: 11200
+## Title: Atmosphere Director
+## Notes: Every zone's fog, light and colour, the way the zone is meant to feel. /atmos
+## SavedVariables: AtmosphereDirectorDB
+## OptionalDeps: ComfyAtmosphere, IndoorRain
+Zones.lua
+AtmosphereDirector.lua

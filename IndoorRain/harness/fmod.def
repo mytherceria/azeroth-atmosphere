@@ -1,0 +1,16 @@
+LIBRARY fmod.dll
+EXPORTS
+_FSOUND_Close@0
+_FSOUND_Init@12
+_FSOUND_SetOutput@4
+_FSOUND_GetChannelsPlaying@0
+_FSOUND_Sample_Load@20
+_FSOUND_Sample_SetDefaults@20
+_FSOUND_PlaySound@8
+_FSOUND_IsPlaying@4
+_FSOUND_StopSound@4
+_FSOUND_GetReserved@4
+_FSOUND_Stream_Open@16
+_FSOUND_Stream_Close@4
+_FSOUND_Stream_GetLengthMs@4
+_FSOUND_File_SetCallbacks@20

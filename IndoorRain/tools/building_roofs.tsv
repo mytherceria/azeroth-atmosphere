@@ -1,0 +1,1340 @@
+# Roof type per building model file, for IndoorRain's roof and wind sounds. Tagged 28 Sep 2026 from the model
+# paths, WMOAreaTable names and texture names of the RavenCraft client (6 taggers, 2 checkers on the doubtful ones).
+# model_id is the MOHD id and is NOT unique (RavenCraft's custom models reuse ids): match on the file.
+file	model_id	tag	confidence	note
+gobs\priory\priory.wmo	0	great_hall	0.50	id 0 (no model id in header); priory, custom church-type building, P_ROOF2/P_WALL kit
+HumanHouse\DuskwoodHouse_Large.wmo	0	timber	0.90	Duskwood human house, shingle roof
+HumanHouse\DuskwoodHouse_Medium.wmo	0	timber	0.85	Duskwood human house, shingle roof
+HumanHouse\ElwynnHouse_Large.wmo	0	timber	0.85	Elwynn human house, shingle roof
+HumanHouse\ElwynnHouse_Medium.wmo	0	timber	0.85	Elwynn human house, shingle roof
+HumanHouse\ElwynnHouse_Small.wmo	0	timber	0.85	Elwynn house, shingle roof
+HumanHouse\WestfallHouse_MediumShingles.wmo	0	timber	0.85	Westfall human house, shingle roof
+HumanHouse\WestfallHouse_MediumStraw.wmo	0	thatch	0.75	Westfall house with straw roof
+HumanHouse\WestfallHouse_SmallStraw.wmo	0	thatch	0.70	Westfall small house, straw roof
+NEWSTYLE\VLAD\WMO\FEUDALSHIP\FEUDALSHIP.WMO	0	timber	0.45	Ship; rule puts wooden ship cabins under timber
+world\azeroth\buildings\houses\Giln_house04.wmo	0	timber	0.60	Gilneas house roof
+world\azeroth\buildings\houses\Giln_house05.wmo	0	timber	0.80	Gilneas-style house, shingle roof
+world\azeroth\buildings\houses\gn_cth_house01.wmo	0	timber	0.75	human house, wood roof textures
+world\azeroth\buildings\houses\gn_cth_house02.wmo	0	timber	0.70	Human town house, wood roof
+world\azeroth\buildings\houses\gn_cth_house03.wmo	0	timber	0.70	human house, wood roof textures
+world\azeroth\buildings\houses\gn_cth_house04.wmo	0	timber	0.70	Human house, wood roof textures
+world\azeroth\buildings\houses\gn_cth_house05.wmo	0	timber	0.75	human house, wood roof textures
+world\azeroth\buildings\houses\gn_cth_house06.wmo	0	timber	0.70	Human town house, shingle roof
+world\azeroth\buildings\houses\gn_cth_house07.wmo	0	timber	0.70	human-style house with tiled roof
+world\azeroth\buildings\houses\Ldrn_house04.wmo	0	timber	0.75	Lordaeron human house
+world\azeroth\buildings\houses\Ldrn_house05.wmo	0	timber	0.70	Lordaeron house, shingle roof
+world\azeroth\buildings\houses\sw_cth_house01.wmo	0	timber	0.70	Stormwind-style house, wood roof
+world\azeroth\buildings\houses\sw_cth_house02.wmo	0	timber	0.75	Stormwind-style house, wood roof
+world\azeroth\buildings\houses\sw_cth_house03.wmo	0	timber	0.75	Stormwind-style house, wood roof
+world\azeroth\buildings\houses\sw_cth_house04.wmo	0	timber	0.70	Stormwind-style house, wood roof
+world\azeroth\buildings\houses\sw_cth_house05.wmo	0	timber	0.70	Stormwind-style house, wood roof
+world\azeroth\buildings\houses\sw_cth_house06.wmo	0	timber	0.65	id 0; Stormwind-style house, tile roof over timber
+world\azeroth\buildings\houses\sw_cth_house07.wmo	0	timber	0.65	Human house, Stormwind house roof
+World\custom\camp\camp.wmo	0	tent	0.40	Camp shelter
+World\custom\camp\camp2.wmo	0	tent	0.45	Camp shelter
+world\custom\camp\camp3.wmo	0	timber	0.40	id 0; same custom kit as kt_tower2/kttheatre (WOODTRIM, ROOF4, WALL5, interior ceiling); a walled cabin, no cloth or hide textures
+World\custom\cellar01\twow_mysteriesofazeroth_cellar_01.wmo	0	underground	0.80	Custom cellar below ground
+World\custom\Dalaran\DAbarrack\al_barracks.wmo	140	timber	0.55	id 140, Mardenholde Keep; Redridge wall/support/trim kit with MM_WOODROOF_01; Redridge-style barracks
+World\custom\Dalaran\DAbs\albs.wmo	52	timber	0.50	MM_WOODROOF_01, human-style building
+World\custom\Dalaran\DAcampus\prisonlonghouse_lordaeron.wmo	5019	timber	0.75	Lordaeron longhouse, wood roof
+World\custom\Dalaran\DAfarm\alfarm.wmo	58	timber	0.65	Farm, wood roof
+World\custom\Dalaran\DAinn\alinn.wmo	53	timber	0.85	inn/tavern with wood roof
+World\custom\Dalaran\DAtwostory\al_twostory.wmo	54	timber	0.65	id 54; MM_WOODROOF_01, Stormwind supports, Elwynn windows
+World\custom\Dalaran\magetower\magetower.wmo	113	stone_house	0.70	stone mage tower, Tower of Azora
+World\custom\Dalaran\sanctum\highelf_smallhouse01.wmo	4639	stone_house	0.55	Mosaic roof, stone count 5
+World\custom\Dalaran\stable\stable.wmo	114	timber	0.65	Human stable
+World\custom\darkstatue\DarkStatue.wmo	883	open	0.80	Statue, no shelter
+world\custom\farm\farm.wmo	58	timber	0.75	farm building, wood roof
+world\custom\farm\farm2.wmo	58	timber	0.70	Custom farmhouse, wood roof
+World\custom\gnship\gnship_int.wmo	0	metal	0.50	id 0; gnome ship hull, cables and vents
+World\custom\kt_barn\kt_barn.wmo	55	timber	0.85	Custom barn, wood roof
+World\custom\kt_Barrack\kt_barracks.wmo	139	stone_house	0.60	Menethil Keep / Westbrook Garrison barracks
+World\custom\kt_bs\ktbs.wmo	52	stone_house	0.50	Blacksmith, rule lists blacksmiths
+World\custom\kt_Chapel\ktchapel.wmo	962	great_hall	0.50	id 962, SHARED with RedridgeChapel; same abbey wall/stained-glass kit, so tagged like it (chapel)
+World\custom\kt_Farm\ktfarm.wmo	58	timber	0.70	Custom farmhouse, wood roof
+World\custom\kt_Inn\ktinn.wmo	53	timber	0.85	human inn, wood roof
+World\custom\kt_longhouse\dal_hq.wmo	5018	timber	0.50	Wood roof texture on longhouse
+World\custom\kt_longhouse\dal_woodtower.wmo	3073	timber	0.60	Wooden tower
+World\custom\kt_longhouse\kt_hq.wmo	5018	timber	0.60	Wood roof
+World\custom\kt_longhouse\kt_lo.wmo	5019	timber	0.60	id 5019; MM_WOODROOF_01, Redridge supports, Westfall stone base
+World\custom\kt_longhouse\kt_woodtower.wmo	3073	timber	0.65	id 3073; custom wood tower, ROOF1, Westfall ceiling
+World\custom\kt_lumbermill\kt_lumbermill.wmo	112	timber	0.85	lumbermill, wooden roof
+World\custom\kt_magetower\kt_magetower.wmo	113	stone_house	0.70	Mage tower (Tower of Azora), stone
+World\custom\kt_manor\kt_manor.wmo	1669	timber	0.65	Manor, wood roof
+World\custom\kt_stable\kt_stable.wmo	114	timber	0.75	Custom stable, wood roof
+World\custom\kt_tower2\kttower2.wmo	0	timber	0.50	id 0; custom kit with WOODTRIM and ROOF2, wood counts dominate
+World\custom\kt_Town\kttownhall.wmo	149	timber	0.70	Lakeshire-style timber town hall
+World\custom\kt_twostory\kt_twostory.wmo	54	timber	0.80	human two-story house, wood roof
+World\custom\kt_windmill\ktwindmill.wmo	0	timber	0.80	Custom windmill, wooden
+World\custom\ktcathedral\ktcathedral.wmo	0	great_hall	0.80	cathedral, stone
+World\custom\ktgate2\ktgate2.wmo	0	open	0.75	Gate structure
+World\custom\ktpalisade\ktpalisade.wmo	0	open	0.85	palisade wall, no roof
+World\custom\ktpalisade\ktpalisade2.wmo	0	open	0.80	Palisade wall, no roof
+World\custom\kttheatre\kttheatre.wmo	0	timber	0.50	id 0; custom kit, WOODTRIM, supports, ROOF2
+world\custom\kttheatre\kttheatre2.wmo	0	timber	0.45	Custom roof plus wood textures
+World\custom\kttown\kttown.wmo	0	timber	0.45	Custom human town
+world\custom\WMO\Halcellar\twow_mysteriesofazeroth_cellar_01.wmo	0	underground	0.80	Cellar below ground
+world\kalimdor\buildings\tanarisruins\tanarisruins16.wmo	7010	open	0.65	id 7010; Tanaris troll ruin walls and pillars, no roof texture
+world\kalimdor\buildings\tanarisruins\tanarisruins17.wmo	7011	open	0.65	id 7011; Tanaris sandstone ruin walls, fountain, no roof
+World\wmo\Azeroth\Balor\BalorCastle\BalorCastle.wmo	146	stone_house	0.60	id 146, Tower of Althalaxx/Ilgalar; Grim Batol and Ironforge stone, Stormwind roof
+World\wmo\Azeroth\Balor\BalorCastle\BalorCastleRuined.wmo	146	stone_house	0.50	Towers of Althalaxx/Ilgalar, stone mage towers
+world\wmo\azeroth\balor\BalorCastleOrange.wmo	7023	great_hall	0.75	castle
+world\wmo\azeroth\Balor\BalorKeepExterior\BalorKeepExterior.wmo	0	great_hall	0.55	Keep exterior
+world\wmo\azeroth\Balor\BalorTower\BalorMageTowerDestroyed.wmo	7061	open	0.50	id 7061; destroyed Stratholme-kit tower, rubble textures
+world\wmo\azeroth\Balor\BalorTower\BalorMageTowerRuined.wmo	7062	stone_house	0.45	id 7062; ruined Stratholme-kit stone tower, keeps roof textures
+world\wmo\azeroth\Balor\Siegetower\SiegeTowerRuined.wmo	7063	open	0.60	id 7063; ruined wooden siege tower, no roof
+world\wmo\azeroth\Balor\Siegetower\SiegeTowerUnruined.wmo	7064	timber	0.45	Wooden siege tower, wood roof
+world\wmo\azeroth\Balor\Turtlehut\SeaTurtleHut.wmo	7065	tent	0.50	Orc hide roof textures
+World\wmo\Azeroth\Buildings\AltarOfStorms\AltarOfStorms.wmo	883	open	0.80	Open-air altar
+World\wmo\Azeroth\Buildings\Big_Keep\Big_Keep.wmo	206	great_hall	0.75	large stone keep
+World\wmo\Azeroth\Buildings\Castle\castle01.wmo	1092	great_hall	0.65	id 1092, Northwatch Hold; Shadowfang stone castle
+World\wmo\Azeroth\Buildings\Castle\castle02.wmo	1530	great_hall	0.60	id 1530; Shadowfang/Stratholme stone castle walls
+World\wmo\Azeroth\Buildings\Castle\castle03.wmo	1531	great_hall	0.70	Castle, stone
+World\wmo\Azeroth\Buildings\Chapel\Chapel.wmo	656	great_hall	0.50	Stone chapel, church
+World\wmo\Azeroth\Buildings\Chapel\DuskwoodChapel.wmo	961	timber	0.55	Duskwood roof, wood 12
+World\wmo\Azeroth\Buildings\Chapel\RedridgeChapel.wmo	962	great_hall	0.60	id 962, SHARED with custom ktchapel; stone chapel, MM_ABBEY_ROOF_01, stained glass
+World\wmo\Azeroth\Buildings\Duskwood_Barn\Duskwood_Barn.wmo	186	timber	0.90	Duskwood barn, wood roof
+World\wmo\Azeroth\Buildings\Duskwood_Barracks\duskwood_barracks.wmo	129	timber	0.60	id 129, Fenris Keep; Duskwood wood roofs, wood count 10
+World\wmo\Azeroth\Buildings\Duskwood_Blacksmith\Blacksmith_AB.wmo	5842	timber	0.60	Duskwood shingle roof texture
+World\wmo\Azeroth\Buildings\Duskwood_Blacksmith\Duskwood_Blacksmith.wmo	130	timber	0.80	Duskwood town building, wood shingles
+world\wmo\azeroth\buildings\Duskwood_Blacksmith\Gilneas_Blacksmith.wmo	130	timber	0.60	Gilneas shingle roof
+World\wmo\Azeroth\Buildings\Duskwood_human_farm\Duskwood_human_farm.wmo	132	timber	0.85	Duskwood farmhouse, wood roof
+World\wmo\Azeroth\Buildings\Duskwood_human_farm\humanfarm_AB.wmo	5843	timber	0.85	Human farmhouse, Duskwood roof
+World\wmo\Azeroth\Buildings\Duskwood_Human_Farm_Burnt\DuskwoodFarmHouseburnt.wmo	860	open	0.60	id 860; burnt walls, no roof texture
+World\wmo\Azeroth\Buildings\Duskwood_HumanTwoStory\Duskwood_HumanTwoStory.wmo	131	timber	0.90	Duskwood two-story house
+World\wmo\Azeroth\Buildings\Duskwood_Inn\Duskwood_Inn.wmo	133	timber	0.85	Duskwood inn, timber and shingle
+World\wmo\Azeroth\Buildings\Duskwood_Lumbermill\Duskwood_lumbermill.wmo	134	timber	0.85	Duskwood lumbermill
+World\wmo\Azeroth\Buildings\Duskwood_MageTower\Duskwood_MageTower.wmo	135	timber	0.65	id 135, The Tower of Arathor; Duskwood kit, wood shingle MM_DUSKWOOD_ROOF_02, wood count 10 vs stone 2
+world\wmo\azeroth\buildings\duskwood_magetower\netherpvp_magetower.wmo	4836	timber	0.60	id 4836; same Duskwood mage tower kit as Duskwood_MageTower (wood count 10), purple shingle roof; kept consistent
+World\wmo\Azeroth\Buildings\Duskwood_Stable\Duskwood_Stable.wmo	136	timber	0.75	Duskwood wooden stable
+World\wmo\Azeroth\Buildings\Duskwood_Stable\Stable_AB.wmo	5844	timber	0.85	Duskwood-style stable
+World\wmo\Azeroth\Buildings\Duskwood_TownHall\Duskwood_TownHall.wmo	137	timber	0.75	Duskwood town hall, timber frame
+World\wmo\Azeroth\Buildings\Duskwood_TownHall_NoWall\Duskwood_TownHall_NoWall.wmo	138	timber	0.80	Darkshire/Brill town hall, timber
+World\wmo\Azeroth\Buildings\DuskwoodAbandoned_Barn\DuskwoodAbandoned_Barn.wmo	189	timber	0.75	abandoned wooden barn
+world\wmo\azeroth\buildings\DuskwoodAbandoned_Barn\GilneasAbandoned_Barn.wmo	189	timber	0.85	Abandoned timber barn
+World\wmo\Azeroth\Buildings\DuskwoodAbandoned_Blacksmith\DuskwoodAbandoned_Blacksmith.wmo	120	timber	0.60	id 120; abandoned Duskwood wood roof and timber kit
+World\wmo\Azeroth\Buildings\DuskwoodAbandoned_human_farm\DuskwoodAbandoned_human_farm.wmo	122	timber	0.75	Abandoned Duskwood farmhouse
+world\wmo\azeroth\buildings\DuskwoodAbandoned_human_farm\GilneasAbandoned_human_farm.wmo	122	timber	0.80	human farmhouse, wood
+World\wmo\Azeroth\Buildings\DuskwoodAbandoned_HumanTwoStory\DuskwoodAbandoned_HumanTwoStory.wmo	121	timber	0.85	Abandoned human two-story house
+world\wmo\azeroth\buildings\DuskwoodAbandoned_HumanTwoStory\GilneasAbandoned_HumanTwoStory.wmo	121	timber	0.75	abandoned human two-story house
+World\wmo\Azeroth\Buildings\DuskwoodAbandoned_Inn\AndorhalAbandoned_Inn.wmo	3513	timber	0.85	Abandoned timber inn
+World\wmo\Azeroth\Buildings\DuskwoodAbandoned_Inn\DuskwoodAbandoned_Inn.wmo	123	timber	0.80	Duskwood inn, wood heavy
+World\wmo\Azeroth\Buildings\DuskwoodAbandoned_Lumbermill\DuskwoodAbandoned_lumbermill.wmo	124	timber	0.75	Abandoned Duskwood lumbermill
+World\wmo\Azeroth\Buildings\DuskwoodAbandoned_TownHall_NoWall\DuskwoodAbandoned_TownHall_NoWall.wmo	128	timber	0.65	Duskwood town hall, wood 13
+world\wmo\azeroth\buildings\DuskwoodAbandoned_TownHall_NoWall\GilneasAbandoned_TownHall_NoWall.wmo	128	timber	0.80	Gilneas abandoned town hall
+World\wmo\Azeroth\Buildings\GnomeHut\GnomeHut.wmo	1107	metal	0.85	gnome hut, metal textures
+World\wmo\Azeroth\Buildings\GnomeHut\GnomeHutTwoStory.wmo	1108	metal	0.80	Gnome hut, metal construction
+world\wmo\azeroth\buildings\goldshireblacksmith\goldshireblacksmith.wmo	52	stone_house	0.60	id 52; stone smithy, Stormwind roof, forge metal
+World\wmo\Azeroth\Buildings\GoldshireInn\GoldshireInn.wmo	53	timber	0.90	Lion's Pride Inn, human inn
+World\wmo\Azeroth\Buildings\GoldshireInn\GoldshireInn_closed.wmo	5156	timber	0.85	Goldshire inn, shingle roof
+World\wmo\Azeroth\Buildings\GriffonAviary\GriffonAviary.wmo	487	open	0.50	Aviary perch
+World\wmo\Azeroth\Buildings\GuardTower\GuardTower.wmo	111	stone_house	0.85	human stone guard tower
+World\wmo\Azeroth\Buildings\GuardTower\GuardTower_damaged.wmo	5021	stone_house	0.50	id 5021; stone tower wall and window kit
+World\wmo\Azeroth\Buildings\GuardTower\GuardTower_damaged_construction.wmo	5069	open	0.60	id 5069; tower under construction, rope and broken top, no roof
+World\wmo\Azeroth\Buildings\GuardTower\GuardTower_destroyed.wmo	5022	open	0.60	Destroyed tower, no roof textures
+World\wmo\Azeroth\Buildings\GuardTower\GuardTower_destroyed_construction.wmo	5070	open	0.60	Destroyed tower
+World\wmo\Azeroth\Buildings\GuardTower\GuardTower_intact.wmo	5039	stone_house	0.80	Stone guard tower
+World\wmo\Azeroth\Buildings\GuardTower_Ruined\RuinedHumanGuardTower01.wmo	209	open	0.75	ruined tower, no roof textures
+World\wmo\Azeroth\Buildings\GuildHouses\GuildHouseA.wmo	1670	timber	0.70	Human guild house, wood roof
+World\wmo\Azeroth\Buildings\GuildHouses\GuildHouseB.wmo	1669	timber	0.70	human guild house, wood roof
+World\wmo\Azeroth\Buildings\HillsbradTerraceWall\HillsbradTerraceWall.wmo	1689	open	0.90	Terrace wall
+World\wmo\Azeroth\Buildings\Human_Barn_Silo\barn.wmo	55	timber	0.90	human barn
+World\wmo\Azeroth\Buildings\Human_Barn_Silo\silo.wmo	56	timber	0.55	Farm silo roof
+World\wmo\Azeroth\Buildings\Human_Barracks\Human_Barracks.wmo	139	stone_house	0.60	id 139, Westbrook Garrison/Menethil Keep; Stormwind stone walls and roof
+World\wmo\Azeroth\Buildings\Human_Barracks\Human_Barracks_COT.wmo	4818	stone_house	0.55	id 4818; identical texture set to Human_Barracks (stone_house), kept consistent
+world\wmo\azeroth\buildings\human_farm\farm.wmo	58	timber	0.85	human farmhouse
+World\wmo\Azeroth\Buildings\human_farm\farm_closed.wmo	5159	timber	0.80	Human farmhouse
+World\wmo\Azeroth\Buildings\Human_farm_test\farmtest.wmo	1102	timber	0.80	human farmhouse, wood roof
+World\wmo\Azeroth\Buildings\HumanTwoStory\HumanTwoStory.wmo	54	timber	0.85	Human two-story house
+World\wmo\Azeroth\Buildings\HumanTwoStory\HumanTwoStory_closed.wmo	5157	timber	0.85	human two-story house
+World\wmo\Azeroth\Buildings\IntactPrisonTower\IntactPrisonTower.wmo	3073	stone_house	0.70	Stone prison tower
+World\wmo\Azeroth\Buildings\KeepWall\Gate01.wmo	230	open	0.90	keep wall gate
+world\wmo\azeroth\buildings\Keepwall\Gate01_gilneas.wmo	230	open	0.85	Keep wall gate
+World\wmo\Azeroth\Buildings\KeepWall\Gate02.wmo	918	open	0.85	keep wall gate
+World\wmo\Azeroth\Buildings\KeepWall\Gate03.wmo	919	open	0.85	Keep wall gate
+world\wmo\azeroth\buildings\Keepwall\gate06.wmo	230	open	0.85	keep wall gate
+world\wmo\azeroth\buildings\Keepwall\gate06_gilneas.wmo	230	open	0.85	Keep wall gate
+World\wmo\Azeroth\Buildings\KeepWall\GateRuined01.wmo	231	open	0.90	ruined gate
+World\wmo\Azeroth\Buildings\KeepWall\GateRuined02.wmo	1009	open	0.90	Ruined gate
+World\wmo\Azeroth\Buildings\KeepWall\KeepBridge01.wmo	941	open	0.90	bridge
+World\wmo\Azeroth\Buildings\KeepWall\LowWallPost01.wmo	1021	open	0.85	Wall post
+World\wmo\Azeroth\Buildings\KeepWall\WallPiece01.wmo	232	open	0.90	wall piece
+World\wmo\Azeroth\Buildings\KeepWall\WallPiece02.wmo	920	open	0.90	Keep wall piece
+World\wmo\Azeroth\Buildings\KeepWall\WallPiece03.wmo	921	open	0.90	wall piece
+World\wmo\Azeroth\Buildings\KeepWall\WallPiece04.wmo	942	open	0.95	Wall piece
+World\wmo\Azeroth\Buildings\KeepWall\WallPiece05.wmo	1010	open	0.90	wall piece
+World\wmo\Azeroth\Buildings\KeepWall\WallPieceRuin01.wmo	233	open	0.85	Ruined wall piece
+World\wmo\Azeroth\Buildings\KeepWall\WallPieceRuin02.wmo	234	open	0.90	ruined wall piece
+World\wmo\Azeroth\Buildings\KeepWall\WallPieceRuin03.wmo	1011	open	0.90	Ruined wall piece
+World\wmo\Azeroth\Buildings\KeepWall\WallPieceRuin04.wmo	1012	open	0.90	ruined wall piece
+World\wmo\Azeroth\Buildings\KeepWall\WallPieceStairs01.wmo	235	open	0.95	Wall stairs piece
+World\wmo\Azeroth\Buildings\KeepWall\WallPost01.wmo	236	open	0.90	wall post
+World\wmo\Azeroth\Buildings\KeepWall\WallPost02.wmo	943	open	0.85	Wall post
+World\wmo\Azeroth\Buildings\KeepWall\WallPostRuined01.wmo	237	open	0.90	ruined wall post
+World\wmo\Azeroth\Buildings\KeepWall\WallPostTunnel01.wmo	238	open	0.70	Wall post with passage
+world\wmo\azeroth\buildings\LongDock\LongDock.wmo	729	open	0.90	wooden dock
+world\wmo\azeroth\buildings\LongDock\LongerDock.wmo	729	open	0.95	Dock
+World\wmo\Azeroth\Buildings\LumberMill\lumbermill.wmo	112	timber	0.90	human lumber mill
+World\wmo\Azeroth\Buildings\Magetower\magetower.wmo	113	stone_house	0.75	Stone mage tower
+World\wmo\Azeroth\Buildings\Moonbrook_Blacksmith\Moonbrook_Blacksmith.wmo	173	stone_house	0.70	blacksmith, stone walls, shingle roof
+World\wmo\Azeroth\Buildings\Moonbrook_human_farm\Moonbrook_human_farm.wmo	175	thatch	0.60	id 175; MM_STRAWROOF_01
+World\wmo\Azeroth\Buildings\Moonbrook_HumanTwoStory\Moonbrook_HumanTwoStory.wmo	174	thatch	0.70	Westfall two-story, straw roof
+World\wmo\Azeroth\Buildings\Moonbrook_Inn\Moonbrook_Inn.wmo	176	timber	0.60	Westfall inn, brown shingles
+World\wmo\Azeroth\Buildings\Moonbrook_TownHall_NoWall\Moonbrook_TownHall_NoWall.wmo	177	timber	0.60	Westfall, brown shingles
+world\wmo\azeroth\buildings\nsabbey\NSabbey.wmo	59	great_hall	0.90	Northshire Abbey, large stone
+World\wmo\Azeroth\Buildings\Oil_Platform\oil_platform.wmo	1093	open	0.80	open platform structure
+World\wmo\Azeroth\Buildings\OilPlatform\OilPlatform.wmo	1149	metal	0.40	id 1149; MM_OIL metal, walls and roof
+World\wmo\Azeroth\Buildings\OilPlatform\OilPlatformSmall.wmo	1177	metal	0.60	id 1177, Venture Co. Operations Center; MM_OIL metal kit and roof
+World\wmo\Azeroth\Buildings\Prison_Camp\PrisonGuardTower.wmo	622	timber	0.55	Brown shingles, wooden tower
+World\wmo\Azeroth\Buildings\Prison_Camp\prisonHQ.wmo	628	timber	0.70	camp HQ, shingle and straw
+World\wmo\Azeroth\Buildings\Prison_Camp\prisonHQ_new.wmo	2954	timber	0.60	Brown shingles
+World\wmo\Azeroth\Buildings\Prison_Camp\prisonHQ_Redridge.wmo	5018	timber	0.50	id 5018; Redridge kit (MM_RR_ROOF_01, RR walls, supports) plus MM_WOODROOF_01; Redridge town building
+World\wmo\Azeroth\Buildings\Prison_Camp\prisonLonghouse.wmo	623	timber	0.75	Prison longhouse, wood shingles
+World\wmo\Azeroth\Buildings\Prison_Camp\prisonLonghouse_New.wmo	2953	timber	0.60	id 2953; brown wood shingles, Westfall timber kit
+World\wmo\Azeroth\Buildings\Prison_Camp\prisonLonghouse_Redridge.wmo	5019	timber	0.75	Redridge longhouse, wood roof
+World\wmo\Azeroth\Buildings\Prison_Camp\PrisonOubliette.wmo	624	underground	0.65	Pit prison
+World\wmo\Azeroth\Buildings\Prison_Camp\PrisonOublietteLarge.wmo	3576	underground	0.60	Pit prison
+World\wmo\Azeroth\Buildings\Prison_Camp\PrisonOublietteTunnel.wmo	625	underground	0.85	oubliette tunnel, cave textures
+World\wmo\Azeroth\Buildings\Prison_Camp\PrisonOublietteWater.wmo	1509	underground	0.80	Prison oubliette pit
+World\wmo\Azeroth\Buildings\RedRidge_Barn\RedRidge_Barn.wmo	187	timber	0.85	Redridge barn
+World\wmo\Azeroth\Buildings\RedRidge_Barracks\redridge_barracks.wmo	140	timber	0.65	Redridge roof textures, rule names Redridge
+World\wmo\Azeroth\Buildings\RedRidge_Blacksmith\RedRidge_Blacksmith.wmo	141	timber	0.80	Redridge blacksmith, wood roof
+world\wmo\azeroth\buildings\redridge_human_farm\redridge_human_farm.wmo	143	timber	0.85	Redridge farmhouse
+World\wmo\Azeroth\Buildings\RedRidge_human_farm\RedRidge_human_farm_closed.wmo	5347	timber	0.85	Redridge farmhouse
+World\wmo\Azeroth\Buildings\RedRidge_HumanTwoStory\RedRidge_HumanTwoStory.wmo	142	timber	0.90	Redridge two-story timber house
+World\wmo\Azeroth\Buildings\RedRidge_Inn\RedRidge_Inn.wmo	144	timber	0.85	Lakeshire Inn
+World\wmo\Azeroth\Buildings\RedRidge_Lumbermill\RedRidge_lumbermill.wmo	145	timber	0.85	Redridge lumbermill
+World\wmo\Azeroth\Buildings\RedRidge_MageTower\RedRidge_MageTower.wmo	146	stone_house	0.70	stone mage tower
+World\wmo\Azeroth\Buildings\RedRidge_Stable\RedRidge_Stable.wmo	147	timber	0.80	Redridge stable
+World\wmo\Azeroth\Buildings\RedRidge_TownHall\RedRidge_TownHall.wmo	148	great_hall	0.55	id 148; Lakeshire town hall, RR greystone walls, clock face, large stone hall
+World\wmo\Azeroth\Buildings\RedRidge_TownHall_NoWall\RedRidge_TownHall_NoWall.wmo	149	timber	0.80	Lakeshire Town Hall, timber
+World\wmo\Azeroth\Buildings\RuinedCathedral\RuinedCathedral.wmo	1729	open	0.60	id 1729; ruins floor, supports and walls, no roof
+World\wmo\Azeroth\Buildings\Scarlet_Monestary\Scarlet_Monestary.wmo	60	great_hall	0.85	Scarlet Monastery, large stone abbey
+World\wmo\Azeroth\Buildings\Stable\stable.wmo	114	timber	0.85	human stable
+World\wmo\Azeroth\Buildings\Stormwind\AZ_PvPbarracks.wmo	3773	great_hall	0.60	Old Town barracks hall
+world\wmo\azeroth\buildings\stormwind\custom\keep\gn_keep_tower01.wmo	0	stone_house	0.60	id 0; Gilneas keep tower, Stratholme stone walls, crenellation, roof
+world\wmo\azeroth\buildings\stormwind\custom\keep\gn_keep_tower02.wmo	0	stone_house	0.60	id 0; Gilneas keep stone tower with roof
+world\wmo\azeroth\buildings\stormwind\custom\keep\gn_keep_tower03.wmo	0	stone_house	0.60	id 0; Gilneas keep stone tower with roof
+world\wmo\azeroth\buildings\stormwind\custom\keep\gn_keep_tower04.wmo	0	stone_house	0.50	Keep tower, stone
+world\wmo\azeroth\buildings\stormwind\custom\keep\gn_keep_tower05.wmo	0	stone_house	0.65	Keep tower
+world\wmo\azeroth\buildings\stormwind\custom\keep\gn_keep_tower06.wmo	0	stone_house	0.60	Keep tower
+world\wmo\azeroth\buildings\stormwind\custom\keep\gn_keep_wall01.wmo	0	open	0.85	keep wall piece
+world\wmo\azeroth\buildings\stormwind\custom\keep\gn_keep_wall03.wmo	0	open	0.75	Keep wall section
+world\wmo\azeroth\buildings\stormwind\custom\keep\gn_keep_wall04.wmo	0	open	0.80	keep wall piece
+world\wmo\azeroth\buildings\stormwind\custom\keep\sw_keep_tower01.wmo	0	stone_house	0.65	Stormwind keep tower, slate roof
+world\wmo\azeroth\buildings\stormwind\custom\keep\sw_keep_tower02.wmo	0	stone_house	0.65	Stormwind keep tower
+world\wmo\azeroth\buildings\stormwind\custom\keep\sw_keep_tower03.wmo	0	stone_house	0.65	Stormwind keep tower
+world\wmo\azeroth\buildings\stormwind\custom\keep\sw_keep_tower04.wmo	0	stone_house	0.50	id 0; Stormwind stone keep tower, crenellation, interior floor
+world\wmo\azeroth\buildings\stormwind\custom\keep\sw_keep_tower05.wmo	0	stone_house	0.60	id 0; Stormwind stone keep tower with MM_STRMWND_ROOF_02
+world\wmo\azeroth\buildings\stormwind\custom\keep\sw_keep_tower06.wmo	0	stone_house	0.55	id 0; Stormwind stone keep tower, crenellation
+world\wmo\azeroth\buildings\stormwind\custom\keep\sw_keep_wall01.wmo	0	open	0.90	Keep wall
+world\wmo\azeroth\buildings\stormwind\custom\keep\sw_keep_wall03.wmo	0	open	0.70	keep wall
+world\wmo\azeroth\buildings\stormwind\custom\keep\sw_keep_wall04.wmo	0	open	0.70	Keep wall piece
+World\wmo\Azeroth\Buildings\Stormwind\Stormwind.wmo	61	great_hall	0.60	id 61; Stormwind city, Cathedral, big stone interiors (rule names it)
+World\wmo\Azeroth\Buildings\Stormwind\StormwindHangar.wmo	5289	great_hall	0.40	id 5289; large Stormwind stone hangar with metal doors and plating
+World\wmo\Azeroth\Buildings\Stormwind\StormwindHarbor.wmo	5207	great_hall	0.45	id 5207; texture list identical to Stormwind.wmo (full city incl. cathedral and crypt kit), so tagged like the city
+World\wmo\Azeroth\Buildings\Stormwind\SW_Harbor_Docks.wmo	5295	open	0.90	Harbor docks
+World\wmo\Azeroth\Buildings\Stormwind\SW_Harbor_LGPillar.wmo	5290	open	0.85	harbor pillar
+World\wmo\Azeroth\Buildings\Stormwind\SW_Harbor_LgTwr02.wmo	5291	stone_house	0.60	Harbor stone tower
+World\wmo\Azeroth\Buildings\Stormwind\SW_Harbor_LgTwr03.wmo	5292	stone_house	0.65	id 5292; Stormwind stone walls with MM_STRMWND_ROOF_01
+World\wmo\Azeroth\Buildings\Stormwind\SW_Harbor_LgWall01.wmo	5293	open	0.85	Harbor wall
+World\wmo\Azeroth\Buildings\Stormwind\SW_Harbor_LGWall02.wmo	5294	open	0.90	harbor wall
+World\wmo\Azeroth\Buildings\Stormwind\SW_Harbor_Lighthouse.wmo	5296	stone_house	0.60	Stone lighthouse, Stormwind roofs
+World\wmo\Azeroth\Buildings\Stormwind\SW_Harbor_Lowmain.wmo	5283	open	0.55	Harbor quay
+World\wmo\Azeroth\Buildings\Stormwind\SW_Harbor_LowStair.wmo	5284	open	0.80	Harbor stairs
+World\wmo\Azeroth\Buildings\Stormwind\SW_Harbor_LowStr.wmo	5285	open	0.55	id 5285; walls, trim and wood boards, no roof texture
+World\wmo\Azeroth\Buildings\Stormwind\SW_Harbor_LowTwr.wmo	5286	stone_house	0.50	id 5286; Stormwind stone walls and floor
+World\wmo\Azeroth\Buildings\Stormwind\SW_Harbor_ShipShelter.wmo	5297	open	0.55	id 5297, SHARED with RuinedSW_ShipShelterA; open-sided ship shelter
+World\wmo\Azeroth\Buildings\Stranglethorn_BootyBay\BootyBay.wmo	580	timber	0.55	Spanish tile and wood roofs, no tin texture
+World\wmo\Azeroth\Buildings\Stranglethorn_BootyBay\BootyBay_fortress1.wmo	2244	open	0.45	Fortification, no roof textures at all
+World\wmo\Azeroth\Buildings\Stranglethorn_BootyBay\BootyBay_fortress2.wmo	2243	open	0.40	Fortification, no roof textures at all
+World\wmo\Azeroth\Buildings\Stranglethorn_BootyBay\BootyBay_house1.wmo	810	timber	0.60	id 810; JLO_BBAY_WOODROOF and wood walls, not tin
+World\wmo\Azeroth\Buildings\Stranglethorn_BootyBay\BootyBay_house2.wmo	811	timber	0.65	id 811; JLO_BBAY_WOODROOF2, wood walls
+World\wmo\Azeroth\Buildings\Stranglethorn_BootyBay\BootyBay_railing.wmo	812	open	0.95	railing
+World\wmo\Azeroth\Buildings\Stranglethorn_BootyBay\BootyBay_warehouse.wmo	1089	timber	0.55	Spanish tile roof over wood
+World\wmo\Azeroth\Buildings\Stranglethorn_BootyBay\BootyBayPlank.wmo	1082	open	0.85	plank walkway
+World\wmo\Azeroth\Buildings\Stranglethorn_BootyBay\ratchet_dock.wmo	1097	open	0.90	Dock
+World\wmo\Azeroth\Buildings\Stranglethorn_BootyBay\Ratchet_Inn.wmo	1916	timber	0.70	inn, tile roof over wood
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins01.wmo	1407	open	0.80	Jungle ruins, roofless
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins02.wmo	1406	open	0.85	jungle troll ruins
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins03.wmo	1405	open	0.85	Troll ruins, roofless
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins04.wmo	1404	open	0.75	troll ruins
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins05.wmo	1403	open	0.75	Jungle ruins
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins06.wmo	1402	open	0.80	jungle troll ruins
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins07.wmo	1401	open	0.80	Jungle ruins, roofless
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins08.wmo	1400	open	0.85	jungle troll ruins
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins09.wmo	1399	open	0.85	Troll ruins, roofless
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins10.wmo	1398	open	0.80	troll ruins
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins11.wmo	1397	open	0.75	Jungle ruins
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins12.wmo	1396	open	0.80	jungle troll ruins
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins13.wmo	1395	open	0.80	Jungle ruins, roofless
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins14.wmo	1394	open	0.85	jungle troll ruins
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins15.wmo	1393	open	0.85	Troll ruins, roofless
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins16.wmo	1392	open	0.80	troll ruins
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins17.wmo	1408	open	0.70	Jungle ruins
+World\wmo\Azeroth\Buildings\Stranglethorn_ruins\Stranglethorn_ruins18.wmo	1829	open	0.80	jungle troll ruins
+world\wmo\azeroth\buildings\Survival\survivaltent01.wmo	4961	tent	0.85	Survival tent, hide canvas
+world\wmo\azeroth\buildings\Survival\survivaltent02.wmo	4961	tent	0.85	survival tent, hide textures
+World\wmo\Azeroth\Buildings\TownHall\TownHall.wmo	115	great_hall	0.50	Stone town hall, slate roof; same textures as Trollbane Hall
+World\wmo\Azeroth\Buildings\TownHall_NoWall\TownHall_NoWall.wmo	116	great_hall	0.60	Trollbane Hall, stone
+World\wmo\Azeroth\Buildings\Westfall_Barn\Westfall_Barn.wmo	188	timber	0.85	Westfall barn
+World\wmo\Azeroth\Buildings\Westfall_Barracks\westfall_barracks.wmo	150	timber	0.70	Westfall barracks, wood and shingles
+World\wmo\Azeroth\Buildings\Westfall_Blacksmith\Westfall_Blacksmith.wmo	151	timber	0.50	id 151; Westfall kit, brown wood shingles
+World\wmo\Azeroth\Buildings\Westfall_GuardTower\Westfall_GuardTower.wmo	159	thatch	0.50	id 159, Sentry Point/North Point Tower; MM_STRAWROOF_01
+world\wmo\azeroth\buildings\Westfall_human_farm\Gilneas_human_farmB.wmo	2613	timber	0.80	Human farmhouse, shingle roof
+World\wmo\Azeroth\Buildings\Westfall_human_farm\Westfall_human_farm.wmo	119	thatch	0.75	Westfall farmhouse, straw roof
+World\wmo\Azeroth\Buildings\Westfall_human_farm\Westfall_human_farmB.wmo	2613	timber	0.85	Westfall farmhouse
+World\wmo\Azeroth\Buildings\Westfall_human_farm_Burnt\WestFallFarmHouseburnt.wmo	861	open	0.70	burnt farmhouse, no roof textures
+world\wmo\azeroth\buildings\Westfall_HumanTwoStory\Gilneas_HumanTwoStory.wmo	152	thatch	0.60	id 152; MM_STRAWFOXY_01 straw roof
+World\wmo\Azeroth\Buildings\Westfall_HumanTwoStory\Westfall_HumanTwoStory.wmo	152	thatch	0.70	Westfall two-story, straw roof
+World\wmo\Azeroth\Buildings\Westfall_Inn\Westfall_Inn.wmo	153	timber	0.85	Westfall inn, shingle roof
+World\wmo\Azeroth\Buildings\Westfall_Lumbermill\Westfall_lumbermill.wmo	154	timber	0.80	lumber mill, brown shingles
+World\wmo\Azeroth\Buildings\Westfall_MageTower\Westfall_MageTower.wmo	155	stone_house	0.70	Westfall stone tower, shingles
+world\wmo\azeroth\buildings\Westfall_Stable\Gilneas_StableB.wmo	2614	timber	0.75	stable with shingle roof
+World\wmo\Azeroth\Buildings\Westfall_Stable\Westfall_Stable.wmo	156	thatch	0.60	id 156; MM_STRAWROOF_01
+World\wmo\Azeroth\Buildings\Westfall_Stable\Westfall_StableB.wmo	2614	timber	0.75	Westfall stable, brown shingles
+World\wmo\Azeroth\Buildings\Westfall_Stable\Westfall_StableC.wmo	5126	timber	0.85	Westfall stable
+World\wmo\Azeroth\Buildings\Westfall_TownHall\Westfall_TownHall.wmo	157	timber	0.55	Brown shingles, same family as Moonbrook buildings tagged timber
+world\wmo\azeroth\buildings\Westfall_TownHall_NoWall\Gilneas_TownHall_NoWall.wmo	158	timber	0.80	Southshore town hall, timber
+World\wmo\Azeroth\Buildings\Westfall_TownHall_NoWall\Westfall_TownHall_NoWall.wmo	158	timber	0.75	Southshore town hall, shingle roof
+World\wmo\Azeroth\Buildings\WorldTree\DuskWorldTree.wmo	1132	underground	0.40	id 1132; giant trunk with a door and a Darnassus-kit room inside (ceiling, floor, pillars); the indoor part is inside the trunk, where rain cannot be heard
+World\wmo\Azeroth\Buildings\WorldTree\WorldTree.wmo	1130	underground	0.50	id 1130; same as DuskWorldTree: a Darnassus-kit room inside the giant trunk behind a door; rain not heard inside the trunk
+World\wmo\Azeroth\Buildings\Ziggurat\TrollZiggurat.wmo	1075	great_hall	0.45	Stone troll temple, Sunken Temple textures
+World\wmo\Azeroth\Buildings\ZulGurub\ZulGurub.wmo	3894	open	0.65	Open-air troll city
+World\wmo\Azeroth\Buildings\ZulGurub\ZulGurubCity.wmo	4275	open	0.60	Outdoor ruined city
+World\wmo\Azeroth\Buildings\ZulGurub\ZulGurubEntrance.wmo	3893	open	0.70	Zul'Gurub entrance, outdoor
+World\wmo\Azeroth\Buildings\ZulGurub\ZulGurubRuins01.wmo	1274	open	0.70	Zul'Gurub ruins
+World\wmo\Azeroth\Buildings\ZulGurub\ZulGurubRuins02.wmo	1589	open	0.75	Zul'Gurub ruins
+World\wmo\Azeroth\Buildings\ZulGurub\ZulKunda.wmo	3895	open	0.70	Zul'Kunda troll ruins
+World\wmo\Azeroth\Buildings\ZulGurub\ZulRandomRuins.wmo	3933	open	0.75	troll ruins
+World\wmo\Azeroth\Buildings\zulgurub_ziggurat\ZulGurub_Ziggurat.wmo	4233	great_hall	0.45	Stone temple
+World\wmo\Azeroth\Collidable Doodads\AllianceShrine\AllianceShrine.wmo	262	open	0.80	small shrine doodad
+World\wmo\Azeroth\Collidable Doodads\Duskwood\ChasmBridge\DuskwoodChasmBridge.wmo	1358	open	0.95	Chasm bridge
+World\wmo\Azeroth\Collidable Doodads\Duskwood\CoveredBridge\DuskwoodCoveredBridge.wmo	1357	timber	0.55	id 1357; covered bridge, Duskwood wood roof
+World\wmo\Azeroth\Collidable Doodads\Duskwood\OpenGrave\DuskwoodOpenGrave.wmo	2234	open	0.85	Open grave pit
+world\wmo\azeroth\collidable doodads\elwynn\abbeygate02\abbeygate02.wmo	64	open	0.80	abbey gate
+world\wmo\azeroth\collidable doodads\elwynn\abbeygate\abbeygate01.wmo	63	open	0.85	Abbey gate
+World\wmo\Azeroth\Collidable Doodads\Elwynn\Bleachers\BleachersWood02.wmo	2235	open	0.85	wooden bleachers
+World\wmo\Azeroth\Collidable Doodads\Elwynn\ElwynnLakeBridge\ElwynnLakeBridge.wmo	227	open	0.95	Lake bridge
+World\wmo\Azeroth\Collidable Doodads\Elwynn\FootBridge\ElwynnFootbridge.wmo	65	open	0.95	footbridge
+World\wmo\Azeroth\Collidable Doodads\Elwynn\LionBridge\ElwynnLionBridge.wmo	66	open	0.95	Bridge
+World\wmo\Azeroth\Collidable Doodads\Elwynn\ValleyOfHeroesBridge\HeroBridge.wmo	219	open	0.90	bridge
+World\wmo\Azeroth\Collidable Doodads\Elwynn\ValleyOfHeroesGate\HeroGate.wmo	247	open	0.85	Valley of Heroes gate
+World\wmo\Azeroth\Collidable Doodads\Elwynn\WideBridge\ElwynnWideBridge.wmo	67	open	0.95	bridge
+World\wmo\Azeroth\Collidable Doodads\HordeShrine\HordeShrine.wmo	267	open	0.70	Small roadside shrine
+World\wmo\Azeroth\Collidable Doodads\IronForge\Footbridge\IronFootbridge.wmo	91	open	0.95	footbridge
+World\wmo\Azeroth\Collidable Doodads\IronForge\IronforgeRopeBridge01\IronforgeRopeBridge01.wmo	439	open	0.95	Rope bridge
+World\wmo\Azeroth\Collidable Doodads\IronForge\StoneBridge\IronStonebridge.wmo	104	open	0.90	stone bridge
+World\wmo\Azeroth\Collidable Doodads\PVP\Bridges\pvp_bridge01.wmo	3153	open	0.90	Bridge
+World\wmo\Azeroth\Collidable Doodads\PVP\Bridges\pvp_bridge02.wmo	3173	open	0.95	bridge
+World\wmo\Azeroth\Collidable Doodads\RedRidge\RedRidgeDamagedBridge\RedridgeDamagedBridge.wmo	264	open	0.95	Damaged bridge
+World\wmo\Azeroth\Collidable Doodads\RedRidge\RedRidgeDocks01\RedRidgeDocks01.wmo	223	open	0.95	docks
+World\wmo\Azeroth\Collidable Doodads\RedRidge\RedRidgeDocks02\RedRidgeDocks02.wmo	225	open	0.95	Docks
+World\wmo\Azeroth\Collidable Doodads\RedRidge\RedRidgeDocks03\RedRidgeDocks03.wmo	226	open	0.90	docks
+World\wmo\Azeroth\Collidable Doodads\RedRidge\RedRidgeDocks\RedRidgeSmallDock01.wmo	2793	open	0.90	Dock
+World\wmo\Azeroth\Collidable Doodads\RedRidge\RedRidgeDocks\RedRidgeSmallDock02.wmo	2814	open	0.95	dock
+world\wmo\azeroth\collidable doodads\redridge\redridgefootbridge\redridgefootbridge.wmo	224	open	0.95	Footbridge
+World\wmo\Azeroth\Collidable Doodads\Stranglethorn\HoldingPen\HoldingPenBamboo.wmo	2392	open	0.85	bamboo holding pen
+World\wmo\Azeroth\Collidable Doodads\Stranglethorn\OilRefinery\OilRefinery.wmo	1065	metal	0.85	Venture Co refinery, heavy metal
+World\wmo\Azeroth\Collidable Doodads\Stranglethorn\RopeBridge\RopeBridge.wmo	108	open	0.95	rope bridge
+World\wmo\Azeroth\Collidable Doodads\Stranglethorn\RopeBridge\RopeBridgeShort.wmo	2011	open	0.95	Rope bridge
+World\wmo\Azeroth\Collidable Doodads\Stranglethorn\RopeBridge\RopeBridgeSmall.wmo	2673	open	0.95	rope bridge
+World\wmo\Azeroth\Collidable Doodads\Stranglethorn\StrangleRuinStair\StrangleRuinStair.wmo	431	open	0.90	Ruin staircase
+World\wmo\Azeroth\Collidable Doodads\Stranglethorn\StrangleRuinStair\StrangleRuinStair02.wmo	1553	open	0.90	ruined stairs
+World\wmo\Azeroth\Collidable Doodads\Stranglethorn\StranglethornArena\StrangleGladiatorArena.wmo	568	open	0.85	Gurubashi Arena, open-air
+World\wmo\Azeroth\Collidable Doodads\Stranglethorn\StranglethornArenaGate\StrangleArenaGate01.wmo	561	open	0.85	arena gate
+World\wmo\Azeroth\Collidable Doodads\Stranglethorn\StranglethornRuins01\StranglethornRuins01.wmo	96	open	0.80	Jungle ruins
+World\wmo\Azeroth\Collidable Doodads\Stranglethorn\StranglethornRuins02\StranglethornRuins02.wmo	97	open	0.85	ruins doodad
+World\wmo\Azeroth\Collidable Doodads\Stranglethorn\StranglethornRuins04\StranglethornRuins04.wmo	98	open	0.85	Jungle ruins
+World\wmo\Azeroth\Collidable Doodads\Stranglethorn\StranglethornRuins11\StranglethornRuins11.wmo	99	open	0.85	jungle ruins
+World\wmo\Azeroth\Collidable Doodads\Stranglethorn\StranglethornRuins12\StranglethornRuins12.wmo	100	open	0.85	Ruins, roofless
+World\wmo\Azeroth\Collidable Doodads\Stranglethorn\StranglethornRuins13\StranglethornRuins13.wmo	101	open	0.80	ruins
+World\wmo\Azeroth\Collidable Doodads\Stranglethorn\StranglethornRuins16\StranglethornRuins16.wmo	102	open	0.80	Jungle ruins
+World\wmo\Azeroth\Collidable Doodads\SwampofSorrows\BridgeStranglethorn\BridgeStranglethorn.wmo	214	timber	0.45	id 214; covered plank bridge with STRANGLEROOF
+World\wmo\Azeroth\Collidable Doodads\SwampofSorrows\SwampBridge01\SwampBridge01.wmo	215	open	0.95	Swamp bridge
+World\wmo\Azeroth\Collidable Doodads\SwampofSorrows\SwampDock01\SwampDock01.wmo	637	open	0.90	dock
+World\wmo\Azeroth\Collidable Doodads\Westfall\HumanBoatHouse\HumanBoatHouse.wmo	684	timber	0.85	Wooden boathouse, wood roof
+World\wmo\Azeroth\Collidable Doodads\Westfall\WestfallGrainSilo01\WestFallGrainSilo01.wmo	197	timber	0.60	Barn roof skin
+World\wmo\Azeroth\Collidable Doodads\Wetlands\WetlandsHumanDock01\WetlandsHumanDock01.wmo	729	open	0.90	Dock
+World\wmo\Azeroth\Collidable Doodads\Wetlands\WetlandsWagon\Final\WetlandsBustedWagon.wmo	450	open	0.85	busted wagon
+world\wmo\azeroth\DwarvenGate\DwarvenGate.wmo	7058	open	0.70	Dwarven gate structure
+world\wmo\azeroth\DwarvenGate\DwarvenGateWall.wmo	7059	open	0.85	dwarven gate wall
+world\wmo\azeroth\DwarvenHouseAbandoned\Dwarven_house.wmo	4765	stone_house	0.80	Dwarven house
+world\wmo\azeroth\GRGate\DwarvenGate2.wmo	111	open	0.60	Gate
+world\wmo\azeroth\GRGate\DwarvenGateWall2.wmo	111	open	0.55	Gate wall
+world\wmo\azeroth\GRGate\DwarvenGateWallNT.wmo	111	open	0.75	dwarven gate wall
+world\wmo\azeroth\grimbatol\dwarfbunker\DwarfBunkerWarehouse.wmo	7060	stone_house	0.60	id 7060; Grim Batol/dwarf stone walls, MM_DWRF_ROOF_01
+world\wmo\Azeroth\grimbatol\grimbatolentrance\wetlands_grimbatol.wmo	6006	open	0.60	id 6006; Grim Batol gate walls and stairs
+world\wmo\azeroth\GRTower\DwarvenTower.wmo	7028	stone_house	0.70	Dwarven stone tower
+world\wmo\azeroth\GRTower\DwarvenTowerBrkn.wmo	7029	open	0.60	Broken tower
+world\wmo\azeroth\GRWalls\DwarvenWall.wmo	7030	open	0.85	Dwarven wall
+world\wmo\azeroth\GRWalls\DwarvenWallBRKN01.wmo	7031	open	0.90	broken dwarven wall
+world\wmo\azeroth\GRWalls\DwarvenWallBRKN02.wmo	7032	open	0.90	Broken dwarven wall
+world\wmo\azeroth\GRWalls\DwarvenWallBRKN03.wmo	7033	open	0.90	broken dwarven wall
+world\wmo\azeroth\GRWalls\DwarvenWallBRKN04.wmo	7034	open	0.90	Broken wall piece
+world\wmo\azeroth\GRWalls\DwarvenWallCurve.wmo	7035	open	0.85	wall segment
+world\wmo\azeroth\GRWalls\DwarvenWallDecline.wmo	7036	open	0.85	Dwarven wall
+World\wmo\Azeroth\GuildHouse\RuinedGuildHouseA.wmo	1669	timber	0.55	id 1669, SHARED with RuinedGuildHouseB; Duskwood wood roof and timber kit
+World\wmo\Azeroth\GuildHouse\RuinedGuildHouseB.wmo	1669	timber	0.50	id 1669, SHARED with RuinedGuildHouseA; Duskwood wood roof and timber kit
+world\wmo\azeroth\HumanTemple\HumanTemple.wmo	7071	great_hall	0.75	human temple, abbey roof
+world\wmo\azeroth\HumanTemple\HumanTempleRuined.wmo	7070	great_hall	0.50	Abbey roof textures, temple
+World\wmo\Azeroth\JoustingArena\JoustingFence\JoustingFence.wmo	4545	open	0.90	fence
+World\wmo\Azeroth\JoustingArena\JoustingFenceExtend\JoustingFenceExtend.wmo	4545	open	0.85	Jousting fence
+World\wmo\Azeroth\JoustingArena\NoblesBoxStadium\JoustingNoblesBox.wmo	188	tent	0.60	id 188, SHARED with PeasantBoxStadiumMain; JA_TENT_FABRIC cloth awning
+world\wmo\azeroth\JoustingArena\PeasantBoxStadiumMain\PeasantBoxStadiumMain.wmo	188	tent	0.55	id 188, SHARED with JoustingNoblesBox (tent); JA_TENT_FABRIC cloth awnings over the stands
+world\wmo\azeroth\JoustingArena\PeasantBoxStadiumSide1\PeasantBoxStadium01.wmo	188	open	0.75	jousting stands
+World\wmo\Azeroth\JoustingArena\PeasantBoxStadiumSide2\PeasantBoxStadium02.wmo	188	open	0.55	Jousting stands, no roof textures
+World\wmo\Azeroth\JoustingArena\SmallTentBlack\SmallTentBlack.wmo	4545	tent	0.90	small tent
+World\wmo\Azeroth\JoustingArena\SmallTentBlue\SmallTentBlue.wmo	4545	tent	0.90	Small blue tent
+World\wmo\Azeroth\JoustingArena\SmallTentGreen\SmallTentGreen.wmo	4545	tent	0.90	small cloth tent
+World\wmo\Azeroth\JoustingArena\SmallTentRed\SmallTentRed.wmo	4545	tent	0.90	Small red tent
+World\wmo\Azeroth\JoustingArena\SmallTentYellow\SmallTentYellow.wmo	4545	tent	0.90	small cloth tent
+world\wmo\azeroth\NewHouses\TallHouseBlue.wmo	7037	timber	0.75	Tall human house, wood roof
+world\wmo\azeroth\NewHouses\TallHouseGray.wmo	7038	timber	0.70	human house, wood roof
+World\wmo\Azeroth\NewHouses\TallHouseGreen.wmo	53	timber	0.90	Inn/tavern, timber house
+world\wmo\azeroth\NewHouses\TallHouseOra.wmo	7039	timber	0.75	human house, wood roof
+world\wmo\azeroth\NewHouses\TallHousePurple.wmo	7040	timber	0.70	Human tall house, wood roof
+world\wmo\azeroth\NewHouses\TallHouseRed.wmo	7041	timber	0.75	human tall house, wood roof
+world\wmo\azeroth\nortwind\nortwind_barn\nortwind_barn.wmo	7042	timber	0.80	Barn, wood roof
+world\wmo\azeroth\nortwind\nortwind_blacksmith\nortwind_blacksmith.wmo	7043	timber	0.70	Redridge-style blacksmith, wood roof
+world\wmo\azeroth\nortwind\nortwind_human_farm\nortwind_human_farm.wmo	7044	timber	0.80	Human farmhouse
+world\wmo\azeroth\nortwind\nortwind_humantwostory\nortwind_humantwostory.wmo	7045	timber	0.80	human two-story house
+world\wmo\azeroth\nortwind\nortwind_inn\nortwind_inn.wmo	7046	timber	0.75	Human inn, wood roof
+world\wmo\azeroth\nortwind\nortwind_lumbermill\nortwind_lumbermill.wmo	7047	timber	0.85	lumbermill, wood roof
+world\wmo\azeroth\nortwind\nortwind_magetower\nortwind_magetower.wmo	7048	stone_house	0.65	Stone mage tower
+world\wmo\azeroth\nortwind\nortwind_stable\nortwind_stable.wmo	7049	timber	0.80	stable, wood roof
+world\wmo\azeroth\nortwind\nortwind_townhall\nortwind_townhall.wmo	7050	timber	0.75	Human town hall, wood roof
+world\wmo\azeroth\nortwind\nortwind_townhall_nowall\nortwind_townhall_nowall.wmo	7051	timber	0.70	human town hall, wood roof
+world\wmo\azeroth\nortwind\nortwindchapel\nortwindchapel.wmo	7052	great_hall	0.50	id 7052; same abbey kit as RedridgeChapel, abbey roof
+world\wmo\azeroth\nortwind\nw_goldmine_varianta\nw_goldmine_varianta.wmo	7053	underground	0.80	gold mine, cave textures
+world\wmo\azeroth\nortwind\ora_gate\ora_gate.wmo	7054	open	0.70	Gate
+world\wmo\azeroth\nortwind\prisonhq_nortwind\prisonhq_nortwind.wmo	7055	timber	0.70	camp HQ, wood roof
+world\wmo\azeroth\nortwind\townhallora\townhallora.wmo	7056	timber	0.70	Human town hall, wood roof
+world\wmo\azeroth\PVPKeep\PVPKeep.wmo	7072	great_hall	0.60	id 7072; keep built from Duskwood/Westfall stone and barracks kit
+world\wmo\azeroth\Scarlet\ScarletBasement.wmo	0	underground	0.75	Scarlet basement crypt
+World\wmo\Azeroth\ShipShelter\RuinedSW_ShipShelterA.wmo	5297	open	0.65	id 5297, SHARED with SW_Harbor_ShipShelter; ruined ship shelter
+World\wmo\Azeroth\ShipShelter\RuinedSW_ShipShelterB.wmo	5297	open	0.50	Ruined boat shelter
+world\wmo\azeroth\Stromgarde\gil_gate.wmo	918	open	0.80	gate
+world\wmo\azeroth\Stromgarde\red_gate.wmo	918	open	0.75	Stromgarde gate
+world\wmo\azeroth\Tinkertown\Tinkertown.wmo	208	great_hall	0.55	id 208, SHARED with alphairon (Ironforge); gnome metal interior inside the mountain, rule names Ironforge interiors
+World\wmo\Azeroth\TownHallNew\TownHallBlue.wmo	228	great_hall	0.75	Stone keep town hall
+World\wmo\Azeroth\TownHallNew\TownHallRed.wmo	228	great_hall	0.70	town hall used for keeps
+World\wmo\Azeroth\TownHallNew\TownHallRuined.wmo	228	great_hall	0.55	Stonewatch and Stromgarde Keeps
+world\wmo\azeroth\WitchHouse\WitchHouseMud.wmo	7066	thatch	0.45	Mud witch hut, RoofWitch
+world\wmo\azeroth\WitchHouse\WitchHouseMudLegs.wmo	7067	thatch	0.45	Same RoofWitch roof as WitchHouseMud
+world\wmo\azeroth\WitchHouse\WitchHouseSwamp.wmo	7068	tent	0.40	id 7068; swamp orc hide roof MM_ORC_SMPROOF_01
+world\wmo\azeroth\WitchHouse\WitchHouseSwampLegs.wmo	7069	tent	0.45	id 7069; identical textures to WitchHouseSwamp (tent), swamp orc hide roof MM_ORC_SMPROOF_01
+World\wmo\cameron.wmo	1179	open	0.30	id 1179; dev test, single Stormwind wall texture, reads as a bare wall piece
+world\wmo\dungeon\az_balor\BalorDungeon.wmo	7006	underground	0.75	Dungeon, cave textures
+world\wmo\dungeon\az_balor\BalorExteriorSecondEntrance.wmo	1670	open	0.45	Exterior entrance
+World\wmo\Dungeon\AZ_Blackrock\Blackrock.wmo	560	underground	0.85	Blackrock Mountain interior
+World\wmo\Dungeon\AZ_Blackrock\Blackrock2.wmo	864	underground	0.75	Blackrock mountain dungeon interior
+World\wmo\Dungeon\AZ_Blackrock\Blackrock_lower_guild.wmo	2714	underground	0.95	Molten Core cavern
+World\wmo\Dungeon\AZ_Blackrock\Blackrock_lower_instance.wmo	2213	underground	0.90	Blackrock Depths, inside mountain
+World\wmo\Dungeon\AZ_Blackrock\Blackrock_upper_guild.wmo	2894	underground	0.85	Blackrock Spire interior in mountain
+World\wmo\Dungeon\AZ_Blackrock\Blackrock_upper_instance.wmo	2212	underground	0.70	Blackrock Spire, inside the mountain
+World\wmo\Dungeon\AZ_Deadmines\AZ_Deadmines_A.wmo	499	underground	0.90	Deadmines cave interior
+World\wmo\Dungeon\AZ_Deadmines\AZ_Deadmines_B.wmo	500	underground	0.85	Deadmines mine tunnels
+World\wmo\Dungeon\AZ_Deadmines\AZ_Deadmines_C.wmo	501	underground	0.90	Deadmines mine interior
+World\wmo\Dungeon\AZ_Deadmines\AZ_Deadmines_D.wmo	814	underground	0.95	The Deadmines mine
+world\wmo\dungeon\az_dragonmawretreat\Dragonmawfull\DragonmawRetreatFull.wmo	7005	underground	0.75	Dungeon, many cave textures
+world\wmo\dungeon\az_dragonmawretreat\DragonmawRetreatEntrance.wmo	7074	underground	0.75	cave entrance, cave textures
+world\wmo\dungeon\az_dragonmawretreat\DragonmawRetreatExit.wmo	7073	underground	0.60	Cave floor, cave 6
+world\wmo\dungeon\AZ_FrostmaneCaverns\frostmanecave.wmo	7081	underground	0.90	cave
+world\wmo\dungeon\AZ_FrostmaneCaverns\FrostmaneRetreat.wmo	7080	underground	0.85	Frostmane cave retreat
+World\wmo\Dungeon\AZ_Karazahn\Karazhan.wmo	881	great_hall	0.70	Karazhan stone tower halls
+world\wmo\dungeon\AZ_Karazahn\Kharaza1.wmo	881	great_hall	0.70	Karazhan tower, stone halls
+World\WMO\Dungeon\AZ_Karazahn\kharazan.wmo	3673	great_hall	0.75	Karazhan tower, large stone halls
+world\wmo\dungeon\AZ_Karazahn\Kharazan_instance.wmo	4449	great_hall	0.70	Karazhan tower interiors
+World\wmo\Dungeon\AZ_StormwindPrisons\StormwindJail.wmo	723	underground	0.80	Stockade, underground prison
+World\wmo\Dungeon\AZ_StormwindPrisons\StormwindPrison.wmo	724	underground	0.85	Stormwind prison vault
+World\wmo\Dungeon\AZ_Subway\Subway.wmo	3494	underground	0.95	Deeprun Tram tunnel
+World\wmo\Dungeon\CavernsOfTime\CavernsofTime.wmo	2473	underground	0.85	Caverns of Time
+World\wmo\Dungeon\CavernsOfTime\CavernsOFTimeEntrance.wmo	2913	underground	0.75	cavern entrance
+world\wmo\dungeon\CavernsofTime\cot_arm1.wmo	2553	underground	0.45	Caverns of Time
+World\wmo\Dungeon\CavernsOfTime\COT_Arm2.wmo	2554	underground	0.80	Caverns of Time cave
+World\wmo\Dungeon\CavernsOfTime\COT_Arm3.wmo	2555	underground	0.50	id 2555; Caverns of Time rock walls, cavern ceiling
+world\wmo\dungeon\CT_Diremaul\CT_Diremaul_Instance.wmo	6003	great_hall	0.55	id 6003; Dire Maul elven stone halls with ceilings
+world\wmo\dungeon\gb_cryptdwarf\CryptFinal20.wmo	7024	underground	0.80	Dwarven crypt
+World\wmo\Dungeon\GM_Dungeon\GMDungeon.wmo	4133	underground	0.45	Enclosed dungeon room
+World\wmo\Dungeon\KL_AhnQiraj\40ManArmyGeneral.wmo	4461	underground	0.85	Ahn'Qiraj underground hall
+World\wmo\Dungeon\KL_AhnQiraj\40ManCanalInner.wmo	4463	underground	0.80	Ahn'Qiraj inner hive
+World\wmo\Dungeon\KL_AhnQiraj\40ManCanalOuter.wmo	4470	open	0.60	id 4470; only exterior textures (BRICKWALLEXT, SOLIDWALLEXT, ruined tower), 'Outer' piece; no hive or cave textures
+World\wmo\Dungeon\KL_AhnQiraj\40ManCourtYard.wmo	4462	open	0.50	id 4462; courtyard with altar and only exterior wall textures, no hive or cave textures
+World\wmo\Dungeon\KL_AhnQiraj\40ManDroneBoss.wmo	4464	underground	0.85	AQ40 interior chamber
+World\wmo\Dungeon\KL_AhnQiraj\40ManEggLayerBoss.wmo	4471	underground	0.80	AQ hive boss chamber
+World\wmo\Dungeon\KL_AhnQiraj\40ManEnterance.wmo	4472	underground	0.70	Ahn'Qiraj entrance
+World\wmo\Dungeon\KL_AhnQiraj\40ManMainBoss1.wmo	4482	underground	0.75	Ahn'Qiraj boss chamber
+World\wmo\Dungeon\KL_AhnQiraj\40ManMainBoss2.wmo	4465	underground	0.70	Ahn'Qiraj boss chamber
+World\wmo\Dungeon\KL_AhnQiraj\40ManMainBossEast.wmo	4466	underground	0.70	AQ40 inner chamber
+World\wmo\Dungeon\KL_AhnQiraj\40ManMainBossWest.wmo	4473	underground	0.85	AQ40 interior chamber
+World\wmo\Dungeon\KL_AhnQiraj\40ManReaverBoss.wmo	4474	underground	0.80	AQ hive boss chamber
+World\wmo\Dungeon\KL_AhnQiraj\40MansSilithidHall.wmo	4460	underground	0.85	Ahn'Qiraj underground hall
+World\wmo\Dungeon\KL_AhnQiraj\Ahn_Qiraj.wmo	1178	underground	0.75	Ahn'Qiraj temple, underground instance
+World\wmo\Dungeon\KL_AhnQiraj\Ahn_Qiraj_city.wmo	4434	open	0.50	id 4434; exterior walls, floors and obelisks
+World\wmo\Dungeon\KL_AhnQiraj\Ahn_Qiraj_columnA.wmo	4437	open	0.85	column
+World\wmo\Dungeon\KL_AhnQiraj\Ahn_Qiraj_columnB.wmo	4438	open	0.70	Column piece
+World\wmo\Dungeon\KL_AhnQiraj\Ahn_Qiraj_columnC.wmo	4439	open	0.55	Column
+World\wmo\Dungeon\KL_AhnQiraj\Ahn_Qiraj_columnD.wmo	4440	open	0.80	Column
+World\wmo\Dungeon\KL_AhnQiraj\Ahn_Qiraj_columnE.wmo	4441	open	0.60	id 4441; exterior trim column only
+World\wmo\Dungeon\KL_AhnQiraj\Ahn_Qiraj_columnF.wmo	4442	open	0.70	Ahn'Qiraj column
+World\wmo\Dungeon\KL_AhnQiraj\Ahn_Qiraj_columnG.wmo	4443	open	0.85	column
+World\wmo\Dungeon\KL_AhnQiraj\Ahn_Qiraj_columnH.wmo	4444	open	0.70	Column piece
+World\wmo\Dungeon\KL_AhnQiraj\Ahn_Qiraj_entrance.wmo	1377	open	0.60	Exterior gate
+World\wmo\Dungeon\KL_AhnQiraj\Ahn_Qiraj_facade.wmo	4445	open	0.70	Ahn'Qiraj facade
+World\wmo\Dungeon\KL_AhnQiraj\Ahn_Qiraj_object.wmo	1378	open	0.40	id 1378; exterior solid wall and trim piece
+World\wmo\Dungeon\KL_AhnQiraj\Ahn_Qiraj_object02.wmo	1379	open	0.60	id 1379; exterior wall and trim piece
+World\wmo\Dungeon\KL_AhnQiraj\Ahn_Qirajwall01.wmo	1269	open	0.90	wall
+World\wmo\Dungeon\KL_AhnQiraj\Ahn_Qirajwall02.wmo	1270	open	0.85	Wall piece
+World\wmo\Dungeon\KL_AhnQiraj\Ahn_Qirajwall03.wmo	1271	open	0.80	wall
+World\wmo\Dungeon\KL_AhnQiraj\EasternBackLandscape.wmo	4475	open	0.70	Landscape backdrop
+World\wmo\Dungeon\KL_AhnQiraj\EasternFrontLandscape.wmo	4476	open	0.55	id 4476; exterior walls, obelisks, ruined towers
+World\wmo\Dungeon\KL_AhnQiraj\EggLayerAdd.wmo	4487	underground	0.50	id 4487; single SILITHUSSMALLHIVE texture, hive chamber
+World\wmo\Dungeon\KL_AhnQiraj\InnerGateEnterance.wmo	4477	open	0.75	gate entrance
+World\wmo\Dungeon\KL_AhnQiraj\InnerLandscape.wmo	4483	underground	0.65	AQ inner cavern
+World\wmo\Dungeon\KL_AhnQiraj\MainBossAdd.wmo	4488	underground	0.70	AQ interior boss room
+World\wmo\Dungeon\KL_AhnQiraj\OuterGateEnterance.wmo	4478	open	0.70	Outer gate
+World\wmo\Dungeon\KL_AhnQiraj\TempleRuinsEnterance.wmo	4493	open	0.55	id 4493; exterior stairs and walls, ruins entrance
+World\wmo\Dungeon\KL_AhnQiraj\WesternBackLandscape.wmo	4479	open	0.60	id 4479; exterior walls and ruined pillars
+World\wmo\Dungeon\KL_AhnQiraj\WesternFrontLandscape.wmo	4480	open	0.60	id 4480; exterior walls and ruined pillars
+World\wmo\Dungeon\KL_Blackfathom\Blackfathom.wmo	726	underground	0.90	Blackfathom Deeps cave dungeon
+world\wmo\dungeon\kl_blackfathom\blackfathom_instance.wmo	1204	underground	0.85	Blackfathom Deeps, deep caverns
+World\wmo\Dungeon\KL_Blackfathom\Old_Blackfathom_facade.wmo	3993	open	0.65	Facade
+world\wmo\dungeon\KL_Darktroll\Darktroll.wmo	6004	underground	0.70	dungeon, cave textures
+World\wmo\Dungeon\KL_DireMaul\KL_Diremaul.wmo	3633	great_hall	0.65	id 3633, Dire Maul; elven stone halls, marble, tapestries
+World\wmo\Dungeon\KL_DireMaul\KL_Diremaul__BackEnt.wmo	3635	open	0.50	id 3635, Dire Maul; outdoor walkway and entrance
+World\wmo\Dungeon\KL_DireMaul\KL_Diremaul_Instance.wmo	3634	great_hall	0.60	Dire Maul halls, Court of the Highborne
+world\wmo\dungeon\KL_GrandMooCanyon\grandmoocanyon.wmo	7075	tent	0.40	Thunder Bluff tent roofs
+world\wmo\dungeon\KL_GrandMooCanyon\MooCave.wmo	7076	underground	0.70	Custom cave
+World\wmo\Dungeon\KL_Maraudon\KL_Maraudon.wmo	1376	underground	0.85	Maraudon caverns
+World\wmo\Dungeon\KL_Maraudon\KL_Maraudon_instance01.wmo	3233	underground	0.90	Maraudon caverns
+World\wmo\Dungeon\KL_OnyxiasLair\KL_OnyxiasLair.wmo	2312	underground	0.95	Onyxia's cave lair
+World\wmo\Dungeon\KL_OnyxiasLair\KL_OnyxiasLair_A.wmo	2332	underground	0.95	Onyxia's Lair cave
+world\wmo\dungeon\KL_Onyxiaslair\kl_onyxiaslair_b.wmo	2333	underground	0.90	Onyxia's cave lair
+World\wmo\Dungeon\KL_OrgrimmarLavaDungeon\LavaDungeon.wmo	3433	underground	0.85	Cleft of Shadow, lava cave
+World\wmo\Dungeon\KL_Razorfen\RazorfenDowns.wmo	1055	underground	0.50	id 1055, map 129; thorn canopy and trench walls, instance warren
+world\wmo\dungeon\kl_razorfen\RazorfenDowns_instance.wmo	1356	underground	0.40	id 1356, maps 1 and 129; same thorn canopy, trench wall and bone textures as RazorfenDowns (underground); enclosed warren
+World\wmo\Dungeon\KL_Razorfen\RazorfenKraul.wmo	1115	underground	0.50	id 1115, Razorfen Kraul; cavern floors and trench walls
+World\wmo\Dungeon\KL_Razorfen\RazorfenKraul_instance.wmo	1193	underground	0.60	Razorfen Kraul tunnels, cave count 5
+world\wmo\dungeon\KL_TimbermawDungeon\timbermaw_exterior.wmo	7079	open	0.50	Exterior structures
+world\wmo\dungeon\KL_TimbermawDungeon\timbermaw_exterior_closedgate.wmo	0	open	0.55	Exterior gate
+world\wmo\dungeon\KL_TimbermawDungeon\timbermaw_instance.wmo	7078	underground	0.70	Timbermaw tunnels through mountain
+World\wmo\Dungeon\KL_Wailing\wailingcaverns.wmo	1069	underground	0.95	Wailing Caverns
+World\wmo\Dungeon\KL_Wailing\wailingcaverns_instance.wmo	1143	underground	0.95	Wailing Caverns cave
+World\wmo\Dungeon\KL_Wailing\wailingcaverns_teeth.wmo	3793	underground	0.80	Wailing Caverns
+World\wmo\Dungeon\KZ_Gnomeragon\KZ_Gnomeragon.wmo	1220	underground	0.90	Gnomeregan, underground city
+World\wmo\Dungeon\KZ_Gnomeragon\KZ_Gnomeragon_Instance.wmo	1249	underground	0.90	Gnomeregan interior
+World\wmo\Dungeon\KZ_Uldaman\KZ_Uldaman.wmo	842	underground	0.90	Uldaman, underground dungeon
+World\wmo\Dungeon\KZ_Uldaman\KZ_Uldaman_A.wmo	1218	underground	0.95	Uldaman dig inside rock
+World\wmo\Dungeon\KZ_Uldaman\KZ_Uldaman_B.wmo	1219	underground	0.95	Uldaman, deep in rock
+World\wmo\Dungeon\KZ_Uldaman\KZ_Uldaman_C.wmo	1716	underground	0.90	Uldaman underground dungeon
+World\wmo\Dungeon\LD_DragonIsles\DragonIsles_A.wmo	2453	unknown	0.50	Whole DragonIsles family has no textures
+World\wmo\Dungeon\LD_DragonIsles\DragonIsles_B.wmo	2493	unknown	0.35	Whole DragonIsles family has no textures
+World\wmo\Dungeon\LD_DragonIsles\DragonIsles_C.wmo	2433	underground	0.35	id 2433; only JS_WAILING textures (Wailing Caverns cave set)
+World\wmo\Dungeon\LD_DragonIsles\DragonIsles_D.wmo	2413	underground	0.30	id 2413; only JS_WAILING textures (Wailing Caverns cave set), same as DragonIsles_C
+World\wmo\Dungeon\LD_ScarletMonestary\Monestary_Cathedral.wmo	1630	great_hall	0.90	Scarlet cathedral
+world\wmo\Dungeon\LD_ScarletMonestary\monestary_cemetery.wmo	1629	great_hall	0.50	SM Graveyard cloister, monastery roof
+World\wmo\Dungeon\LD_ScarletMonestary\Monestary_Library.wmo	1631	great_hall	0.85	Scarlet Monastery library, stone halls
+world\wmo\dungeon\LD_ScarletMonestary\monestary_war.wmo	1632	great_hall	0.85	Scarlet Monastery armory
+World\wmo\Dungeon\LD_ShadowFang\LD_ShadowFang.wmo	650	great_hall	0.70	Shadowfang Keep castle
+world\wmo\Dungeon\LD_ShadowFang\ld_shadowfanginterior.wmo	689	great_hall	0.75	Shadowfang Keep castle interior
+World\wmo\Dungeon\LD_Stratholme\FrostWyrm_Final01.wmo	4491	great_hall	0.50	id 4491, Sapphiron's Lair/Kel'Thuzad Chamber; enclosed stone chambers
+World\wmo\Dungeon\LD_Stratholme\Stratholme.wmo	1057	great_hall	0.45	Athenaeum, Gallery, cloister halls
+World\wmo\Dungeon\LD_Stratholme\Stratholme_A.wmo	3453	great_hall	0.40	Stratholme city; match Stratholme.wmo
+World\wmo\Dungeon\LD_Stratholme\Stratholme_B.wmo	3454	great_hall	0.50	Stratholme city incl. Alonsus Chapel; match Stratholme.wmo
+World\wmo\Dungeon\LD_Stratholme\Stratholme_C.wmo	3455	open	0.40	id 3455; street, sidewalk, rubble and walls only
+World\wmo\Dungeon\LD_Stratholme\Stratholme_raid.wmo	4489	great_hall	0.45	id 4489, map 533 Naxxramas; enclosed Undercity-kit stone interior
+World\wmo\Dungeon\MD_Algazgate\AlgazGate.wmo	629	open	0.75	Dun Algaz gate
+World\wmo\Dungeon\MD_AnimalDen\AnimalDen.wmo	570	underground	0.85	Animal den cave
+World\wmo\Dungeon\MD_Anvilmarpass\Anvilmarpass.wmo	211	underground	0.85	mountain pass tunnel
+World\wmo\Dungeon\MD_BarrowDens\BarrowDens.wmo	833	underground	0.85	Barrow dens underground
+World\wmo\Dungeon\MD_BarrowDens\BarrowDens_B.wmo	2574	underground	0.70	barrow den, underground
+World\wmo\Dungeon\MD_BarrowDens\BarrowDens_C.wmo	3093	underground	0.85	Furbolg barrow den
+World\wmo\Dungeon\MD_BarrowDens\CorruptBarrowDens.wmo	1289	underground	0.85	barrow den, underground
+World\wmo\Dungeon\MD_BarrowDensOneRm\BarrowDensOneRm.wmo	954	underground	0.70	Druid barrow den, dug in
+World\wmo\Dungeon\MD_BarrowDensOneRm\CorruptBarrowDensOneRoom.wmo	1290	underground	0.75	barrow den, earthen chamber
+World\wmo\Dungeon\MD_Bloodelf_crystaltower\BloodElf_Micro.wmo	4446	stone_house	0.45	Blood elf tower
+World\wmo\Dungeon\MD_Bloodelf_crystaltower\High1Elf_Micro.wmo	6001	stone_house	0.45	id 6001; elven stone walls with red tile roof
+World\wmo\Dungeon\MD_Caveden\MD_IceDen.wmo	608	underground	0.90	Ice cave den
+World\wmo\Dungeon\MD_Caveden\MD_JungleDen.wmo	719	underground	0.90	cave den
+World\wmo\dungeon\md_caveden\MD_MushroomDen.wmo	605	underground	0.95	Cave den
+World\wmo\Dungeon\MD_Caveden\MD_TrollDen.wmo	1182	underground	0.90	cave den
+World\wmo\Dungeon\MD_Caveden\MD_TrollDen_Warm.wmo	1183	underground	0.90	Troll cave den
+World\wmo\Dungeon\MD_Caveden\MD_VolcanicDen.wmo	3054	underground	0.85	volcanic cave den
+World\wmo\Dungeon\MD_Caveden\MD_WarmDen.wmo	720	underground	0.90	Cave den
+World\wmo\Dungeon\MD_CaveTunnels\MD_CaveTunnel01.wmo	693	underground	0.95	cave tunnel
+World\wmo\Dungeon\MD_CaveTunnels\MD_ColdCaveTunnel01.wmo	1649	underground	0.95	Cave tunnel
+World\wmo\Dungeon\MD_CaveTunnels\MD_StoneAshen_Tunnel.wmo	1187	underground	0.85	cave tunnel
+World\wmo\Dungeon\MD_CaveTunnels\MD_WarmCaveTunnel01.wmo	1081	underground	0.90	Cave tunnel
+World\wmo\Dungeon\MD_CaveTunnels\PvP_Alterac_Ent01.wmo	0	underground	0.80	cave tunnel entrance
+World\wmo\Dungeon\MD_CaveTunnels\PvP_Alterac_Snow01.wmo	4013	underground	0.85	Frostwolf tunnel
+World\wmo\Dungeon\MD_Crypt\MD_Crypt.wmo	241	underground	0.90	crypt and tomb
+World\wmo\Dungeon\MD_Crypt\MD_Crypt_B.wmo	3333	underground	0.85	Crypt
+World\wmo\Dungeon\MD_Crypt\MD_Crypt_C.wmo	3353	underground	0.85	catacombs
+World\wmo\Dungeon\MD_Crypt\MD_Crypt_D.wmo	3833	underground	0.90	Crypt
+World\wmo\Dungeon\MD_CryptOneRm\MD_CryptOneRm.wmo	712	underground	0.75	one-room crypt
+World\wmo\Dungeon\MD_CryptSchool\MD_CryptSchool.wmo	963	underground	0.80	Crypt interior
+World\wmo\Dungeon\MD_CryptSimpleEnt\MD_CryptSimpleEnt.wmo	713	stone_house	0.60	id 713, Crypt; above-ground crypt entrance
+world\wmo\Dungeon\MD_DragonShrines\MD_RedDragonShrine.wmo	5127	open	0.40	Shrine, no roof textures
+World\wmo\Dungeon\MD_Dwarven Tunnels\LargeTunnel.wmo	756	underground	0.85	dwarven tunnel
+World\wmo\Dungeon\MD_Dwarven Tunnels\MediumTunnel.wmo	441	underground	0.90	Dwarven tunnel
+World\wmo\Dungeon\MD_Dwarven Tunnels\MediumTunnel_Snow.wmo	763	underground	0.90	dwarven tunnel
+World\wmo\Dungeon\MD_Dwarven Tunnels\SmallTunnel.wmo	442	underground	0.80	Dwarven tunnel
+World\wmo\Dungeon\MD_Dwarven Tunnels\SmallTunnel_Snow.wmo	764	underground	0.85	dwarven tunnel
+World\wmo\Dungeon\MD_FishingHole\MD_FishingHoleIce.wmo	1128	underground	0.85	Ice cave, cave textures
+World\wmo\Dungeon\MD_Goldmine\MD_Goldmine.wmo	84	underground	0.90	mine
+World\wmo\Dungeon\MD_Goldmine\MD_Goldmine_1Room.wmo	721	underground	0.90	Mine
+World\wmo\Dungeon\MD_Goldmine\MD_Goldmine_variantA.wmo	996	underground	0.90	mine
+World\wmo\Dungeon\MD_Goldmine\MD_Goldmine_variantB.wmo	2593	underground	0.90	Alterac mine
+World\wmo\Dungeon\MD_Goldmine\MD_Goldmine_variantC.wmo	2594	underground	0.90	Venture Co. mine
+World\wmo\Dungeon\MD_Goldmine\MD_Goldmine_variantD.wmo	2853	underground	0.85	Gold mine
+World\wmo\Dungeon\MD_Goldmine\MD_Goldmine_variantE.wmo	2993	underground	0.90	mine, The Slag Pit
+World\wmo\Dungeon\MD_Goldmine\MD_Goldmine_variantF.wmo	2939	underground	0.90	Mine
+World\wmo\Dungeon\MD_Hive\exterior_arch.wmo	1034	open	0.85	exterior arch
+World\wmo\Dungeon\MD_Hive\exterior_piece01.wmo	1035	open	0.60	id 1035; hive exterior trim and wall piece
+World\wmo\Dungeon\MD_Hive\exterior_piece02.wmo	1036	open	0.70	hive exterior piece
+World\wmo\Dungeon\MD_Hive\exterior_piece03.wmo	1037	open	0.70	Hive exterior piece
+World\wmo\Dungeon\MD_Hive\exterior_piece04.wmo	1038	open	0.50	Hive exterior piece
+World\wmo\Dungeon\MD_Hive\exterior_piece05.wmo	1039	open	0.65	Hive exterior piece
+World\wmo\Dungeon\MD_Hive\mini-hive_A.wmo	1040	underground	0.80	silithid hive interior
+World\wmo\Dungeon\MD_Hive\mini-hive_B.wmo	1041	underground	0.80	Silithid hive interior
+World\wmo\Dungeon\MD_Hive\mini-hive_C.wmo	1042	underground	0.60	id 1042; hive ceiling, egg sacks, nest
+World\wmo\Dungeon\MD_Hive\mini-hive_C_albino.wmo	3193	underground	0.55	Silithid hive interior
+World\wmo\Dungeon\MD_Hive\mini-hive_D.wmo	1043	underground	0.80	insect hive interior
+World\wmo\Dungeon\MD_Hive\mini-hive_D_albino.wmo	3194	underground	0.60	Hive interior
+World\wmo\Dungeon\MD_Hive\mini-hive_E.wmo	1044	underground	0.80	silithid hive interior
+World\wmo\Dungeon\MD_Hive\mini-hive_E_albino.wmo	3195	underground	0.70	Silithid hive interior
+World\wmo\Dungeon\MD_Hive\mini-hive_F.wmo	1045	underground	0.75	Gaping Chasm hive
+World\wmo\Dungeon\MD_Hive\mini-hive_F_albino.wmo	3196	underground	0.55	Silithid hive interior
+World\wmo\Dungeon\MD_Hordemine\MD_Hordemine.wmo	797	underground	0.85	mine
+World\wmo\Dungeon\MD_Hordemine\MD_Hordemine1Room.wmo	799	underground	0.80	Horde mine
+World\wmo\Dungeon\MD_Mountaincave\MD_Icecave.wmo	603	underground	0.90	ice cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Icecave02.wmo	1490	underground	0.95	Ice cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Icecave03.wmo	1489	underground	0.95	ice cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Icecave04.wmo	1491	underground	0.95	Ice cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Icecave05.wmo	4113	underground	0.90	ice cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Icecave_Medium.wmo	715	underground	0.90	Ice cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Junglecave.wmo	642	underground	0.90	cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Junglecave07.wmo	2009	underground	0.95	Jungle cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Junglecave_Crystal.wmo	4015	underground	0.95	crystal cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Junglecave_Medium.wmo	716	underground	0.95	Jungle cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Mountaincave_Medium.wmo	714	underground	0.95	mountain cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Mountaincave_Medium_B.wmo	2873	underground	0.90	Mountain cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Mountaincave_Medium_C.wmo	2933	underground	0.90	mountain cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Mountaincave_Medium_D.wmo	2934	underground	0.90	Mountain cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Mountaincave_Medium_E.wmo	2935	underground	0.95	mountain cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Mountaincave_Medium_F.wmo	2936	underground	0.95	Mountain cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Mountaincave_Medium_G.wmo	2937	underground	0.90	mountain cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Mountaincave_Medium_G_Warm.wmo	3713	underground	0.90	Mountain cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Mountaincave_Medium_H.wmo	2938	underground	0.90	mountain cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Mushroomcave.wmo	600	underground	0.95	Mushroom cave and mines
+World\wmo\Dungeon\MD_Mountaincave\MD_Mushroomcave02.wmo	1549	underground	0.95	mushroom cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Mushroomcave03.wmo	1550	underground	0.95	Cave and mine
+World\wmo\Dungeon\MD_Mountaincave\MD_Mushroomcave04.wmo	1551	underground	0.90	mushroom cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Mushroomcave05.wmo	1552	underground	0.90	Mushroom cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Mushroomcave06.wmo	1752	underground	0.90	mushroom cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Mushroomcave07.wmo	1749	underground	0.95	Mushroom cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Mushroomcave08.wmo	1750	underground	0.95	mushroom cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Mushroomcave09.wmo	1751	underground	0.95	Cave, The Slag Pit
+World\wmo\Dungeon\MD_Mountaincave\MD_Mushroomcave10.wmo	3053	underground	0.90	mushroom cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Underwatercave_Medium.wmo	1351	underground	0.90	Underwater cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Warmcave.wmo	648	underground	0.90	cave
+World\wmo\Dungeon\MD_Mountaincave\MD_Warmcave_Medium.wmo	706	underground	0.95	Warm cave
+world\wmo\Dungeon\MD_nagaTemple\md_nagatemple.wmo	4997	underground	0.70	naga temple, cave textures
+World\wmo\Dungeon\MD_Ogremound\MD_Brogremound.wmo	269	underground	0.90	Ogre mound grotto
+World\wmo\Dungeon\MD_Ogremound\MD_Brogremound1Room.wmo	272	underground	0.70	earthen ogre mound
+World\wmo\Dungeon\MD_Ogremound\MD_Grogremound.wmo	270	underground	0.85	Ogre mound cave
+World\wmo\Dungeon\MD_Ogremound\MD_Grogremound1Room.wmo	273	underground	0.80	ogre mound interior
+World\wmo\Dungeon\MD_Ogremound\MD_OgreMine3.wmo	4625	underground	0.85	Ogre mine
+World\wmo\Dungeon\MD_Ogremound\MD_Ogremound.wmo	203	underground	0.90	ogre mound, dug into rock
+World\wmo\Dungeon\MD_Ogremound\MD_Ogremound1Room.wmo	213	underground	0.85	Ogre mound, earth-covered
+World\wmo\Dungeon\MD_Ogremound\MD_Ogremound_Medium.wmo	722	underground	0.75	earthen ogre mound, Boulderfist Hall
+World\wmo\Dungeon\MD_Ogremound\MD_Snogremound.wmo	271	underground	0.85	Ogre mound cave
+World\wmo\Dungeon\MD_Ogremound\MD_Snogremound1Room.wmo	275	underground	0.80	ogre mound interior
+World\wmo\Dungeon\MD_Ogremound\Nagrand_Ogremound01.wmo	4556	underground	0.75	Earthen ogre mound
+World\wmo\Dungeon\MD_Pirateship\Pirateship.wmo	1104	timber	0.75	wooden pirate ship cabins
+World\wmo\Dungeon\MD_Pirateship\Pirateship_plank.wmo	3214	open	0.70	Ship plank
+World\wmo\Dungeon\MD_Ruinedfortress\MD_RuinedFortress.wmo	688	tent	0.45	Orc hide roof textures
+World\wmo\Dungeon\MD_Ruinedkeep\Ruinedkeep.wmo	228	great_hall	0.65	Stonewatch/Stromgarde Keep
+World\wmo\Dungeon\MD_Ruinedkeep\Ruinedkeep_crypt.wmo	3213	underground	0.75	Scholomance crypt beneath keep
+World\wmo\Dungeon\MD_Ruinedkeep\Ruinedkeep_crypt_facade.wmo	3273	stone_house	0.50	id 3273; crypt brick and JACRYPTSHINGLES roof, above-ground facade
+World\wmo\Dungeon\MD_Ruinedkeep\Ruinedkeep_crypt_instance.wmo	3293	underground	0.85	Scholomance crypt instance
+World\wmo\Dungeon\MD_Shipwreck\Shipwreck_A.wmo	538	open	0.60	Broken wreck hull
+World\wmo\Dungeon\MD_Shipwreck\Shipwreck_B.wmo	539	open	0.50	Broken hull
+World\wmo\Dungeon\MD_Shipwreck\Shipwreck_C.wmo	1094	open	0.55	Shipwreck
+World\wmo\Dungeon\MD_Shipwreck\Shipwreck_D.wmo	1095	timber	0.40	id 1095; wooden hull, deck planking and keel
+World\wmo\Dungeon\md_shipwreck\Shipwreck_DBack.wmo	5149	open	0.60	id 5149; broken rear hull section, planks only
+World\wmo\Dungeon\md_shipwreck\Shipwreck_DFront.wmo	5150	open	0.70	shipwreck fragment
+World\wmo\Dungeon\MD_Shipwreck\Transport_Shipwreck.wmo	879	open	0.60	Broken wreck hull
+World\wmo\Dungeon\MD_Spidermine\MD_Spidermine.wmo	446	underground	0.90	mine
+World\wmo\Dungeon\MD_Spidermine\MD_Spidermine_nokobolds.wmo	757	underground	0.90	Spider mine
+World\wmo\Dungeon\MD_Stratholme_Plaguewood_Tunnel\MD_Stratholme_Plaguewood_Tunnel.wmo	3953	underground	0.85	tunnel
+World\wmo\Dungeon\MD_TimbermawHold\MD_Furbog_01.wmo	3493	underground	0.85	Furbolg hold cave
+world\wmo\dungeon\MD_TimbermawHold\md_timbermawhold.wmo	2256	underground	0.90	Timbermaw Hold tunnels
+World\wmo\Dungeon\Monestary\Scarlet_Monestary_Interior.wmo	1076	great_hall	0.90	Scarlet Monastery interior halls
+world\wmo\dungeon\ND_ArugalsTower\Arugals_Tower01.wmo	5196	stone_house	0.60	Stone tower
+World\wmo\Dungeon\ND_Necropolis\ND_Necropolis01.wmo	5037	great_hall	0.45	Necropolis stone interior
+World\wmo\Dungeon\ND_TitanMicros\ND_TitanOverlook03.wmo	5315	open	0.60	id 5315; Ulduar titan pillars and floor tiles, overlook platform
+World\wmo\Dungeon\OL_OgreHuts\Ogre_GuardTower.wmo	4722	tent	0.45	id 4722; ogre sticks and orc hide roof MM_ORC_ROOF_01
+World\wmo\Dungeon\OL_OgreHuts\Ogre_Hut.wmo	4670	stone_house	0.55	id 4670; ogre rock walls and floor, no hide roof
+World\wmo\Dungeon\OL_OgreHuts\Ogre_Hut2Story.wmo	4672	stone_house	0.55	Stone count 10, ogre stone hut
+World\wmo\Dungeon\OL_OgreHuts\Ogre_Hut_Huge.wmo	4719	stone_house	0.50	Stone 8, same family as other ogre stone huts
+World\wmo\Dungeon\OL_OgreHuts\Ogre_HutBig.wmo	4674	stone_house	0.40	Stone 8, ogre stone hut
+World\wmo\Dungeon\OL_OgreHuts\PVP_Ogre_Arena01.wmo	4728	open	0.60	id 4728; ogre rock arena, open-air
+world\wmo\dungeon\PVP_HelfArena\HelfArena.wmo	7022	open	0.55	id 7022; elven arena, stairs and gravestones
+World\wmo\Dungeon\SunkenTemple\AZ_SunkenTemple.wmo	1329	underground	0.85	Sunken Temple, submerged halls
+World\wmo\Dungeon\SunkenTemple\AZ_SunkenTemple_Instance.wmo	1330	underground	0.85	Sunken Temple, submerged dungeon
+World\wmo\Dungeon\Sunstrider_Anchorage\Sunstrider_ship.wmo	4502	timber	0.50	Ship cabin
+World\wmo\Dungeon\Sunstrider_Anchorage\Sunstrider_ship_blue.wmo	4502	timber	0.50	Ship; match Sunstrider_ship, cabins timber
+World\wmo\Dungeon\Sunstrider_Anchorage\SunstriderAnchorage.wmo	4500	open	0.55	id 4500; elven dock walls and arches, no roof texture
+World\wmo\Dungeon\test\collintest.wmo	1063	open	0.50	id 1063; dev test, single Stormwind wall texture, reads as a bare wall piece
+World\wmo\Dungeon\test\gnome_shrink\gnome_shrink.wmo	5598	metal	0.75	gnome building, metal textures
+World\wmo\Dungeon\test\missingwmo.wmo	1171	unknown	0.90	Placeholder test model
+World\wmo\Dungeon\test\test.wmo	75	underground	0.50	Sunken Temple interior
+world\wmo\Dungeon\TT_NewTinkertown\Tinkertown.wmo	6003	metal	0.45	Gnome, metal 33
+World\wmo\Dungeon\woodtroll_temple\woodtroll_temple.wmo	4504	great_hall	0.45	id 4504; forest troll stone temple, tile floor, stone walls
+World\wmo\elevators\ThousandNeedlesElevator\ThousandNeedlesElevator.wmo	1142	open	0.55	id 1142; tauren elevator platform and logs
+world\wmo\Exterior_Designers\AzjolNerub\AzjolRoofGiant.wmo	4853	underground	0.40	id 4853; Azjol-Nerub cavern roof piece
+World\wmo\Exterior_Designers\HowlingFjord\ED_Juggernaught.wmo	4934	metal	0.55	Dreadnaught roof, rusty plate
+world\wmo\GBCity\GBCityExtend.wmo	7026	stone_house	0.50	Dwarven roof, stone
+world\wmo\GRDwarfGov\GRDwarfGov.wmo	7025	great_hall	0.50	Dwarven government hall
+world\wmo\GRDwarfRampart\DwarfRampart.wmo	7027	stone_house	0.55	id 7027; has rooms: dwarf fireplaces, books, windows, MM_DWRF_ROOF_01; indoor parts are dwarven stone rooms
+world\wmo\GRDwarfRampart\DwarfRampartClean.wmo	7057	stone_house	0.50	id 7057; same kit as DwarfRampart: fireplaces, books, windows, dwarf roof; indoor rooms are dwarven stone
+World\wmo\Kalimdor\Bestiary\Bestiary.wmo	454	tent	0.65	id 454, Razor Hill Barracks; Orgrimmar/Blackrock hide roofs
+World\wmo\Kalimdor\Buildings\AzsharaOutpost\AzsharaOutpost.wmo	2833	stone_house	0.40	AZR_ROOF01 is the Highborne stone roof also on Azshara ruins
+world\wmo\Kalimdor\buildings\bk_nightelf\bk_NightElf2Story.wmo	762	timber	0.75	night elf two-story house
+world\wmo\Kalimdor\buildings\bk_nightelf\bk_NightElfDruidTower.wmo	808	timber	0.65	Night elf roof
+world\wmo\Kalimdor\buildings\bk_nightelf\bk_NightElfOutpost.wmo	2513	timber	0.60	id 2513; night elf outpost roof and tower walls
+world\wmo\Kalimdor\buildings\bk_nightelf\bk_NightElfSmallHouse.wmo	725	timber	0.70	Night elf small house
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\AZRClassicalElfRuin01.wmo	1162	open	0.85	elf ruins
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\AZRClassicalElfRuin02.wmo	1161	open	0.90	Elven ruins
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\AZRClassicalElfRuin03.wmo	1160	open	0.70	elf ruins
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\AZRClassicalElfRuin04.wmo	1159	open	0.80	Elf ruin
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\AZRClassicalElfRuin05.wmo	1158	open	0.70	elven ruins
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\AZRClassicalElfRuin06.wmo	1157	open	0.85	Elven ruins
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\AZRClassicalElfRuin07.wmo	1156	open	0.85	elf ruins
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\AZRClassicalElfRuin08.wmo	1155	open	0.90	Elven ruins
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\AZRClassicalElfRuin09.wmo	1184	open	0.60	Ruined temple
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\AZRClassicalElfRuin10.wmo	1181	open	0.80	Elf ruin
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\AZRClassicalElfRuin11.wmo	4173	open	0.70	elven ruins
+World\wmo\kalimdor\buildings\ClassicalElfRuins\AZRClassicalElfRuin_UW05.wmo	5807	open	0.70	Underwater elven ruin
+World\wmo\kalimdor\buildings\ClassicalElfRuins\AZRClassicalElfRuin_uwhite05.wmo	5807	open	0.85	elf ruins
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\ClassicalElfRuin01.wmo	1144	open	0.90	Elven ruins
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\ClassicalElfRuin02.wmo	1145	open	0.80	elf ruins
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\ClassicalElfRuin03.wmo	1146	open	0.80	Elf ruin
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\ClassicalElfRuin04.wmo	1147	open	0.70	elven ruins
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\ClassicalElfRuin05.wmo	1148	open	0.75	Elven ruins
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\ClassicalElfRuin06.wmo	1153	open	0.85	elf ruins
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\ClassicalElfRuin07.wmo	1154	open	0.90	Elven ruins
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\ClassicalElfRuin08.wmo	1152	open	0.80	elf ruins
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\ClassicalElfRuin10.wmo	1391	open	0.80	Elf ruin
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\ClassicalElfTemple.wmo	1174	great_hall	0.50	id 1174, Temple of Zin-Malor; stone temple with ceiling and roof
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\ClassicalElfTemple2.wmo	1185	great_hall	0.45	id 1185, Hetaera's Clutch; elven stone temple with ceiling and roof
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\SnowClassicalElfRuin02.wmo	1381	open	0.85	snowy elf ruins
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\SnowClassicalElfRuin03.wmo	1382	open	0.60	Elven ruin
+World\wmo\Kalimdor\Buildings\ClassicalElfRuins\SnowClassicalElfRuin05.wmo	1383	open	0.70	elf ruins
+World\wmo\Kalimdor\Buildings\Durotar\TiriGardeKeep\TiriGardeKeep01.wmo	3874	stone_house	0.55	Small stone keep
+World\wmo\Kalimdor\Buildings\Durotar\TiriGardeKeep\TiriGardeKeep02.wmo	3875	stone_house	0.45	id 3875; Stormwind stone walls and abbey stone, keep piece
+World\wmo\kalimdor\buildings\Dwarf\OL_Dwarven_WatchTower.wmo	4814	stone_house	0.70	Dwarven stone watchtower
+world\wmo\Kalimdor\Buildings\FurbolgCave\FurbolgCaveHyjal_01.wmo	7004	underground	0.85	furbolg cave
+world\wmo\Kalimdor\Buildings\FurbolgTreeHouse\furbolgtreehouse1.wmo	2513	timber	0.50	Furbolg wooden hut
+world\wmo\Kalimdor\Buildings\FurbolgTreeHouse\furbolgtreehouse2.wmo	892	timber	0.40	Match furbolgtreehouse1, wooden furbolg hut
+World\wmo\Kalimdor\Buildings\GoblinHoldingPen\GoblinHoldingPen.wmo	2693	open	0.55	Holding pen
+World\wmo\Kalimdor\Buildings\GoblinHut\GoblinHut.wmo	1105	metal	0.85	goblin hut
+World\wmo\Kalimdor\Buildings\GoblinHut\KL_Goblin_ice_observatory.wmo	3593	metal	0.60	id 3593; goblin building kit MM_GOB
+World\wmo\Kalimdor\Buildings\GoblinHut\KL_Goblin_igloo_A.wmo	3553	metal	0.60	id 3553; goblin building kit MM_GOB
+World\wmo\Kalimdor\Buildings\GoblinHut\KL_Goblin_igloo_B.wmo	3573	metal	0.60	Goblin hut, rule says metal
+World\wmo\Kalimdor\Buildings\GoblinHut\KL_Goblin_igloo_C.wmo	3574	metal	0.50	Goblin hut
+World\wmo\Kalimdor\Buildings\GoblinHut\KL_Goblin_igloo_D.wmo	3575	metal	0.55	Goblin hut
+World\wmo\Kalimdor\Buildings\GoblinHut\KL_Tanaris_GoblinBld_A.wmo	1769	metal	0.80	Tanaris goblin building
+World\wmo\Kalimdor\Buildings\GoblinHut\KL_Tanaris_GoblinBld_B.wmo	1770	metal	0.75	Goblin building
+World\wmo\Kalimdor\Buildings\GoblinHut\KL_Tanaris_GoblinBld_C.wmo	1771	metal	0.65	id 1771; Tanaris goblin building kit JLO_GOB
+World\wmo\Kalimdor\Buildings\GoblinHut\KL_Tanaris_GoblinBld_D.wmo	3413	metal	0.65	Goblin building, rule says metal
+World\wmo\Kalimdor\Buildings\GoblinLab\GoblinLab.wmo	1106	metal	0.70	goblin lab
+world\wmo\Kalimdor\buildings\highbornelf\hb_temple_tower_thing01.wmo	7077	stone_house	0.45	Highborne stone tower
+World\wmo\Kalimdor\Buildings\NagaPagoda\NagaPagoda01.wmo	1202	open	0.50	id 1202; single NAGAPAVILION texture, open-sided pavilion
+world\wmo\Kalimdor\buildings\NagaPagoda\ND_Naga_Pagoda_01.wmo	4995	open	0.50	id 4995; single BT_NAGA_PAGODA texture, open-sided
+world\wmo\Kalimdor\buildings\NagaPagoda\ND_Naga_Pagoda_02.wmo	4996	open	0.40	id 4996; same single BT_NAGA_PAGODA texture as ND_Naga_Pagoda_01 (open), open-sided
+World\wmo\Kalimdor\Buildings\NightElf2Story\DSNightElf2Story.wmo	891	timber	0.75	Night elf two-story house
+World\wmo\Kalimdor\Buildings\NightElf2Story\NightElf2Story.wmo	762	timber	0.80	night elf two-story house
+World\wmo\Kalimdor\Buildings\NightElfAbbey\NightElfAbbey.wmo	755	timber	0.50	Aldrassil, night elf roofs
+World\wmo\Kalimdor\Buildings\NightElfDruidTower\DSNightElfDruidTower.wmo	892	timber	0.60	id 892; night elf tree tower, NE roof
+World\wmo\Kalimdor\Buildings\NightElfDruidTower\NightElfDruidTower.wmo	808	timber	0.60	id 808, Raynewood Retreat; night elf tree tower, NE roof
+World\wmo\Kalimdor\Buildings\NightElfGuardTower\NightElfGuardTower.wmo	2372	timber	0.65	id 2372; night elf tower, NE Darnassus roofs
+World\wmo\Kalimdor\Buildings\NightElfGuardTower\NightElfGuardTower_B.wmo	3655	timber	0.55	Night elf roof textures
+World\wmo\Kalimdor\Buildings\NightElfGuardTower\NightElfPVPGuardTower.wmo	4194	timber	0.55	Darnassus roof textures
+World\wmo\Kalimdor\Buildings\nightelfhunterslodge\dsnightelfhunterslodge.wmo	893	timber	0.65	Night elf lodge
+world\wmo\Kalimdor\Buildings\NightElfHuntersLodge\High1ElfHuntersLodge.wmo	798	timber	0.70	elven wooden hunters' lodge
+World\wmo\Kalimdor\Buildings\NightElfHuntersLodge\NightElfHuntersLodge.wmo	798	timber	0.70	Night elf hunters lodge
+World\wmo\Kalimdor\Buildings\nightelfinn\dsnightelfinn.wmo	894	timber	0.75	night elf inn
+World\wmo\Kalimdor\Buildings\NightElfInn\NightElfInn.wmo	727	timber	0.80	Night elf inn
+World\wmo\Kalimdor\Buildings\NightElfMoonWell\DSNightElfMoonWell.wmo	895	open	0.85	moonwell
+World\wmo\Kalimdor\Buildings\nightelfmoonwell\dsnightelfmoonwellornate.wmo	896	open	0.85	Moonwell
+World\wmo\Kalimdor\Buildings\NightElfMoonWell\GiantMoonwell.wmo	1275	open	0.85	moonwell, open-air
+World\wmo\Kalimdor\Buildings\NightElfMoonWell\NightElfMoonWell.wmo	773	open	0.90	Moonwell, open air
+World\wmo\Kalimdor\Buildings\nightelfmoonwell\nightelfmoonwellornate.wmo	774	open	0.90	moonwell, open to sky
+World\wmo\Kalimdor\Buildings\NightElfOutpost\NightElfOutpost.wmo	2513	timber	0.70	Night elf outpost building
+World\wmo\Kalimdor\Buildings\NightElfOutpost\NightElfOutpost_B.wmo	3653	timber	0.50	Night elf building
+World\wmo\Kalimdor\Buildings\nightelfsmallhouse\dsnightelfsmallhouse.wmo	897	timber	0.70	Night elf small house
+world\wmo\Kalimdor\buildings\nightelfsmallhouse\dsnightelfsmallhouse2.wmo	4816	timber	0.70	night elf small house
+World\wmo\Kalimdor\Buildings\NightElfSmallHouse\NightElfSmallHouse.wmo	725	timber	0.70	Night elf small house
+World\wmo\Kalimdor\Buildings\NightElfSouthGate\southGate.wmo	1173	open	0.85	gate
+World\wmo\Kalimdor\Buildings\OrcBarracks\AbandonedOrcBarracks.wmo	657	tent	0.60	Orc roof textures, hide
+World\wmo\Kalimdor\Buildings\OrcBarracks\BlackrockOrcBarracks.wmo	658	tent	0.55	Blackrock orc roof
+world\wmo\kalimdor\buildings\orcbarracks\OrcBarracks.wmo	454	tent	0.70	Orc barracks, hide roof
+World\wmo\Kalimdor\Buildings\OrcBarracks\SwampOrcBarracks.wmo	659	tent	0.65	id 659; swamp orc hide roofs
+World\wmo\Kalimdor\Buildings\OrcBlacksmith\AbandonedOrcBlacksmith.wmo	660	tent	0.60	id 660; abandoned orc hide roof
+World\wmo\Kalimdor\Buildings\OrcBlacksmith\BlackrockOrcBlacksmith.wmo	661	tent	0.55	id 661; Blackrock orc hide roof
+World\wmo\Kalimdor\Buildings\OrcBlacksmith\orcblacksmith.wmo	455	tent	0.55	Orc roof, hide
+World\wmo\Kalimdor\Buildings\OrcBlacksmith\SwampOrcBlacksmith.wmo	662	tent	0.55	Swamp orc roof
+World\wmo\Kalimdor\Buildings\OrcFortress\BlackrockOrcFortress.wmo	663	tent	0.50	Orc roofs
+World\wmo\Kalimdor\Buildings\OrcFortress\OrcFortress.wmo	456	tent	0.55	id 456, Thunder Axe Fortress; Orgrimmar hide roofs
+World\wmo\Kalimdor\Buildings\OrcFortress\SwampOrcFortress.wmo	664	tent	0.50	id 664; swamp orc hide roofs
+World\wmo\Kalimdor\Buildings\OrcGreatHall\AbandonedOrcGreatHall.wmo	653	tent	0.60	id 653; abandoned orc hide roof
+World\wmo\Kalimdor\Buildings\OrcGreatHall\BlackrockOrcGreatHall.wmo	654	tent	0.50	Blackrock orc roof, hide
+World\wmo\Kalimdor\Buildings\OrcGreatHall\OrcGreatHall.wmo	457	tent	0.55	Orc roof
+World\wmo\Kalimdor\Buildings\OrcGreatHall\SwampOrcGreatHall.wmo	655	tent	0.50	Swamp orc roof
+World\wmo\Kalimdor\Buildings\OrcHut\BlackrockOrcHut.wmo	3373	tent	0.70	orc hut, hide roof
+World\wmo\Kalimdor\Buildings\OrcHut\OrcHut.wmo	1388	tent	0.80	Orc hut, hide roof
+World\wmo\Kalimdor\Buildings\OrcInn\OrcInn.wmo	1849	tent	0.70	orc inn, hide roof
+World\wmo\Kalimdor\Buildings\OrcKennel\AbandonedOrcKennel.wmo	665	tent	0.55	Orc roof, hide
+World\wmo\Kalimdor\Buildings\OrcKennel\BlackrockOrcKennel.wmo	666	tent	0.55	Orc roof
+World\wmo\Kalimdor\Buildings\OrcKennel\OrcKennel.wmo	458	tent	0.65	Orc roof
+World\wmo\Kalimdor\Buildings\OrcKennel\SwampOrcKennel.wmo	667	tent	0.60	id 667; swamp orc hide roof
+World\wmo\Kalimdor\Buildings\OrcMageTower\abandonedOrcMageTower.wmo	668	tent	0.55	id 668; abandoned orc hide roof
+World\wmo\Kalimdor\Buildings\OrcMageTower\BlackrockOrcMageTower.wmo	669	tent	0.50	id 669; Blackrock orc hide roof
+World\wmo\Kalimdor\Buildings\OrcMageTower\OrcMageTower.wmo	459	tent	0.50	Orgrimmar/orc roof textures
+world\wmo\Kalimdor\buildings\orcmagetower\orcmagetower_expansion.wmo	4668	tent	0.45	Orc roof
+World\wmo\Kalimdor\Buildings\OrcMageTower\SwampOrcMageTower.wmo	670	tent	0.50	Swamp orc roof
+World\wmo\Kalimdor\Buildings\OrcMedium\AbandonedOrcMedium.wmo	671	tent	0.60	id 671; abandoned orc hide roof
+World\wmo\Kalimdor\Buildings\OrcMedium\BlackrockOrcMedium.wmo	672	tent	0.60	id 672; Blackrock orc hide roof
+World\wmo\Kalimdor\Buildings\OrcMedium\OrcMedium.wmo	460	tent	0.70	orc hut, hide roof
+World\wmo\Kalimdor\Buildings\OrcMedium\SwampOrcMedium.wmo	673	tent	0.60	Swamp orc roof, hide
+World\wmo\Kalimdor\Buildings\OrcTower\AbandonedOrcTower.wmo	674	tent	0.45	Orc roof
+World\wmo\Kalimdor\Buildings\OrcTower\BlackrockOrcTower.wmo	675	tent	0.50	Blackrock orc roof
+World\wmo\Kalimdor\Buildings\OrcTower\OrcTower.wmo	461	tent	0.55	id 461; Orgrimmar hide roof
+World\wmo\Kalimdor\Buildings\OrcTower\SwampOrcTower.wmo	676	tent	0.50	id 676; swamp orc hide roof
+World\wmo\Kalimdor\Buildings\OrcTwoStory\BlackrockOrcTwoStory.wmo	3393	tent	0.60	id 3393; Blackrock orc hide roof
+World\wmo\Kalimdor\Buildings\OrcTwoStory\OrcTwoStory.wmo	1389	tent	0.60	Orgrimmar roof, hide
+World\wmo\Kalimdor\Buildings\OrcZeppelinHouse\OrcZeppelinHouse.wmo	3113	metal	0.55	Zeppelin tower, rule says metal (roof textures are orc)
+world\wmo\kalimdor\buildings\orczeppelinhouse\OrcZeppelinHouse_Durotar01.wmo	5689	metal	0.50	Zeppelin tower, rule says metal; match OrcZeppelinHouse
+world\wmo\Kalimdor\buildings\owlbearden\owlbearden02.wmo	4525	underground	0.55	id 4525; single BK_DEN texture, animal den
+world\wmo\Kalimdor\buildings\owlbearden\owlbearden03.wmo	4526	underground	0.60	id 4526; single BK_DEN texture, animal den
+World\wmo\Kalimdor\Buildings\Quillboar\Bighouse.wmo	825	tent	0.50	id 825; quillboar hide and bone roof
+World\wmo\Kalimdor\Buildings\Quillboar\Hut.wmo	826	tent	0.65	Pig-hide roof textures
+World\wmo\Kalimdor\Buildings\Quillboar\Ladder.wmo	827	open	0.85	ladder
+World\wmo\Kalimdor\Buildings\Quillboar\Wallhut.wmo	829	tent	0.50	Pig-hide roof
+World\wmo\Kalimdor\Buildings\Quillboar\Wallhut2.wmo	830	tent	0.55	id 830; quillboar hide-and-thorn roof STU_RF_PIGROOF
+world\wmo\Kalimdor\buildings\spirittauren\SpiritLonghouse01.wmo	704	tent	0.80	Tauren longhouse
+world\wmo\Kalimdor\buildings\spirittauren\SpiritTaurenBridge01.wmo	1129	open	0.90	bridge
+world\wmo\Kalimdor\buildings\spirittauren\SpiritTaurenChickenHunt01.wmo	696	tent	0.75	Tauren tent
+world\wmo\Kalimdor\buildings\spirittauren\SpiritTaurenDock01.wmo	700	open	0.85	dock
+world\wmo\Kalimdor\buildings\spirittauren\SpiritTaurenDruidTent01.wmo	694	tent	0.90	Tauren druid tent
+world\wmo\Kalimdor\buildings\spirittauren\SpiritTaurenHutA01.wmo	697	tent	0.85	tauren hut
+world\wmo\Kalimdor\buildings\spirittauren\SpiritTaurenHutB01.wmo	698	tent	0.85	Tauren hut
+world\wmo\Kalimdor\buildings\spirittauren\SpiritTaurenHutBig01.wmo	699	tent	0.80	tauren hut, hide roof
+world\wmo\Kalimdor\buildings\spirittauren\SpiritTaurenHutC01.wmo	700	tent	0.85	Tauren hut
+world\wmo\Kalimdor\buildings\spirittauren\SpiritTaurenHutD01.wmo	701	tent	0.85	tauren hut
+world\wmo\Kalimdor\buildings\spirittauren\SpiritTaurenTallHut01.wmo	702	tent	0.90	Tauren tall hut
+world\wmo\Kalimdor\buildings\spirittauren\SpiritTaurenTepee01.wmo	703	tent	0.90	tauren tepee
+World\wmo\Kalimdor\Buildings\TanarisRuins\TanarisRuins01.wmo	1205	open	0.75	Tanaris ruins
+World\wmo\Kalimdor\Buildings\TanarisRuins\TanarisRuins02.wmo	1206	open	0.85	desert ruins
+World\wmo\Kalimdor\Buildings\TanarisRuins\TanarisRuins03.wmo	1207	open	0.70	Tanaris ruins
+World\wmo\Kalimdor\Buildings\TanarisRuins\TanarisRuins04.wmo	1208	open	0.80	ruins
+World\wmo\Kalimdor\Buildings\TanarisRuins\TanarisRuins05.wmo	1209	open	0.75	Desert ruins
+World\wmo\Kalimdor\Buildings\TanarisRuins\TanarisRuins06.wmo	1210	open	0.70	Tanaris ruins
+World\wmo\Kalimdor\Buildings\TanarisRuins\TanarisRuins07.wmo	1211	open	0.75	Tanaris ruins
+World\wmo\Kalimdor\Buildings\TanarisRuins\TanarisRuins09.wmo	1212	open	0.85	desert ruins
+World\wmo\Kalimdor\Buildings\TanarisRuins\TanarisRuins11.wmo	1213	open	0.70	Tanaris ruins
+World\wmo\Kalimdor\Buildings\TanarisRuins\TanarisRuins12.wmo	1214	open	0.80	ruins
+World\wmo\Kalimdor\Buildings\TanarisRuins\TanarisRuins13.wmo	1215	open	0.75	Desert ruins
+World\wmo\Kalimdor\Buildings\TanarisRuins\TanarisRuins14.wmo	1216	open	0.70	Tanaris ruins
+World\wmo\Kalimdor\Buildings\TanarisRuins\TanarisRuins15.wmo	2049	open	0.75	Tanaris ruins
+World\wmo\Kalimdor\Buildings\TanarisShipYard\TanarisShipYard.wmo	2393	open	0.65	id 2393; shipyard scaffolding, planks and excavation tents
+world\wmo\Kalimdor\buildings\tauren\TaurenbridgeWide.wmo	1129	open	0.95	Bridge
+World\wmo\Kalimdor\Buildings\TaurenDruidTent\TaurenDruidTent.wmo	694	tent	0.90	tauren tent
+World\wmo\Kalimdor\Buildings\TaurenHunterTent\TaurenHunterTent.wmo	695	tent	0.90	Tauren hunter tent
+World\wmo\Kalimdor\Buildings\TaurenHuts\RuinedTaurenChickenHut.wmo	2255	tent	0.60	id 2255; ruined tauren hide roof
+World\wmo\Kalimdor\Buildings\TaurenHuts\RuinedTaurenHutB.wmo	2252	tent	0.60	id 2252; ruined tauren hide roof
+World\wmo\Kalimdor\Buildings\TaurenHuts\RuinedTaurenTallHut.wmo	2253	tent	0.50	id 2253; ruined tauren hide roof
+World\wmo\Kalimdor\Buildings\TaurenHuts\RuinedTaurenTepee.wmo	2254	tent	0.50	Tauren tepee roof
+world\wmo\kalimdor\buildings\taurenhuts\TaurenChickenHut.wmo	696	tent	0.85	tauren hut
+World\wmo\Kalimdor\Buildings\TaurenHuts\TaurenHutA.wmo	697	tent	0.90	Tauren hut
+World\wmo\Kalimdor\Buildings\TaurenHuts\TaurenHutB.wmo	698	tent	0.90	tauren hut
+World\wmo\Kalimdor\Buildings\TaurenHuts\TaurenHutBig.wmo	699	tent	0.90	Tauren hut
+World\wmo\Kalimdor\Buildings\TaurenHuts\TaurenHutC.wmo	700	tent	0.90	tauren hut, hide roof
+World\wmo\Kalimdor\Buildings\TaurenHuts\TaurenHutD.wmo	701	tent	0.90	Tauren hut
+world\wmo\kalimdor\buildings\taurenhuts\TaurenTallHut.wmo	702	tent	0.90	tauren hut
+world\wmo\kalimdor\buildings\taurenhuts\TaurenTepee.wmo	703	tent	0.95	Tauren tepee
+World\wmo\Kalimdor\Buildings\TaurenLonghouse\TaurenLonghouse.wmo	704	tent	0.90	tauren longhouse
+World\wmo\Kalimdor\Buildings\TaurenShamanTent\TaurenShamanTent.wmo	705	tent	0.90	Tauren shaman tent
+World\wmo\Kalimdor\Buildings\TrollBridge\Trollbridge.wmo	1201	open	0.95	bridge
+World\wmo\Kalimdor\Buildings\TrollBurrow\AbandonedTrollBurrow.wmo	677	tent	0.50	Orc hide roof textures
+World\wmo\Kalimdor\Buildings\TrollBurrow\BlackrockTrollBurrow.wmo	678	tent	0.40	Orc hide roof
+World\wmo\Kalimdor\Buildings\TrollBurrow\SwampTrollBurrow.wmo	679	tent	0.45	Swamp orc hide roof, like the other troll burrows
+World\wmo\Kalimdor\Buildings\TrollBurrow\TrollBurrow.wmo	453	tent	0.50	id 453; Orgrimmar hide roof MM_ORC_ROOF_01
+World\wmo\Kalimdor\Buildings\TrollHotel\troll_hotel01.wmo	1198	thatch	0.80	Troll hut, straw roof
+World\wmo\Kalimdor\Buildings\TrollHotel\troll_hotel_burn01.wmo	1273	open	0.55	id 1273; burnt troll building, no roof texture
+World\wmo\Kalimdor\Buildings\Trollhut\trollhut01.wmo	1186	tent	0.50	Kodo-skin roof texture
+World\wmo\Kalimdor\Buildings\Trollhut\trollhut_burn01.wmo	1203	tent	0.45	Kodo-skin roof
+World\wmo\Kalimdor\Buildings\Trollhut\Trollhut_Desert.wmo	2190	tent	0.55	Kodo-skin roof
+World\wmo\Kalimdor\Buildings\Trollhut\TrollHut_DesertSmall.wmo	2191	tent	0.55	id 2191; kodo-skin roof GP_TROLL_KOTOSKIN_DESERT
+World\wmo\Kalimdor\Buildings\Trollhut\trollhutSmall01.wmo	1200	tent	0.60	id 1200; only roof texture is BM_TROLL_KOTOSKIN01 (kodo skin), no straw; hide roof like TrollHut_DesertSmall
+World\wmo\Kalimdor\Buildings\Trollhut\trolltent.wmo	1830	tent	0.75	troll tent, kodo skin roof
+World\wmo\Kalimdor\Buildings\TrollShop\trollshop01.wmo	3533	thatch	0.85	Troll shop, straw roof
+World\wmo\Kalimdor\Buildings\TrollShoppingMall\trollshoppingmall01.wmo	3534	thatch	0.80	troll hut, straw roof
+World\wmo\Kalimdor\Buildings\WyvernNest\WyvernNest.wmo	462	open	0.80	Wyvern nest
+World\wmo\Kalimdor\CollidableDoodads\Barrens\ExcavationPlatform\ExcavationPlatform.wmo	1390	open	0.90	excavation platform
+World\wmo\Kalimdor\CollidableDoodads\darkshore\auberdinedocks\auberdinedock.wmo	3733	open	0.95	Dock
+World\wmo\Kalimdor\CollidableDoodads\darkshore\bridge\darkshorebridge\brian\darkshorebridge01.wmo	686	open	0.95	bridge
+World\wmo\Kalimdor\CollidableDoodads\Darkshore\Bridge\DarkshoreBridge\Brian\DarkshoreBridge02.wmo	731	open	0.95	Bridge
+World\wmo\Kalimdor\CollidableDoodads\darkshore\bridge\darkshorebridge\brian\darkshorebridge02_new.wmo	5964	open	0.90	bridge
+World\wmo\Kalimdor\CollidableDoodads\darkshore\bridge\darkshorebridge\brian\darkshorebridge03.wmo	761	open	0.95	Bridge
+World\wmo\Kalimdor\CollidableDoodads\Darkshore\Bridge\DarkshoreBridge\Brian\DarkshoreBridge04.wmo	869	open	0.95	bridge
+World\wmo\Kalimdor\CollidableDoodads\Darkshore\DarkshoreDocks\DarkshoreDocks01.wmo	870	open	0.95	Dock
+World\wmo\Kalimdor\CollidableDoodads\Darkshore\DarkshoreDocks\DarkshoreDocks02.wmo	871	open	0.95	docks
+World\wmo\Kalimdor\CollidableDoodads\Darkshore\DarkshoreDocks\DarkshoreDocks03.wmo	1172	open	0.95	Docks
+World\wmo\Kalimdor\CollidableDoodads\Darkshore\DarkshoreDocks\DarkshoreDocksAberdeen.wmo	1176	open	0.90	docks
+World\wmo\Kalimdor\CollidableDoodads\Darkshore\DarkshoreDocks\DarkshoreDocksCurve.wmo	872	open	0.90	Dock
+World\wmo\Kalimdor\CollidableDoodads\Darkshore\DarkshoreExcavation\DSExcavationPlatform.wmo	3913	open	0.90	excavation platform
+World\wmo\Kalimdor\CollidableDoodads\Darkshore\DarkshoreExcavation\DSExcavationRailin.wmo	3914	open	0.85	Excavation railing
+World\wmo\Kalimdor\CollidableDoodads\darkshore\giantseaturtle01\giantseaturtle01.wmo	193	stone_house	0.35	id 193; shell structure with TURTLESHELL and turtle roof textures, hard shell overhead
+World\wmo\Kalimdor\CollidableDoodads\darkshore\giantseaturtle02\giantseaturtle02.wmo	194	open	0.70	Giant turtle shell doodad
+World\wmo\Kalimdor\CollidableDoodads\Darkshore\SnakeSpine\SnakeSpineGiantArch.wmo	873	open	0.90	giant arch
+World\wmo\Kalimdor\CollidableDoodads\Darkshore\WreckedElvenDestroyer\ElvenDestroyerWreckBack.wmo	1386	open	0.65	Shipwreck
+World\wmo\Kalimdor\CollidableDoodads\Darkshore\WreckedElvenDestroyer\ElvenDestroyerWreckFront.wmo	1387	open	0.60	id 1387; wrecked ship bow, sails and blades
+World\wmo\Kalimdor\CollidableDoodads\Desolace\CentaurHorn.wmo	2236	open	0.80	Centaur horn prop
+World\wmo\Kalimdor\CollidableDoodads\Durotar\DurotarBridge\DurotarBridge01.wmo	1135	open	0.95	bridge
+World\wmo\Kalimdor\CollidableDoodads\Durotar\Rocks\DurotarRootedRock03.wmo	882	open	0.80	Rock formation
+World\wmo\Kalimdor\CollidableDoodads\Durotar\StoneGate\DurotarGate.wmo	839	open	0.90	stone gate
+World\wmo\Kalimdor\CollidableDoodads\DustwallowMarsh\CrashedZippelin\Final\CrashedZippelin.wmo	553	open	0.50	Crashed wreck
+World\wmo\Kalimdor\CollidableDoodads\DustwallowMarsh\DustWallowFootbridge\DustWallowFootbridge.wmo	542	open	0.95	footbridge
+World\wmo\Kalimdor\CollidableDoodads\DustwallowMarsh\TheramoreDocks\TheramoreDocks.wmo	1359	open	0.95	Docks
+World\wmo\Kalimdor\CollidableDoodads\Feralas\FeathermoonDock\feathermoon_dock.wmo	4609	open	0.95	dock
+World\wmo\Kalimdor\CollidableDoodads\Feralas\FeralasStoneBridge\FeralasStoneBridge01.wmo	1137	open	0.95	Stone bridge
+World\wmo\Kalimdor\CollidableDoodads\Hyjal\HyjalDemon\HyjalDemon01.wmo	1369	open	0.80	demon statue
+World\wmo\Kalimdor\CollidableDoodads\Hyjal\WorldTreeRoots\WorldTreeRoots01.wmo	1370	open	0.80	Tree roots
+World\wmo\Kalimdor\CollidableDoodads\Hyjal\WorldTreeRoots\WorldTreeRoots02.wmo	1371	open	0.80	tree roots
+World\wmo\Kalimdor\CollidableDoodads\Hyjal\WorldTreeRoots\WorldTreeRoots03.wmo	1372	open	0.80	Tree roots
+World\wmo\Kalimdor\CollidableDoodads\Kalidar\KalidarBridge\KalidarBridge01.wmo	746	open	0.95	bridge
+World\wmo\Kalimdor\CollidableDoodads\Kalidar\KalidarDock\KalidarDock01.wmo	754	open	0.95	Dock
+World\wmo\Kalimdor\CollidableDoodads\Kalidar\KalidarTreeBranch\KalidarTreeBranch.wmo	1141	open	0.80	tree branch
+World\wmo\Kalimdor\CollidableDoodads\Moonglade\Bridge\MoongladeBridge.wmo	1199	open	0.95	Bridge
+world\wmo\kalimdor\CollidableDoodads\mulgore\centaurtents\CentaurTent02.wmo	1138	tent	0.90	centaur hide tent
+world\wmo\kalimdor\CollidableDoodads\mulgore\centaurtents\CentaurTent03.wmo	1139	tent	0.90	Centaur tent
+world\wmo\kalimdor\CollidableDoodads\mulgore\centaurtents\CentaurTentCommand.wmo	2292	tent	0.90	centaur hide tent
+world\wmo\kalimdor\CollidableDoodads\mulgore\CrossroadsBridge\Crossroadsbridge.wmo	1309	open	0.95	Bridge
+World\wmo\Kalimdor\CollidableDoodads\Mulgore\TaurenBridge01\TaurenBridge01.wmo	1129	open	0.90	bridge
+World\wmo\Kalimdor\CollidableDoodads\Mulgore\TaurenTent01\TaurenTent01.wmo	607	tent	0.95	Tauren tent
+World\wmo\Kalimdor\CollidableDoodads\Orcbridge\Orcbridge.wmo	1140	open	0.95	bridge
+World\wmo\Kalimdor\CollidableDoodads\Silithus\elventowerSilithus01.wmo	3994	stone_house	0.50	id 3994; Silithus elven stone tower, NE roof
+World\wmo\Kalimdor\CollidableDoodads\Silithus\masterhive.wmo	3613	underground	0.60	id 3613; Silithid big hive interior
+World\wmo\Kalimdor\CollidableDoodads\Silithus\NightElf2StorySilithus.wmo	4014	timber	0.55	Night elf house roof
+World\wmo\Kalimdor\CollidableDoodads\Silithus\NightElfMoonWellDefiled.wmo	4073	open	0.85	moonwell
+World\wmo\Kalimdor\CollidableDoodads\Silithus\NightElfOutpost_silithus.wmo	4033	timber	0.45	Night elf outpost
+World\wmo\Kalimdor\CollidableDoodads\Silithus\QuirajTower01.wmo	3456	open	0.60	id 3456; ruined Qiraji tower, not enterable
+World\wmo\Kalimdor\CollidableDoodads\Silithus\QuirajTower02.wmo	3457	open	0.50	id 3457; ruined Qiraji tower
+World\wmo\Kalimdor\CollidableDoodads\Silithus\QuirajTower03.wmo	3458	open	0.60	id 3458; ruined Qiraji tower
+World\wmo\Kalimdor\CollidableDoodads\Silithus\QuirajTowerBase.wmo	3459	open	0.60	Tower base, no roof
+World\wmo\Kalimdor\CollidableDoodads\Stonetalon\BoneDam\outland_bone_dam.wmo	2129	open	0.80	dam structure
+World\wmo\Kalimdor\CollidableDoodads\Stonetalon\LandingPad\LandingPad01.wmo	997	open	0.90	Landing pad
+world\wmo\Kalimdor\collidabledoodads\stonetalon\loggingplatform\loggingplatform.wmo	1380	open	0.90	logging platform
+World\wmo\Kalimdor\CollidableDoodads\Stonetalon\MonsterMachine\MonsterLogMachine_01.wmo	1006	metal	0.65	id 1006; metal plating, metal walls, big doors and conveyor (metal count 11); any enclosed part is metal
+World\wmo\Kalimdor\CollidableDoodads\Stonetalon\StonetalonWheelPlatform\StonetalonWheelPlatform.wmo	1136	open	0.85	wheel platform
+World\wmo\Kalimdor\CollidableDoodads\Tanaris\GadgetzanWall\GadgetzanWall.wmo	4395	open	0.90	Town wall
+World\wmo\Kalimdor\CollidableDoodads\Tanaris\GoblinGates\TanarisGoblinWallGate01.wmo	2239	open	0.85	wall gate
+World\wmo\Kalimdor\CollidableDoodads\Tanaris\GoblinGates\TanarisGoblinWallGateBig.wmo	2240	open	0.85	Goblin wall gate
+World\wmo\Kalimdor\CollidableDoodads\Tanaris\TrollTent\TrollTentDesert01.wmo	2189	tent	0.90	troll hide tent
+World\wmo\Kalimdor\CollidableDoodads\Tanaris\TrollTent\TrollTentSand01.wmo	1192	tent	0.90	Troll tent
+World\wmo\Kalimdor\CollidableDoodads\Teldrassil\Dock\TeldrassilPortDock.wmo	1529	open	0.90	dock
+World\wmo\Kalimdor\CollidableDoodads\ThousandNeedles\BleachedElvenDestroyer\BleachedElvenDestroyer.wmo	2653	open	0.60	Wrecked ship
+World\wmo\Kalimdor\CollidableDoodads\ThousandNeedles\Bridge\1000NeedlesBridge.wmo	1175	open	0.90	bridge
+World\wmo\Kalimdor\CollidableDoodads\Winterspring\Bridges\WinterspringRockBridge.wmo	1375	open	0.90	Rock bridge
+World\wmo\Kalimdor\CollidableDoodads\Winterspring\EverlookWall\EverlookWall.wmo	3753	open	0.90	wall
+World\wmo\Kalimdor\CollidableDoodads\Winterspring\FrostSabreRock\WinterSpringFrostSaberRock.wmo	1374	open	0.75	Rock formation
+World\wmo\Kalimdor\Darnassis\Darnassis.wmo	1079	timber	0.45	id 1079, SHARED with every Darnasus home file; indoor groups are mostly night elf homes and shops (MM_NE_DRNSS roofs, shingles), which the rule puts under timber
+World\wmo\Kalimdor\Desolace\DesolaceBridge\DesolaceBridge01.wmo	2237	open	0.95	Bridge
+World\wmo\Kalimdor\Desolace\RockBrodge\DesolaceRockBridge.wmo	2238	open	0.90	rock bridge
+world\wmo\Kalimdor\elunarian\elunariandestroyedhomes\DarnasusHomeADestroyed.wmo	1079	open	0.50	Destroyed home
+world\wmo\Kalimdor\elunarian\elunariandestroyedhomes\DarnasusHomeBDestroyed.wmo	1079	open	0.45	id 1079, SHARED with Darnassis.wmo and all Darnassus homes; destroyed home, grass and trunks, roof mostly gone
+world\wmo\Kalimdor\elunarian\elunariandestroyedhomes\DarnasusHomeCDestroyed.wmo	1079	open	0.45	id 1079, SHARED with Darnassis.wmo; destroyed home, roof mostly gone
+world\wmo\Kalimdor\elunarian\elunariandestroyedhomes\DarnasusHomeSmallADestroyed.wmo	1079	open	0.60	id 1079, SHARED with Darnassis.wmo; destroyed home, roof mostly gone
+world\wmo\Kalimdor\elunarian\elunariandestroyedhomes\DarnasusHomeSmallBDestroyed.wmo	1079	open	0.50	Destroyed home
+world\wmo\Kalimdor\elunarian\elunariandestroyedhomes\DarnasusHomeSmallCDestroyed.wmo	1079	open	0.55	Destroyed home
+world\wmo\Kalimdor\elunarian\elunariandestroyedhomes\DarnasusHomeSmallDDestroyed.wmo	1079	open	0.50	Destroyed home
+world\wmo\Kalimdor\elunarian\elunariandestroyedhomes\DarnasusHomeSmallEDestroyed.wmo	1079	open	0.45	id 1079, SHARED with Darnassis.wmo; destroyed home, roof mostly gone
+world\wmo\Kalimdor\elunarian\elunariandestroyedhomes\DarnasusHomeSmallFDestroyed.wmo	1079	open	0.45	id 1079, SHARED with Darnassis.wmo; destroyed home, roof mostly gone
+world\wmo\Kalimdor\elunarian\elunariandestroyedhomes\DarnasusTreehomeADestroyed.wmo	1079	open	0.60	id 1079, SHARED with Darnassis.wmo; destroyed treehome
+world\wmo\Kalimdor\elunarian\elunariandestroyedhomes\DarnasusTreehomeBDestroyed.wmo	1079	open	0.50	Destroyed tree home
+world\wmo\Kalimdor\elunarian\elunariandestroyedhomes\DarnasusTreeHomeCDestroyed.wmo	1079	open	0.50	Destroyed tree home
+world\wmo\Kalimdor\elunarian\elunariandestroyedhomes\DarnasusTreeHomeDDestroyed.wmo	1079	open	0.50	Destroyed tree home
+world\wmo\Kalimdor\elunarian\ElunarianHomes\DarnasusHomeA.wmo	1079	timber	0.60	id 1079, SHARED with Darnassis.wmo; night elf home, MM_NE_DRNSS_ROOF
+world\wmo\Kalimdor\elunarian\ElunarianHomes\DarnasusHomeB.wmo	1079	timber	0.55	id 1079, SHARED; same MM_DRNSS/MM_NE_DRNSS_ROOF set as DarnasusHomeA/C (timber), night elf home
+world\wmo\Kalimdor\elunarian\ElunarianHomes\DarnasusHomeC.wmo	1079	timber	0.60	id 1079, SHARED with Darnassis.wmo; night elf home, MM_NE_DRNSS_ROOF
+world\wmo\Kalimdor\elunarian\ElunarianHomes\DarnasusHomeSmallA.wmo	1079	timber	0.60	Darnassus night elf home
+world\wmo\Kalimdor\elunarian\ElunarianHomes\DarnasusHomeSmallB.wmo	1079	timber	0.70	night elf home
+world\wmo\Kalimdor\elunarian\ElunarianHomes\DarnasusHomeSmallC.wmo	1079	timber	0.45	Same roof as DarnasusHomeSmallA; night elf home
+world\wmo\Kalimdor\elunarian\ElunarianHomes\DarnasusHomeSmallD.wmo	1079	timber	0.60	id 1079, SHARED with Darnassis.wmo; night elf home, MM_NE_DRNSS_ROOF
+world\wmo\Kalimdor\elunarian\ElunarianHomes\DarnasusHomeSmallE.wmo	1079	timber	0.55	id 1079, SHARED; same MM_DRNSS/MM_NE_DRNSS_ROOF set as the timber homes, night elf home
+world\wmo\Kalimdor\elunarian\ElunarianHomes\DarnasusHomeSmallF.wmo	1079	timber	0.60	id 1079, SHARED with Darnassis.wmo; night elf home, MM_NE_DRNSS_ROOF
+world\wmo\Kalimdor\elunarian\ElunarianHomes\DarnasusTreeHomeA.wmo	1079	timber	0.65	Darnassus tree home, wood
+world\wmo\Kalimdor\elunarian\ElunarianHomes\DarnasusTreeHomeB.wmo	1079	timber	0.65	Shingle roof, wood 10
+world\wmo\Kalimdor\elunarian\ElunarianHomes\DarnasusTreeHomeC.wmo	1079	timber	0.60	Tree home, wood
+world\wmo\Kalimdor\elunarian\ElunarianHomes\DarnasusTreeHomeD.wmo	1079	timber	0.70	night elf tree home
+world\wmo\Kalimdor\elunarian\ruinedelfhouses\dsnightelf2story_ruined.wmo	5680	timber	0.45	id 5680; night elf house kit, keeps MM_NE_DS_ROOF_03
+world\wmo\Kalimdor\elunarian\ruinedelfhouses\dsnightelfdruidtower_ruined.wmo	6591	open	0.55	id 6591; ruined night elf tower
+world\wmo\Kalimdor\elunarian\ruinedelfhouses\dsnightelfhunterlodge_ruined.wmo	5691	timber	0.50	Keeps both lodge roof textures
+world\wmo\Kalimdor\elunarian\ruinedelfhouses\dsnightelfinn_ruined.wmo	5759	open	0.50	Ruined inn
+world\wmo\Kalimdor\elunarian\ruinedelfhouses\dsnightelfsmallhouse_ruined.wmo	5863	open	0.55	Ruined house
+world\wmo\Kalimdor\GoblinHouses\GoblinHouseVariantA\GoblinHutVariantA.wmo	7013	metal	0.80	goblin hut
+world\wmo\Kalimdor\GoblinHouses\GoblinHouseVariantB\GoblinHutVariantB.wmo	7014	metal	0.75	Goblin hut
+world\wmo\Kalimdor\GoblinHouses\GoblinHouseVariantC\GoblinHutVariantC.wmo	7015	metal	0.85	goblin hut, tin roof
+world\wmo\Kalimdor\GoblinHouses\GoblinHouseVariantD\GoblinHutVariantD.wmo	7016	metal	0.80	Goblin hut
+world\wmo\Kalimdor\GoblinHouses\GoblinHouseVariantE\GoblinBlacksmithBay.wmo	7017	metal	0.70	goblin blacksmith, metal
+world\wmo\Kalimdor\GoblinHouses\GoblinHouseVariantF\GoblinHutVariantF.wmo	7018	metal	0.75	Goblin hut
+world\wmo\Kalimdor\GoblinHouses\GoblinHouseVariantG\GoblinHutVariantG.wmo	7019	metal	0.75	goblin hut
+world\wmo\Kalimdor\GoblinHouses\GoblinHouseVariantH\GoblinHutVariantH.wmo	7020	metal	0.75	Goblin hut
+world\wmo\Kalimdor\GoblinMine\md_goldmine_goblin.wmo	4607	underground	0.90	goblin mine
+world\wmo\Kalimdor\GoblinTownHall\GoblinTownHall.wmo	7021	metal	0.75	Goblin town hall
+World\wmo\kalimdor\Hyjal\Hyjal_Malorne_Shrine_Intact.wmo	6121	open	0.55	Outdoor shrine
+World\wmo\Kalimdor\Ogrimmar\KL_PvPBarracks.wmo	3813	tent	0.55	Orgrimmar hide roofs
+World\wmo\Kalimdor\Ogrimmar\Ogrimmar.wmo	759	tent	0.50	id 759; Orgrimmar hide roofs and kodo skin dominate
+World\wmo\Kalimdor\PVP\CollidableDoodads\NETents\NightElfTent01_PVP.wmo	4273	tent	0.90	Night elf tent
+World\wmo\Kalimdor\PVP\CollidableDoodads\NETents\NightElfTent02_PVP.wmo	4274	tent	0.90	night elf tent
+World\wmo\Kalimdor\PVP\CollidableDoodads\Walls\HumanWall_PvP.wmo	4093	open	0.85	Wall
+World\wmo\Kalimdor\PVP\CollidableDoodads\Walls\OrcGatePvP.wmo	4094	open	0.90	gate
+World\wmo\Kalimdor\Silvermyst\Bridge\silvermyst_bridge.wmo	4723	open	0.90	Bridge
+World\wmo\Kalimdor\ThunderBluff\DruidMesaA.wmo	775	tent	0.75	Thunder Bluff mesa, tauren roofs
+World\wmo\Kalimdor\ThunderBluff\DruidMesaB.wmo	778	tent	0.75	Thunder Bluff mesa tents
+World\wmo\Kalimdor\ThunderBluff\GiantTotem.wmo	779	open	0.55	id 779; totem, logs and ramps
+World\wmo\Kalimdor\ThunderBluff\LowerMesaA.wmo	780	tent	0.70	Thunder Bluff mesa tents
+World\wmo\Kalimdor\ThunderBluff\LowerMesaB.wmo	781	tent	0.70	Thunder Bluff mesa, tauren tents
+World\wmo\Kalimdor\ThunderBluff\LowerMesaC.wmo	776	tent	0.65	Thunder Bluff tents
+World\wmo\Kalimdor\ThunderBluff\LowerMesaD.wmo	777	open	0.55	id 777; only BM_THUNDER_LOGS, no roof
+World\wmo\Kalimdor\ThunderBluff\LowerMesaE.wmo	782	tent	0.75	Thunder Bluff mesa tents
+World\wmo\Kalimdor\ThunderBluff\LowerMesaF.wmo	783	tent	0.65	id 783; tauren hide tent roofs BM_THUNDER_ROOF
+World\wmo\Kalimdor\ThunderBluff\MidMesaA.wmo	784	tent	0.70	Thunder Bluff mesa tents
+World\wmo\Kalimdor\ThunderBluff\MidMesaB.wmo	785	tent	0.70	Thunder Bluff mesa, tauren tents
+World\wmo\Kalimdor\ThunderBluff\MidMesaC.wmo	786	tent	0.65	Thunder Bluff tents
+World\wmo\Kalimdor\ThunderBluff\MidMesaD.wmo	787	tent	0.75	Thunder Bluff mesa, tauren tents
+World\wmo\Kalimdor\ThunderBluff\ShamanMesa.wmo	747	tent	0.75	Thunder Bluff mesa tents
+World\wmo\kalimdor\ThunderBluff\TB_ZeppelinDock.wmo	5629	open	0.75	zeppelin dock platform
+World\wmo\Kalimdor\ThunderBluff\UndeadCave.wmo	789	underground	0.90	Pools of Vision cave
+World\wmo\Kalimdor\ThunderBluff\UpperMesaA.wmo	790	tent	0.70	Thunder Bluff mesa, tauren tents
+World\wmo\Kalimdor\ThunderBluff\UpperMesaB.wmo	791	tent	0.65	Thunder Bluff tents
+World\wmo\Kalimdor\ThunderBluff\UpperMesaC.wmo	792	open	0.55	id 792; only a rope texture, no roof
+World\wmo\Kalimdor\ThunderBluff\UpperMesaD.wmo	793	tent	0.75	Thunder Bluff mesa tents
+World\wmo\Kalimdor\ThunderBluff\UpperMesaE.wmo	794	tent	0.65	id 794; tauren hide tent roofs BM_THUNDER_ROOF
+World\wmo\Kalimdor\ThunderBluff\WarriorMesaA.wmo	795	tent	0.70	Thunder Bluff mesa tents
+World\wmo\Kalimdor\ThunderBluff\WarriorMesaB.wmo	796	tent	0.70	Thunder Bluff mesa, tauren tents
+World\wmo\Kalimdor\Winterspring\MD_WinterspringCave01.wmo	3535	underground	0.90	Mazthoril cave
+World\wmo\kalimdor\Winterspring\MD_WinterspringCave02.wmo	5396	underground	0.90	cave
+world\wmo\KarazhanOutland\Kara40Platform.wmo	7003	open	0.70	Platform
+world\wmo\KarazhanOutland\OutlandBoss.wmo	7001	tent	0.35	id 7001; draenei tent floor, hood and walls plus Lost Ones house textures dominate
+world\wmo\KarazhanOutland\OutlandThingyNoRocks.wmo	7002	open	0.60	Same texture profile as sibling Kara40Platform; a platform
+World\wmo\KhazModan\Buildings\Anvilmar\AnvilMar.wmo	752	stone_house	0.55	Dwarven stone hall
+world\wmo\KhazModan\buildings\DWARVEN_1STORY_HOVEL\MUD_HOVEL\mod_hovel.wmo	554	stone_house	0.80	Dwarven hovel
+world\wmo\khazmodan\buildings\dwarven_1story_hovel\mud_hovel\mud_hovel.wmo	554	stone_house	0.75	dwarven hovel
+World\wmo\KhazModan\Buildings\dwarven_1story_hovel\snow_hovel\hovel_machine.wmo	1067	stone_house	0.80	Dwarven stone hovel
+World\wmo\KhazModan\Buildings\dwarven_1story_hovel\snow_hovel\snow_hovel.wmo	556	stone_house	0.85	dwarven stone hovel
+world\wmo\KhazModan\buildings\DWARVEN_2STORY_HOVEL\MUD_2STORY\mod_2story.wmo	585	stone_house	0.75	Dwarven two-story hovel
+world\wmo\khazmodan\buildings\dwarven_2story_hovel\mud_2story\mud_2story.wmo	585	stone_house	0.70	dwarven hovel, dwarf roof
+World\wmo\KhazModan\Buildings\dwarven_2story_hovel\snow_2story\snow_2story.wmo	587	stone_house	0.80	Dwarven two-story house
+World\wmo\KhazModan\Buildings\Dwarven_Barracks\snow_barracks\snow_dwarfbarracks.wmo	708	stone_house	0.65	id 708, Dun Baldar/Dun Garok; dwarven stone walls, MM_DWRF_SROOF
+World\wmo\KhazModan\Buildings\Dwarven_Barracks\wetlands_barracks\wet_dwarfbarracks.wmo	709	stone_house	0.70	Dwarven stone barracks
+World\wmo\KhazModan\Buildings\Dwarven_Blacksmith\Snow_Blacksmith\snow_blacksmith.wmo	611	stone_house	0.85	dwarven blacksmith
+World\wmo\KhazModan\Buildings\Dwarven_Blacksmith\Wetland_Blacksmith\wetland_blacksmith.wmo	612	stone_house	0.80	Dwarven blacksmith
+World\wmo\KhazModan\Buildings\Dwarven_GriffonAviary\Dwarven_GriffonAviary.wmo	815	stone_house	0.45	Aerie Peak, stone 14
+World\wmo\KhazModan\Buildings\Dwarven_GuardTower\Dwarven_GuardTower.wmo	589	stone_house	0.80	Dwarven guard tower
+World\wmo\KhazModan\Buildings\Dwarven_Inn\snow_Inn\Snow_Inn.wmo	1970	stone_house	0.80	dwarven stone inn
+World\wmo\KhazModan\Buildings\Dwarven_Inn\wetlands_Inn\wet_Inn.wmo	1971	stone_house	0.80	Dwarven stone inn
+world\wmo\KhazModan\buildings\DWARVEN_INN\WETLANDS_INN\wit_Inn.wmo	1971	stone_house	0.80	dwarven stone inn
+World\wmo\KhazModan\Buildings\Dwarven_SnowStable\Dwarven_SnowStable.wmo	593	stone_house	0.70	Dwarven stable
+World\wmo\KhazModan\Buildings\Dwarven_SnowTower\Dwarven_PVPSnowTower.wmo	4193	stone_house	0.80	dwarven stone tower
+World\wmo\KhazModan\Buildings\Dwarven_SnowTower\Dwarven_SnowTower.wmo	590	stone_house	0.80	Dwarven snow tower
+World\wmo\KhazModan\Buildings\Dwarven_Stable\Dwarven_Stable.wmo	594	stone_house	0.70	dwarven stable
+World\wmo\KhazModan\Buildings\Dwarven_Tavern\snow_tavern\Snow_Tavern.wmo	618	stone_house	0.80	Dwarven stone tavern
+World\wmo\KhazModan\Buildings\Dwarven_Tavern\wetlands_tavern\wet_Tavern.wmo	619	stone_house	0.80	dwarven stone tavern
+World\wmo\KhazModan\Buildings\GreatWall\GreatWall_Gate.wmo	818	open	0.75	Great wall gate
+World\wmo\KhazModan\Buildings\GreatWall\GreatWall_tower_01.wmo	819	stone_house	0.55	Stone wall tower
+World\wmo\KhazModan\Buildings\GreatWall\GreatWall_tower_02.wmo	821	stone_house	0.55	Stone wall tower
+World\wmo\KhazModan\Buildings\GreatWall\GreatWall_wall_01.wmo	840	open	0.90	wall
+World\wmo\KhazModan\Buildings\GreatWall\GreatWall_wall_02.wmo	822	open	0.90	Great wall section
+World\wmo\KhazModan\Buildings\GreatWall\GreatWall_wall_03.wmo	823	open	0.90	wall
+World\wmo\KhazModan\Buildings\GreatWall\GreatWall_wall_04.wmo	824	open	0.90	Wall piece
+World\wmo\KhazModan\Buildings\SearingGorge\DarkIronCrane.wmo	3013	open	0.80	crane
+World\wmo\KhazModan\Buildings\SearingGorge\DarkIronTower.wmo	3014	stone_house	0.50	Dark Iron tower; metal count is the 'iron' in the name
+World\wmo\KhazModan\Buildings\ThandolSpan_Bridge\ThandolSpan.wmo	820	open	0.85	Thandol Span bridge
+World\wmo\KhazModan\Buildings\Wetlands_GrimBatol\Wetlands_GrimBatol.wmo	576	open	0.55	id 576; Grim Batol gate walls and stairs
+World\wmo\KhazModan\Cities\Ironforge\alphairon.wmo	208	great_hall	0.65	id 208, Ironforge, SHARED with Tinkertown; big interior inside the mountain
+World\wmo\KhazModan\Cities\Ironforge\ironforge.wmo	208	great_hall	0.65	Ironforge named in great_hall rule
+World\wmo\KhazModan\Collidable Doodads\GolBolarPlatform\GolBolarPlatform.wmo	3654	open	0.85	platform
+World\wmo\KhazModan\Collidable Doodads\LochModan\DwarvenDam\DwarvenDam01.wmo	805	open	0.50	Stonewrought Dam
+World\wmo\KhazModan\Collidable Doodads\LochModan\DwarvenDock\DwarvenDock01.wmo	806	open	0.95	dock
+World\wmo\KhazModan\Collidable Doodads\LochModan\DwarvenSentinels\DwarvenSentinel01.wmo	596	open	0.90	Dwarven statue
+World\wmo\KhazModan\Collidable Doodads\LochModan\DwarvenSentinels\DwarvenSentinel02.wmo	597	open	0.95	dwarven statue
+World\wmo\KhazModan\Collidable Doodads\LochModan\ExcavationSite\ExcavationPlatform01.wmo	887	open	0.90	Excavation platform
+World\wmo\KhazModan\Collidable Doodads\LochModan\ExcavationSite\ExcavationPlatform02.wmo	888	open	0.85	excavation platform
+World\wmo\KhazModan\Collidable Doodads\LochModan\ExcavationSite\ExcavationPlatform03.wmo	889	open	0.85	Excavation platform
+World\wmo\KhazModan\Collidable Doodads\LochModan\NetherguardWall\NetherguardWall.wmo	1349	open	0.85	wall
+World\wmo\KhazModan\Collidable Doodads\SearingGorge\SearingGorgeScaffold\SearingGorgeScaffold.wmo	2633	open	0.90	Scaffold
+World\wmo\KhazModan\CollidableDoodads\MenethilDocks\MenethilDocks.wmo	3693	open	0.95	docks
+World\wmo\KhazModan\CollidableDoodads\WetlandsFootbridge\WetlandsFootbridge01.wmo	2149	open	0.95	Footbridge
+World\wmo\Lorderon\Buildings\Alterac\GreenHouse01.wmo	890	timber	0.50	Lordaeron house
+world\wmo\Lorderon\buildings\Bloodelf_Abandoned\BE_3story_aban.wmo	4582	stone_house	0.40	Blood elf house family
+world\wmo\Lorderon\buildings\Bloodelf_Abandoned\BE_3story_alt_aban.wmo	4583	stone_house	0.45	id 4583; abandoned elven stone house, rusted tile roofs
+world\wmo\Lorderon\buildings\Bloodelf_Abandoned\BloodElf_Arcane_Sanctum_Aban.wmo	4557	great_hall	0.45	id 4557; abandoned elven sanctum, same form as Arcane_Sanctum
+world\wmo\Lorderon\buildings\Bloodelf_Abandoned\BloodElf_GuardTower01_aban.wmo	4558	stone_house	0.55	id 4558; abandoned elven stone guard tower
+world\wmo\Lorderon\buildings\Bloodelf_Abandoned\BloodElf_Hunter_Lodge_Aban.wmo	4559	stone_house	0.45	Blood elf lodge, stone family
+world\wmo\Lorderon\buildings\Bloodelf_Abandoned\BloodElf_SmallGazebo01_aban.wmo	4549	open	0.85	gazebo
+world\wmo\Lorderon\buildings\Bloodelf_Abandoned\Bloodelf_SmallHouse02_aban.wmo	4561	stone_house	0.40	Blood elf house family
+world\wmo\Lorderon\buildings\Bloodelf_Abandoned\Bloodelf_SmallHouse_aban01.wmo	4560	stone_house	0.45	id 4560; abandoned elven stone house, rusted tile roofs
+world\wmo\Lorderon\buildings\Bloodelf_Abandoned\BloodElf_TwoStory01_Aban.wmo	4550	stone_house	0.50	id 4550; abandoned elven stone house, rusted roof
+world\wmo\Lorderon\buildings\Bloodelf_Abandoned\Windrunner_Spire.wmo	4613	stone_house	0.50	id 4613; abandoned elven stone spire, rusted roof
+World\wmo\Lorderon\Buildings\EasternPlaguelands\Cathedral\Cathedral.wmo	959	great_hall	0.90	Cathedral, Scarlet Basilica
+World\wmo\Lorderon\Buildings\EasternPlaguelands\NaxPortal\epl_portal.wmo	4521	open	0.70	portal structure
+World\wmo\Lorderon\Buildings\EasternPlaguelands\UndeadSlaughterhouse\SlaughterHouse.wmo	925	stone_house	0.40	Scourge stone building
+World\wmo\Lorderon\Buildings\EasternPlaguelands\UndeadZiggurat\Undead_RogueTemple01.wmo	4512	stone_house	0.50	id 4512; Undercity stone walls with roof
+World\wmo\Lorderon\Buildings\EasternPlaguelands\UndeadZiggurat\Undead_SkullTower01.wmo	4513	stone_house	0.45	id 4513; Undercity/ziggurat stone walls
+World\wmo\Lorderon\Buildings\EasternPlaguelands\UndeadZiggurat\UndeadZiggurat.wmo	1078	stone_house	0.50	id 1078; stone ziggurat walls
+World\wmo\Lorderon\Buildings\Eversong\Footbridge\Eversong_Footbridge.wmo	4497	open	0.95	Footbridge
+World\wmo\Lorderon\Buildings\Ghostlands\BloodElf_Platform\BE_Platform_Ghostlands_01.wmo	4537	open	0.85	platform
+World\wmo\Lorderon\Buildings\Ghostlands\Dock\Ghostlands_Dock01.wmo	4506	open	0.90	Dock
+World\wmo\Lorderon\Buildings\Ghostlands\Footbridge\ghostlands_Footbridge.wmo	4498	open	0.95	footbridge
+World\wmo\Lorderon\Buildings\Ghostlands\Fountain\GhostlandsFountian.wmo	4563	open	0.90	Fountain
+World\wmo\Lorderon\Buildings\Ghostlands\ScourgeWall\Ghostlands_ScourgeWall_Front.wmo	4515	open	0.90	wall
+World\wmo\Lorderon\Buildings\Silvermoon\Abandoned\Slvrmn_2Story01.wmo	4546	stone_house	0.45	Silvermoon house, stone family
+World\wmo\Lorderon\Buildings\Silvermoon\Abandoned\slvrmn_2Storylong.wmo	4547	stone_house	0.50	Elf stone house
+World\wmo\Lorderon\Buildings\Silvermoon\Abandoned\Slvrmn_3Story01.wmo	4548	stone_house	0.45	Silvermoon house
+World\wmo\Lorderon\Buildings\Silvermoon\Abandoned\Two_Story01.wmo	4648	stone_house	0.45	id 4648; elven stone walls, red rusted roof
+World\wmo\Lorderon\Buildings\Silvermoon\ArcaneSanctum\BloodElf_Arcane_Sanctum.wmo	4507	great_hall	0.50	id 4507, SHARED with High1Elf_Arcane_Sanctum; elven sanctum hall
+world\wmo\Lorderon\buildings\Silvermoon\ArcaneSanctum\High1Elf_Arcane_Sanctum.wmo	4507	great_hall	0.50	id 4507, SHARED with BloodElf_Arcane_Sanctum; elven sanctum hall
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Bridge\BE_ArchBridge01.wmo	4637	open	0.95	Arch bridge
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Bridge\BE_SunstriderBridge.wmo	4481	open	0.85	bridge
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Dock\BE_Dock01.wmo	4505	open	0.90	Dock
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Foutain\BE_FountainSilvermoon.wmo	4454	open	0.90	fountain
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Gate\BloodElf_Gate.wmo	4484	open	0.80	Elven gate
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_GuardTower\BloodElf_GuardTower01.wmo	4496	stone_house	0.60	id 4496; elven stone guard tower, red roof
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_GuardTower\HighElf_GuardTower01.wmo	4638	stone_house	0.70	High elf guard tower
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Inn\BloodElf_Inn.wmo	4469	stone_house	0.50	Elf stone inn
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Inn\High1Elf_Inn.wmo	6002	stone_house	0.45	Elf inn
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_MiliatryTent\BloodElf_MilitaryTent.wmo	4821	tent	0.85	military cloth tent
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Platform\BE_platform_01.wmo	4455	open	0.90	Platform
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Platform\BE_platform_02.wmo	4453	open	0.90	platform
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Platform\BE_platform_03.wmo	4456	open	0.95	Platform
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Platform\BE_platform_04.wmo	4457	open	0.85	platform
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Platform\BE_Tomb01.wmo	4819	underground	0.45	Tomb
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Platform\BloodElf_platform.wmo	4451	open	0.90	platform
+world\wmo\Lorderon\buildings\Silvermoon\BloodElf_Platform\HighElf_platform.wmo	4451	open	0.90	Platform
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Pond\BloodElf_Pond01.wmo	4452	open	0.95	pond
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_SmallGazebo01\BloodElf_SmallGazebo01.wmo	4467	open	0.85	Gazebo
+world\wmo\Lorderon\buildings\Silvermoon\BloodElf_SmallGazebo01\High1Elf_SmallGazebo01.wmo	4467	open	0.85	gazebo
+world\wmo\Lorderon\buildings\Silvermoon\BloodElf_smallhouse\Bloodelf_SmallHouse01.wmo	4435	stone_house	0.45	Blood elf house
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_smallhouse\Bloodelf_SmallHouse02.wmo	4495	stone_house	0.45	id 4495; elven stone walls, red tile roof
+world\wmo\Lorderon\buildings\Silvermoon\BloodElf_smallhouse\Bloodelf_SmallHouse03.wmo	5139	stone_house	0.55	id 5139; elven stone walls, red tile roof
+world\wmo\Lorderon\buildings\Silvermoon\BloodElf_smallhouse\HighElf_SmallHouse01.wmo	4638	stone_house	0.55	id 4638; elven stone house, red tile roof
+world\wmo\Lorderon\buildings\Silvermoon\BloodElf_smallhouse\Highelf_SmallHouse03.wmo	5139	stone_house	0.55	High elf small house
+world\wmo\Lorderon\buildings\Silvermoon\BloodElf_Stairs\be_gardenstairs01.wmo	4640	open	0.90	stairs
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Stairs\BE_GardenWall01.wmo	4641	open	0.85	Garden wall
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Stairs\BloodElf_Stairs01.wmo	4450	open	0.90	stairs
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Stairs\BloodElf_Stairs02.wmo	4458	open	0.90	Stairs
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Stairs\BloodElf_Stairs03.wmo	4459	open	0.95	stairs
+world\wmo\Lorderon\buildings\Silvermoon\BloodElf_Stairs\Bloodelf_Stairs04.wmo	4657	open	0.95	Stairs
+world\wmo\Lorderon\buildings\Silvermoon\BloodElf_Stairs\High1elf_Stairs04.wmo	4657	open	0.90	stairs
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Tower\BloodElf_Tower.wmo	4485	stone_house	0.50	Blood elf tower
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_TwoStory01\BloodElf_TwoStory01.wmo	4468	stone_house	0.45	id 4468, SHARED with High1Elf_TwoStory01; elven stone house, tile roof
+world\wmo\Lorderon\buildings\Silvermoon\BloodElf_TwoStory01\High1Elf_TwoStory01.wmo	4468	stone_house	0.55	id 4468, SHARED with BloodElf_TwoStory01; elven stone house, tile roof
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElf_Wall\BloodElf_Wall.wmo	4486	open	0.95	wall
+world\wmo\Lorderon\buildings\Silvermoon\BloodElf_Wall\High1Elf_Wall.wmo	4486	open	0.95	Wall
+world\wmo\Lorderon\buildings\Silvermoon\BloodElfDock\HighElfDock.wmo	5090	open	0.90	dock
+World\wmo\Lorderon\Buildings\Silvermoon\BloodElfLodge\BloodElf_Hunter_Lodge.wmo	4514	stone_house	0.45	Blood elf lodge
+world\wmo\Lorderon\buildings\Silvermoon\BloodElfLodge\High1Elf_Hunter_Lodge.wmo	4514	stone_house	0.50	id 4514; all elven stone-kit textures (walls, tower, red tile roof), no wood at all
+World\wmo\Lorderon\Buildings\Silvermoon\High1Elf_Inn.wmo	6002	stone_house	0.50	id 6002; elven stone walls, red tile roof
+world\wmo\Lorderon\buildings\Silvermoon\HighElfCommand\highElfCommand.wmo	4639	stone_house	0.50	id 4639, SHARED with highElfHouseVariantC/D/E and RoundVariantB (all stone_house); same house kit, kept consistent
+world\wmo\Lorderon\buildings\Silvermoon\HighElfGate\highelf_gate.wmo	4484	open	0.80	Gate
+world\wmo\Lorderon\buildings\Silvermoon\highElfHouseVariantA\highElfHouseVariantA.wmo	4639	stone_house	0.50	High elf house
+world\wmo\Lorderon\buildings\Silvermoon\highElfHouseVariantB\highElfHouseVariantB.wmo	4639	stone_house	0.45	High elf house
+world\wmo\Lorderon\buildings\Silvermoon\highElfHouseVariantC\highElfHouseVariantC.wmo	4639	stone_house	0.45	id 4639, SHARED with other high elf houses and highElfCommand; stone walls, tile roof
+world\wmo\Lorderon\buildings\Silvermoon\highElfHouseVariantD\highElfHouseVariantD.wmo	4639	stone_house	0.55	id 4639, SHARED; high elf stone house, blue tile roof
+world\wmo\Lorderon\buildings\Silvermoon\highElfHouseVariantE\highElfHouseVariantE.wmo	4639	stone_house	0.55	id 4639, SHARED; elven stone house, tile roof
+world\wmo\Lorderon\buildings\Silvermoon\highElfHouseVariantF\highElfHouseVariantF.wmo	4639	stone_house	0.55	High elf house
+World\wmo\Lorderon\buildings\Silvermoon\highelfhousevariantg\highElfHouseVariantG.wmo	4639	stone_house	0.50	High elf house
+world\wmo\Lorderon\buildings\Silvermoon\HighElfRoundHouseVariantA\highElfHouseRoundVariantA.wmo	4639	stone_house	0.45	High elf house
+world\wmo\Lorderon\buildings\Silvermoon\HighElfRoundHouseVariantB\highElfHouseRoundVariantB.wmo	4639	stone_house	0.45	id 4639, SHARED; high elf stone round house, blue tile roof
+world\wmo\Lorderon\buildings\Silvermoon\Scrying_Tower\HE_Scrying_Tower.wmo	4436	stone_house	0.60	id 4436, SHARED with Scrying_Tower; elven stone tower
+World\wmo\Lorderon\Buildings\Silvermoon\Scrying_Tower\Scrying_Tower.wmo	4436	stone_house	0.55	id 4436, SHARED with HE_Scrying_Tower; elven stone tower
+World\wmo\Lorderon\Buildings\Silvermoon\Silvermoon_City_01.wmo	4499	great_hall	0.45	Silvermoon city large buildings
+World\wmo\Lorderon\Buildings\TirisfalGlade\FenrisKeep\FenrisKeep.wmo	3873	great_hall	0.50	Stone keep
+world\wmo\lorderon\buildings\tirisfalglade\LorderonZeppelinTower\LorderonZeppelin.wmo	3253	metal	0.50	Zeppelin tower, rule says metal (textures say wood, Duskwood roof)
+World\wmo\Lorderon\Buildings\TirisfalGlade\Mausoleum\MausoleumActive.wmo	2233	stone_house	0.70	above-ground mausoleum, crypt entrance
+World\wmo\Lorderon\Buildings\TirisfalGlade\UtherShrine\UtherShrine.wmo	1229	stone_house	0.50	id 1229, Uther's Tomb; small stone shrine
+World\wmo\Lorderon\Buildings\Wetlands\BridgeBigWhite\BridgeBigWhite.wmo	802	open	0.95	bridge
+World\wmo\Lorderon\Buildings\ZulAman\Entrance\Zulaman_Entrance.wmo	4545	open	0.65	Entrance gate
+World\wmo\Lorderon\Buildings\ZulAman\FTroll_Huts\Forrest_Troll_Hut2Story.wmo	4538	thatch	0.70	forest troll hut, leafy roof
+World\wmo\Lorderon\Buildings\ZulAman\FTroll_Huts\Forrest_Troll_HutSmall01.wmo	4539	thatch	0.80	Forest troll hut, leafy roof
+World\wmo\Lorderon\Buildings\ZulAman\FTroll_Ruins\FTroll_Ruins_Cornersmall01.wmo	4527	open	0.80	troll ruins corner
+World\wmo\Lorderon\Buildings\ZulAman\FTroll_Ruins\FTroll_Ruins_CornerTall01.wmo	4531	open	0.80	Troll ruins
+World\wmo\Lorderon\Buildings\ZulAman\FTroll_Ruins\FTroll_Ruins_Stairs01.wmo	4528	open	0.90	ruined stairs
+World\wmo\Lorderon\Buildings\ZulAman\FTroll_Ruins\FTroll_Ruins_Wall01.wmo	4529	open	0.90	Ruin wall
+World\wmo\Lorderon\Buildings\ZulAman\FTroll_Ruins\FTroll_Ruins_Wall02.wmo	4530	open	0.85	ruin wall
+World\wmo\Lorderon\Buildings\ZulAman\FTrollTemples\Zulaman_Warlord_Zuljin_Temple.wmo	4752	open	0.50	Temple platform
+World\wmo\Lorderon\Buildings\ZulAman\ZulAman_Enterance\Zulamon_Enterance.wmo	4570	open	0.65	id 4570; Zul'Aman gate, grass floor and tower tops
+World\wmo\Lorderon\Buildings\ZulAman\ZulAman_Pieces\Zulaman_Pillar_A.wmo	4551	open	0.90	Pillar
+World\wmo\Lorderon\Buildings\ZulAman\ZulAman_Pieces\Zulaman_Pillar_A_Broken.wmo	4552	open	0.95	broken pillar
+World\wmo\Lorderon\Buildings\ZulAman\ZulAman_Pieces\Zulaman_Pillar_B.wmo	4553	open	0.95	Pillar
+World\wmo\Lorderon\Buildings\ZulAman\ZulAman_Pieces\Zulaman_Pillar_B_Broken.wmo	4554	open	0.90	broken pillar
+World\wmo\Lorderon\Buildings\ZulAman\ZulAman_Pieces\Zulaman_Wall_A_Double.wmo	4555	open	0.90	Wall
+World\wmo\Lorderon\Buildings\ZulAman\ZulAman_Pieces\ZulAmanWall01.wmo	4802	open	0.90	wall
+World\wmo\Lorderon\Buildings\ZulAman\ZulAman_Pieces\ZulAmanWall02.wmo	4804	open	0.90	Wall
+World\wmo\Lorderon\Buildings\ZulAman\ZulAman_Pieces\ZulAmanWall03.wmo	4805	open	0.95	wall
+World\wmo\Lorderon\Buildings\ZulAman\ZulAman_Pieces\ZulAmanWall04.wmo	4806	open	0.95	Wall piece
+World\wmo\Lorderon\Buildings\ZulAman\ZulAman_Pieces\ZulAmanWall05.wmo	4807	open	0.90	wall
+World\wmo\Lorderon\Buildings\ZulAman\ZulAman_Pieces\ZulAmanWall06.wmo	4808	open	0.90	Wall
+World\wmo\Lorderon\Buildings\ZulAman\ZulAman_Pieces\ZulAmanWall07.wmo	4809	open	0.90	wall
+World\wmo\Lorderon\Buildings\ZulAman\ZulAman_Pieces\ZulAmanWall08.wmo	4810	open	0.90	Wall
+World\wmo\Lorderon\Buildings\ZulAman\ZulAman_Pieces\ZulAmanWall09.wmo	4811	open	0.95	wall
+World\wmo\Lorderon\Buildings\ZulAman\ZulAman_Pieces\ZulAmanWall10.wmo	4812	open	0.95	Wall piece
+World\wmo\Lorderon\Buildings\ZulAman\ZulAman_Pieces\ZulAmanWall11.wmo	4813	open	0.90	wall
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\Bridge\ArathiStoneBridge01.wmo	933	open	0.95	Stone bridge
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\Bridge\ArathiStoneBridge02.wmo	936	open	0.95	stone bridge
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\Bridge\ArathiStoneBridge03.wmo	4433	open	0.90	Stone bridge
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\Durnholde\DurnholdeInnerWall.wmo	2940	open	0.85	inner wall
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\DurnholdeDestroyedWalls\DurnholdeDestroyedWall.wmo	3460	open	0.95	Destroyed wall
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\HumanRuinedBuildings\ChimneyTop.wmo	1355	open	0.85	ruined chimney
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\HumanRuinedBuildings\HuRuinedBuilding_Collapsed.wmo	3915	open	0.55	Collapsed ruin
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\HumanRuinedBuildings\HuRuinedBuildingsBig01.wmo	1165	open	0.75	roofless human ruins
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\HumanRuinedBuildings\HuRuinedBuildingsBig02.wmo	1166	open	0.75	Ruined roofless human building
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\HumanRuinedBuildings\HuRuinedBuildingsBig03.wmo	1167	open	0.70	ruined human building
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\HumanRuinedBuildings\HuRuinedBuildingsMed01.wmo	1168	open	0.75	Ruined building, no roof texture
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\HumanRuinedBuildings\HuRuinedBuildingsMed02.wmo	1169	open	0.75	ruined building, roofless
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\HumanRuinedBuildings\HuRuinedBuildingsSm01_WineCellar.wmo	3853	underground	0.60	Wine cellar
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\HumanRuinedBuildings\HuRuinedBuildingsSmall01.wmo	1163	open	0.75	roofless human ruins
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\HumanRuinedBuildings\HuRuinedBuildingsSmall02.wmo	1164	open	0.75	Ruined roofless human building
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\Stromguard\Stromguard.wmo	3473	open	0.50	id 3473; Stromgarde ruin walls and sidewalks, no roof
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\WreckedBuildingHCorner01\WreckedBuildingHCorner01.wmo	1080	open	0.85	Wrecked building corner
+World\wmo\Lorderon\CollidableDoodads\ArathiHighlands\WreckedBuildingHCorner02\WreckedBuildingHCorner02.wmo	1020	open	0.80	wrecked building corner
+World\wmo\Lorderon\CollidableDoodads\EasternPlaguelands\PlagueBlockade\PlagueBlockade.wmo	4053	open	0.80	Blockade barricade
+World\wmo\Lorderon\CollidableDoodads\Hinterlands\TrollCityPieces\AerieTrollCityAmpatheater.wmo	2362	open	0.90	open-air amphitheater
+World\wmo\Lorderon\CollidableDoodads\Hinterlands\TrollCityPieces\AerieTrollCityArena.wmo	2354	open	0.80	Troll city arena
+World\wmo\Lorderon\CollidableDoodads\Hinterlands\TrollCityPieces\AerieTrollCityLevel1.wmo	2361	open	0.75	troll city terrace
+World\wmo\Lorderon\CollidableDoodads\Hinterlands\TrollCityPieces\AerieTrollCityLevel2.wmo	2360	open	0.75	Troll city terrace pieces
+World\wmo\Lorderon\CollidableDoodads\Hinterlands\TrollCityPieces\AerieTrollCityLevel3.wmo	2359	open	0.75	troll city terrace pieces
+World\wmo\Lorderon\CollidableDoodads\Hinterlands\TrollCityPieces\AerieTrollCityLevel4.wmo	2358	open	0.70	Troll city ruins
+World\wmo\Lorderon\CollidableDoodads\Hinterlands\TrollCityPieces\AerieTrollCityLevel5.wmo	2357	open	0.80	troll city terrace piece
+World\wmo\Lorderon\CollidableDoodads\Hinterlands\TrollCityPieces\AerieTrollCityLevel6.wmo	2356	open	0.70	Troll city terrace
+World\wmo\Lorderon\CollidableDoodads\Hinterlands\TrollCityPieces\AerieTrollCityLevel7.wmo	2355	open	0.75	troll city terrace
+World\wmo\Lorderon\CollidableDoodads\PlagueLandBridge\PlaguelandsBridge.wmo	1151	open	0.95	Bridge
+World\wmo\Lorderon\Undercity\Undercity.wmo	1150	underground	0.90	Undercity, beneath Lordaeron
+World\wmo\Lorderon\Undercity\Undercitywall01.wmo	1350	underground	0.50	Undercity
+World\wmo\Monoman\Utari\utari_hall_01.wmo	5804	great_hall	0.35	id 5804; custom Utari set, numbered textures give no material; name says hall
+World\wmo\Monoman\Utari\utari_house_01.wmo	5805	timber	0.30	id 5805; custom Utari set, numbered textures give no material; tagged by name as a house (default house tag), low confidence
+World\wmo\Monoman\Utari\utari_house_02.wmo	5806	timber	0.30	id 5806; custom Utari set, numbered textures give no material; tagged by name as a house, low confidence
+World\wmo\Monoman\Utari\utari_house_03.wmo	5807	unknown	0.70	No textures in whole Utari family
+World\wmo\Monoman\Utari\utari_inn_01.wmo	5808	unknown	0.40	No textures in whole Utari family
+World\wmo\Monoman\Utari\utari_lumbermill_01.wmo	0	timber	0.60	Lumbermill, name only
+World\wmo\Monoman\Utari\utari_market_01.wmo	0	tent	0.35	id 0; custom Utari set, no material clue; name says market, likely cloth stalls
+World\wmo\Monoman\Utari\utari_shop_01.wmo	0	timber	0.30	id 0; custom Utari set, no material clue; tagged by name as a shop building, low confidence
+World\wmo\Monoman\Utari\utari_shop_02.wmo	0	timber	0.30	id 0; custom Utari set, no material clue; tagged by name as a shop building, low confidence
+World\wmo\Monoman\Utari\utari_shop_03.wmo	0	unknown	0.70	No textures in whole Utari family
+World\wmo\Monoman\Utari\utari_shrine_01.wmo	5809	open	0.40	Shrine, name only
+World\wmo\Monoman\Utari\utari_stair_01.wmo	0	open	0.80	Stairs
+World\wmo\Monoman\Utari\utari_tower_01.wmo	0	stone_house	0.35	id 0; custom Utari set, no material clue; name says tower
+world\wmo\Northrend\Buildings\Human\DB_Barracks.wmo	5151	timber	0.65	id 5151; Duskwood kit with wood shingles BM_KZN_SHINGLES01
+World\wmo\Northrend\Buildings\Human\Icebreaker\Transport_Icebreaker_ship_nomasts.wmo	5388	timber	0.60	id 5388; wooden deck, hull and cabin walls
+world\wmo\Northrend\Buildings\Human\ND_Human_Boreanalliancetown_Barracks\ND_Human_Borean_Bridge.wmo	5059	open	0.95	Bridge
+World\wmo\Northrend\Buildings\Tuskarr\ND_Tuskarr_Hut02\ND_Tuskarr_Hut02.wmo	4898	tent	0.80	tuskarr hide hut
+World\wmo\Northrend\Buildings\Tuskarr\TS_Dock_02.wmo	5163	open	0.90	Dock
+World\wmo\Northrend\HowlingFjord\RadioTower\RadioTower.wmo	4998	metal	0.80	gnomish metal radio tower
+World\wmo\Northrend\ND_BearCaves\ND_BearCave.wmo	4912	underground	0.90	Bear cave
+World\wmo\Northrend\ND_IceCaves\ND_Icecave03.wmo	5499	underground	0.95	ice cave
+World\wmo\Northrend\ND_VentureBay\ND_VentureBay_CraneBoat.wmo	5482	timber	0.45	Boat with shingle-roof cabin (MM_STRATH_ROOF), wood
+World\wmo\Outland\AncOrcBuildings\AncOrcFarm.wmo	4576	tent	0.55	Ancient orc hut
+World\wmo\Outland\AncOrcBuildings\AncOrcFarm_D.wmo	4617	tent	0.50	Ancient orc hut
+World\wmo\Outland\AncOrcBuildings\AncOrcHutBig.wmo	4577	tent	0.70	ancient orc hut, hide roof
+World\wmo\Outland\AncOrcBuildings\AncOrcHutSmall.wmo	4578	tent	0.60	id 4578; mud-walled orc hut, same RG kit whose watch tower uses RG_TARP
+World\wmo\Outland\AncOrcBuildings\AncOrcHutSmall_D.wmo	4618	tent	0.50	id 4618; mud-walled orc hut, RG kit with tarp roofs
+World\wmo\Outland\AncOrcBuildings\AncOrcLumberMill.wmo	4584	tent	0.45	Ancient orc building, hide
+World\wmo\Outland\AncOrcBuildings\AncOrcLumberMill_D.wmo	4615	tent	0.50	Ancient orc mill
+World\wmo\Outland\AncOrcBuildings\AncOrcTownHall.wmo	4580	tent	0.55	Ancient orc hall, hide
+World\wmo\Outland\AncOrcBuildings\AO_BridgeArch01.wmo	4659	open	0.90	bridge arch
+World\wmo\Outland\AncOrcBuildings\AO_BridgeLong01.wmo	4784	open	0.95	Bridge
+World\wmo\Outland\AncOrcBuildings\AO_BridgeLong02.wmo	4785	open	0.95	bridge
+World\wmo\Outland\AncOrcBuildings\AO_BridgeLong03.wmo	4721	open	0.95	Bridge
+World\wmo\Outland\AncOrcBuildings\AO_BridgeWalkwayLong01.wmo	4642	open	0.90	bridge walkway
+World\wmo\Outland\AncOrcBuildings\AO_BridgeWalkwayShort01.wmo	4647	open	0.90	Bridge walkway
+World\wmo\Outland\AncOrcBuildings\AO_Footbridge01.wmo	4660	open	0.95	footbridge
+World\wmo\Outland\BrokenBuildings\Broken_bdelftower.wmo	4666	open	0.55	id 4666; broken Shattrath walls and rubble
+World\wmo\Outland\DarkPortal\DarkPortal.wmo	2050	open	0.90	portal arch
+World\wmo\Outland\DarkPortal\war2darkportal.wmo	3313	open	0.85	Dark Portal gateway
+World\wmo\Outland\DraeniBuildings\draeniHutHooded01.wmo	2353	tent	0.75	draenei hut, hide textures
+World\wmo\Outland\DraeniBuildings\draeniTower01.wmo	2352	metal	0.40	Draenei tower, metal 8
+World\wmo\Outland\DraeniBuildings\outland_draeni_hut_1.wmo	2241	tent	0.60	id 2241; DRAENI_TENT wall and floor textures
+world\wmo\Outland\HumanBuildings\outlandhumantower02.wmo	2070	stone_house	0.60	id 2070; stone tower kit (TOWER_EXWALL, TOWER_SIDE)
+World\wmo\Outland\HumanBuildings\outlandhumantower03.wmo	2069	stone_house	0.60	id 2069; stone tower kit
+World\wmo\Outland\HumanBuildings\outlandhumantower04.wmo	2071	stone_house	0.60	Human stone tower
+World\wmo\Outland\HumanBuildings\outlandRuinedMageTower.wmo	3033	open	0.60	Ruined tower
+World\wmo\Outland\HumanBuildings\outlandruinhumanbarracks01.wmo	2010	open	0.60	Ruined barracks
+World\wmo\Outland\HumanTank\humantank01.wmo	1469	metal	0.50	id 1469; armor plates, lion head and wheels
+World\wmo\Outland\HumanTank\humantank02.wmo	1609	metal	0.50	id 1609; identical plates/lion head/wheels set to humantank01 (metal), kept consistent
+World\wmo\Outland\HumanTank\humantank03.wmo	1610	open	0.50	id 1610; tank kit plus RUBBLE, a wreck
+World\wmo\Outland\Lostones\LO_house01.wmo	4678	metal	0.50	Lost Ones salvage hut, metal count matches stone; roof is metal
+World\wmo\Outland\Lostones\LO_house02.wmo	4679	metal	0.40	Lost Ones salvage hut, metal equals stone; roof metal
+World\wmo\Outland\Lostones\LO_Tower01.wmo	4626	metal	0.40	Lost Ones salvage tower, metal 6 vs stone 5
+World\wmo\Outland\LostOnes\lo_tower_inn02.wmo		tent	0.50	id 4626; draenei tent walls and Lost Ones house textures
+world\wmo\Outland\LostOnes\lo_wc3hut.wmo	2352	tent	0.65	id 2352, SHARED with lo_wc3hutclosed; draenei tent walls, Lost Ones house
+world\wmo\Outland\LostOnes\lo_wc3hutclosed.wmo	2352	tent	0.55	id 2352, SHARED with lo_wc3hut; draenei tent walls
+world\wmo\Outland\LostOnes\lo_wc3inn.wmo	2352	metal	0.40	Metal count 9 vs stone 4
+world\wmo\outland\nagrand\docks\nagranddocks01.wmo	4829	open	0.90	docks
+World\wmo\Outland\Neterstorm\Bridges\Goblin_BridgeSmall01.wmo	4815	open	0.90	Bridge
+World\wmo\Outland\NetherMicros\NetherMicro_02.wmo	4772	underground	0.45	id 4772; cave floor and wall, mine beams and planks (cave count 17), same set as NetherMicro_03
+world\wmo\Outland\NetherMicros\NetherMicro_03.wmo	6000	underground	0.60	id 6000; cave floor, cave walls and mine beams
+World\wmo\Outland\OrcBuildings\AncOrcWatchTower.wmo	4801	tent	0.50	id 4801; RG_TARP and orc hide roof
+World\wmo\Outland\OrcBuildings\outlandorcbarracks01.wmo	1709	tent	0.60	Orc hide roof textures
+World\wmo\Outland\OrcBuildings\outlandorcfortressruin01.wmo	1809	open	0.55	Ruined fortress
+World\wmo\Outland\OrcBuildings\outlandorcpigfarm01.wmo	1710	tent	0.55	Orc hide roof
+World\wmo\Outland\OrcBuildings\outlandorctower01.wmo	1711	tent	0.50	id 1711; ruined orc hide roof MM_ORC_AROOF_02_RUIN
+World\wmo\Outland\OrcBuildings\outlandorctower02.wmo	1712	open	0.45	id 1712; only ruined floor and trim textures, no roof or wall texture; a ruin
+World\wmo\Outland\OrcBuildings\outlandorctower03.wmo	1713	open	0.40	id 1713; only two ruined trim textures, no roof or wall; a ruin
+World\wmo\Outland\OrcBuildings\outlandorctower04.wmo	1714	open	0.50	Orc watch tower platform
+World\wmo\Outland\OrcBuildings\outlandorctower05.wmo	1715	open	0.50	Ruined tower
+World\wmo\Outland\OrcBuildings\outlandpigfarmruin02.wmo	1929	open	0.60	Ruined farm
+World\wmo\Outland\Shadowmoon\Slagpit\Shadowmoon_Slagpit01.wmo	5810	underground	0.50	id 5810; Blackrock Spire rock walls, ceilings and dirt floors, same kit as Slagpit02/0C; the indoor parts are rock tunnels
+World\wmo\Outland\Shadowmoon\Slagpit\Shadowmoon_Slagpit02.wmo	4741	underground	0.45	id 4741, SHARED with Slagpit0C; Blackrock rock walls, ceilings, dirt floors
+World\wmo\Outland\Shadowmoon\Slagpit\Shadowmoon_Slagpit0C.wmo	4741	underground	0.50	id 4741, SHARED with Slagpit02 (underground); Blackrock quarry and rock walls, ceilings; kept consistent
+world\wmo\Outland\Zangar\Road\Zangar_Road_02.wmo	4681	open	0.90	Road piece
+world\wmo\Outland\Zangar\Road\Zangar_Road_21.wmo	4699	open	0.90	road piece
+World\wmo\PlayerHousing\Human\HumanLevelOneTest.wmo	1197	timber	0.65	Human player house
+World\wmo\PlayerHousing\Human\HumanLevelThreeTest.wmo	1196	timber	0.60	id 1196; human house, Stormwind roof and supports
+World\wmo\PvP\Alterac\Walls\AlteracValleyHordeWallsLower.wmo	4373	open	0.90	Fortification walls
+World\wmo\PvP\Alterac\Walls\AlteracValleyHordeWallsUpper.wmo	4374	open	0.90	walls
+World\wmo\PvP\Buildings\CTF\CTFhuman.wmo	4253	stone_house	0.45	Human base, Stormwind slate roof
+World\wmo\PvP\Buildings\CTF\CTFNightelf_A.wmo	4295	great_hall	0.50	Silverwing Hold, large fortress
+World\wmo\PvP\Buildings\CTF\CTFOrc_A.wmo	4276	tent	0.50	Warsong Lumber Mill, orc roofs
+World\wmo\PvP\Buildings\CTF\CTFOrc_Aclifftower.wmo	4333	tent	0.55	id 4333; Orgrimmar hide roof MM_OGRMR_ROOF_03
+World\wmo\PvP\Buildings\CTF\PVPEntrance_Nightelf.wmo	4277	timber	0.50	id 4277; night elf building with ceiling, interior walls and MM_NE_ROOF_03; night elf wooden building, not a bare gate
+World\wmo\PvP\Buildings\CTF\PVPEntrance_Orc.wmo	4294	tent	0.50	id 4294; Orgrimmar hide roof over an Uldaman rock cut, orc base
+World\wmo\PvP\Buildings\DwarfStronghold\DwarfStronghold.wmo	4153	great_hall	0.60	Dwarven stronghold keep
+world\wmo\pvp\buildings\dwarftunnel\MediumtunnelShortpvp.wmo	441	underground	0.85	dwarven tunnel
+World\wmo\PVP\Buildings\Lordaeron\PVP_Lordaeron_Arena.wmo	4839	open	0.70	Open-air arena
+World\wmo\PvP\Buildings\OrcBarracksPvP\AlteracGeneralOrcFortress.wmo	4353	tent	0.50	id 4353; Blackrock orc hide roofs
+World\wmo\PvP\Buildings\OrcBarracksPvP\OrcBarracksPvP.wmo	4154	tent	0.70	Orc barracks, hide roof
+World\wmo\PvP\Buildings\OrcTower\PvP_DarkOrcTower.wmo	4293	tent	0.50	id 4293; Blackrock orc hide roofs
+World\wmo\PvP\Buildings\OrcTower\PvP_OrcTower.wmo	4213	tent	0.50	Orc roof textures
+World\wmo\PvP\Buildings\TaurenGate\PvP_TaurenGate01.wmo	4313	open	0.80	gate
+World\wmo\PvP\Fence\ArathiAllianceFence.wmo	4447	open	0.90	Fence
+World\wmo\PvP\Fence\ArathiHordeFence.wmo	4448	open	0.95	fence
+World\wmo\transports\Alliance_Battleship\Transport_Alliance_Battleship.wmo	7139	timber	0.50	id 7139, SHARED with KulTiras battleship; wooden cabins, ceilings, trims
+World\wmo\transports\Alliance_Battleship\Transport_KulTiras_Battleship.wmo	7139	timber	0.65	id 7139, SHARED with Alliance battleship; wooden cabins
+World\wmo\transports\BlackCitadel\BlackCitadel.wmo	4413	great_hall	0.60	Citadel, stone texture; large fortress
+world\wmo\Transports\highelfships\highelf_ship.wmo	5657	timber	0.45	Ship cabin
+World\wmo\transports\icebreaker\Transport_Icebreaker_ship.wmo	4950	timber	0.55	Wooden ship with cabins, rule says timber
+World\wmo\transports\icebreaker\Transport_Icebreaker_ship_stationary.wmo	5025	timber	0.60	id 5025; wooden deck, hull and cabin walls
+World\wmo\transports\passengership\transportship_A.wmo	909	timber	0.60	id 909; JLO_BBAY_WOODROOF, ship interior and wood walls
+World\wmo\transports\transport_ship\transportship.wmo	3134	timber	0.75	wooden ship, wood roof
+World\wmo\transports\transport_ship_ne\transportship_ne.wmo	4768	timber	0.60	Night elf ship cabin
+World\wmo\transports\transport_ship_NE\Transportship_NE_Stationary.wmo	4823	timber	0.60	Night elf ship cabin
+World\wmo\transports\transport_ship_Pirate\Transport_Pirate_ship.wmo	4949	timber	0.55	Wooden ship with cabins, rule says timber
+World\wmo\transports\transport_zeppelin\*transport_zeppelin.wmo	3133	metal	0.60	id 3133, SHARED with transport_zeppelin.wmo; goblin zeppelin, metal count 23
+World\wmo\transports\transport_zeppelin\transport_zeppelin.wmo	3133	metal	0.45	id 3133, SHARED with *transport_zeppelin (metal); goblin hull, metal and engine textures; kept consistent
+World\wmo\transports\Undead\Ship_UD_Transport.wmo	5508	timber	0.60	id 5508; wooden ship interior, walls and planks
+World\wmo\transports\zeppelin\transport_zeppelin.wmo	1930	metal	0.65	Zeppelin, metal count 15

@@ -1,0 +1,9 @@
+# Copies of the client's sounds never belong in this folder (README, License): the offline scripts in tools/
+# made .ogg files from them, the native tests write .wav images of what the DLL builds, and the 0.12 and 0.13
+# addon zips hold .ogg copies. The tools refuse an output folder inside a git work tree; this catches what gets
+# here some other way, in any case of the extension (the client's own files are named .WAV as often as .wav).
+# A file matched here that must be committed after all needs git add -f.
+*.[oO][gG][gG]
+*.[wW][aA][vV]
+/release/0.12/IndoorRain-addon-0.12.zip
+/release/0.13/IndoorRain-addon-0.13.zip

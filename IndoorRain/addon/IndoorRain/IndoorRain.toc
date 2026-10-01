@@ -1,0 +1,6 @@
+## Interface: 11200
+## Title: Indoor Rain
+## Notes: Muffled rain, snow and sandstorm while you are under a roof, and thunder, wind and lightning in the rain. Needs IndoorRain.dll in dlls.txt. /indoorrain
+## Version: 0.14
+## SavedVariables: IndoorRainDB
+IndoorRain.lua

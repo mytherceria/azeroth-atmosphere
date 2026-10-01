@@ -1,0 +1,13 @@
+# Built files: made by tools/make_release.sh, published as release assets, never committed.
+dist/
+*.dll
+*.blp
+*.mpq
+*.MPQ
+*.zip
+# Audio of any kind: the game's sounds are read from the player's own client at run time and never shipped.
+*.ogg
+*.wav
+*.mp3
+*.flac
+__pycache__/

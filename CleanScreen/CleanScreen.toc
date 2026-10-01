@@ -1,0 +1,5 @@
+## Interface: 11200
+## Title: Clean Screen
+## Notes: Fades the whole UI to nothing over a minute of doing nothing; any activity brings it straight back. /cleanscreen
+## SavedVariables: CleanScreenDB
+CleanScreen.lua

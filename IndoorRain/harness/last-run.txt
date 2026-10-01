@@ -1,0 +1,129 @@
+== harness.exe <client>\Data
+wine: created the configuration directory '<run>/prefix'
+WARNING: radv is not a conformant Vulkan implementation, testing use only.
+data_dir: <client>\Data
+IndoorRain.dll loaded
+fmod up (nosound), through the import table
+   sounds built at start: 6 of 6 in 2100 ms; 32.1 MB held, 57.0 MB at the build's peak; the storm's thunder and gusts are built when it comes on
+0e a rain loop asked for during the build passes through asked during the build, NULL in 0 ms, expected NULL at once  ok
+0 both hooks installed after the engine came up          log "close installed, init installed" x1, expected 1..1  ok
+0b the first Init was NOT intercepted (by design)        log "sound engine started" x0, expected 0..0  ok
+0c the rain-loop swap is installed (0.13)                log "outdoor rain swap: installed" x1, expected 1..1  ok
+   client: RavenCraft's (patch-S.mpq in the scan): heavy rain 45.5 s, three gusts
+0f the outdoor rain loops were built                     log "built outdoor_rain_" x3, expected 3..3  ok
+0f2 the indoor rain loops were built                     log "built indoor_rain_" x3, expected 3..3  ok
+0f4 the DLL reads the mixer's rate from FMOD             log "the game's mixer runs at 44100 Hz: each" x1, expected 1..1  ok
+0f5 and builds the six rain loops at it                  log "frames at 44100 Hz, 2 ch" x6, expected 6..6  ok
+0f3 no thunder before the storm comes on                 log "built thunder_" x0, expected 0..0  ok
+0g no gust before the storm comes on                     log "built gust_" x0, expected 0..0  ok
+0h nothing failed to build: 6 of 6                       log "sounds built at start: 6 of 6" x1, expected 1..1  ok
+1 no world                                               channels = 0, expected 0  ok
+2 in world, dry, outdoors (bridge connects)              channels = 0, expected 0  ok
+3 raining, addon says outdoors                           channels = 0, expected 0  ok
+3b the DLL answers session 42 with rain level 2          "IRS1:k0:l2:n420:d00", expected "IRS1:k0:l2:n420:d00"  ok
+4 addon says indoors (play)                              channels = 1, expected >0  ok
+5 /indoorrain off (stop)                                 channels = 0, expected 0  ok
+5b off: storm on at storm_rate 1000, nothing plays       strikes 0, channels 0, expected 0 and 0  ok
+5b2 nothing of the storm built while off                 log "built thunder_" x0, expected 0..0  ok
+5c off: the game's rain loop is not swapped              stream NULL, expected NULL  ok
+6 /indoorrain on (play)                                  channels = 1, expected >0  ok
+7 stepped outside (stop)                                 channels = 0, expected 0  ok
+8 back inside at volume 30 (play)                        channels = 1, expected >0  ok
+9 rain turned heavy (other file, restarted)              channels = 1, expected >0  ok
+9b heavy rain at 30% plays at 53/255                     log "volume: rain heavy at 53/255 (ambience 100%, volume 30%" x1, expected 1..1  ok
+9c the ambience slider scales it                         log "volume: rain heavy at 27/255 (ambience 50%, volume 30%" x1, expected 1..1  ok
+9d master is the engine's, not ours (still playing)      channels = 1, expected >0  ok
+9d2 so the level did not change                          log "volume: rain heavy at 27/255 (ambience 50%, volume 30%" x1, expected 1..1  ok
+9d3 master at zero: no loop at all (stop)                channels = 0, expected 0  ok
+9d4 master back (play)                                   channels = 1, expected >0  ok
+9d5 Ambient Sounds off: the storm outside is silent (stop) channels = 0, expected 0  ok
+9d6 Ambient Sounds back on (play)                        channels = 1, expected >0  ok
+9e ambience at zero: no loop at all (stop)               channels = 0, expected 0  ok
+9f slider back up (play)                                 channels = 1, expected >0  ok
+9g back at 53/255                                        log "volume: rain heavy at 53/255 (ambience 100%, volume 30%" x2, expected 2..2  ok
+10 volume 0 while playing (stop, no churn)               channels = 0, expected 0  ok
+10b no start/stop churn at volume 0                      starts during volume 0: 0, expected 0  ok
+11 volume back to 60 (play)                              channels = 1, expected >0  ok
+12 rain stopped while indoors (stop)                     channels = 0, expected 0  ok
+12b real storm: type -1, sound 8535 (play)               channels = 1, expected >0  ok
+12c it is the heavy rain track                           heavy rain starts: 1, expected 1  ok
+12d type names snow, sound says rain (stop)              channels = 0, expected 0  ok
+12d2 type snow with its effect: the type decides (play)  channels = 1, expected >0  ok
+12d3 it is the heavy snow track                          heavy snow starts: 1, expected 1  ok
+12e rain sound left over, no intensity (stop)            channels = 0, expected 0  ok
+12f storm over: sound 0 (stays silent)                   channels = 0, expected 0  ok
+13 snow indoors (plays the snow track)                   channels = 1, expected >0  ok
+13b it is the snow track                                 log "stream started: snow medium" x1, expected 1..1  ok
+13c sandstorm indoors (plays the sand track)             channels = 1, expected >0  ok
+13d it is the heavy sand track                           log "stream started: sand heavy" x1, expected 1..1  ok
+13e light snow (other file, restarted)                   channels = 1, expected >0  ok
+13f each snow and sand loop built when first wanted      log "built indoor_s" x4, expected 4..4  ok
+14 light rain indoors (play)                             channels = 1, expected >0  ok
+14b light rain has its own track now                     log "stream started: rain light" x1, expected 1..1  ok
+14c light rain plays far quieter than heavy              log "volume: rain light at 21/255 (ambience 100%, volume 60%" x1, expected 1..1  ok
+15 logged out (stop)                                     channels = 0, expected 0  ok
+16 back in the rain, indoors (play)                      channels = 1, expected >0  ok
+16b close intercepted through the import table           log "FSOUND_Close intercepted" x1, expected 1..1  ok
+16c stream dropped, not closed twice                     log "dropping the stream" x1, expected 1..1  ok
+16d no crash                                             still alive after the engine closed under the stream  ok
+17 engine re-initialised: rain resumes (play)            channels = 1, expected >0  ok
+17b the re-init was intercepted                          log "sound engine started" x1, expected 1..1  ok
+19 the game's Light rain loop opens as the built one     stream opened, 20000 ms, expected 20000  ok
+19 the game's Medium rain loop opens as the built one    stream opened, 30000 ms, expected 30000  ok
+19 the game's Heavy rain loop opens as the built one     stream opened, 45500 ms, expected 45500  ok
+19b any other file goes through untouched                stream NULL, expected NULL  ok
+19c the swaps are logged by the worker                   log "the game's heavy rain loop is IndoorRain's outdoor loop" x1, expected 1..1  ok
+19d (light and medium too)                               log "rain loop is IndoorRain's outdoor loop" x3, expected 3..3  ok
+20 strikes in a heavy storm                              log "storm: strike" x3, expected 2..1000  ok
+20b thunder played outdoors                              log "storm: thunder" x3, expected 1..1000  ok
+20c gusts played outdoors                                log "storm: gust" x2, expected 1..1000  ok
+20d every storm sound opened                             log "could not open" x0, expected 0..0  ok
+20h the ten thunders built as the storm came on          log "built thunder_" x10, expected 10..10  ok
+20i each gust decoded through fmod, built then           log "built gust_" x3, expected 3..3  ok
+20j the engine's new rate read from FMOD, logged once    log "the game's mixer now runs at 48000 Hz:" x1, expected 1..1  ok
+20k and the storm's sounds built at it (mono)            log "frames at 48000 Hz, 1 ch" x13, expected 13..13  ok
+20e indoors the thunder is the muffled one               log "(indoors, muffled)" x3, expected 1..1000  ok
+20f heavy rain indoors again (play)                      channels = 2, expected >0  ok
+20g the strike digit counts every strike                 digit 0 -> 8 after 8 strikes, 0 without lightning  ok
+0d a default ini runs no building probe                  log "building:" x0, expected 0..0  ok
+21 the building probe names the inn                      log "building: World\wmo\Azeroth\Buildings\GoldshireInn\GoldshireInn.wmo (model 53, name set 0, group 1932)" x1, expected 1..1  ok
+21b stepping out is logged                               log "building: none" x1, expected 1..1000  ok
+18 loop survives a full mixer (reserved channel)         reserved=1 playing=1 flood voices=14  ok
+18b no cut-off retry was needed                          log "cut off" x0, expected 0..0  ok
+22 a thunder yields to game sounds on a full mixer       mixer 12/12, test strikes 1, thunders played 0, game voices 11 -> 11  ok
+23 a value of the wrong shape stays byte-identical       "IRS1:k0:l0:n000:d0" unchanged, refusals logged 2  ok
+24 a read-only page is refused                           "IRS1:k0:l0:n000:d00" unchanged, refusals logged 2  ok
+24b writable again: the DLL answers session 44           "IRS1:k0:l0:n440:d00", expected n44  ok
+25 no FMOD file callback off the game's thread           control 171, this thread 174, others 0 (last 0; the worker is 308)  ok
+0 check(s) failed
+
+== harness.exe --no-data
+data_dir: <run>\nodata\no-data\ (empty, made here)
+IndoorRain.dll loaded
+fmod up (nosound), through the import table
+   sounds built at start: 0 of 6 in 0 ms; 0.0 MB held, 0.0 MB at the build's peak; the storm's thunder and gusts are built when it comes on
+0 both hooks installed after the engine came up          log "close installed, init installed" x1, expected 1..1  ok
+0b the first Init was NOT intercepted (by design)        log "sound engine started" x0, expected 0..0  ok
+0c the rain-loop swap is installed (0.13)                log "outdoor rain swap: installed" x1, expected 1..1  ok
+N1 nothing was built, and the log says so                log "sounds built at start: 0 of 6" x1, expected 1..1  ok
+N1b the scan names every archive missing                 log "patch.MPQ missing, patch-S.mpq missing, sound.MPQ missing" x1, expected 1..1  ok
+N1c one line per rain source (the storm's wait)          log "cannot build" x3, expected 3..3  ok
+N2 in world, dry, outdoors (bridge connects)             channels = 0, expected 0  ok
+N3 swap on, loop unbuilt: the game's own call passes     stream NULL, expected NULL  ok
+N3b and the worker says why                              log "heavy outdoor loop is not built, so the game plays its own" x1, expected 1..1  ok
+N4 heavy rain indoors: nothing to play                   channels = 0, expected 0  ok
+N4b the indoor loop's failure is logged once             log "could not open indoor_rain_heavy" x1, expected 1..1  ok
+N5 a storm with nothing built plays nothing              channels = 0, expected 0  ok
+N5b strikes still land (the flash is the addon's)        log "storm: strike" x1, expected 1..1000  ok
+N5c no thunder played                                    log "storm: thunder" x0, expected 0..0  ok
+N5d no gust played                                       log "storm: gust" x0, expected 0..0  ok
+N5e the missing thunder is logged once                   log "storm: could not open" x1, expected 1..1  ok
+N5f the storm's 8 sources, each logged once              log "cannot build" x11, expected 11..11  ok
+N5g an archive another program holds: its error once     log "cannot open patch-S.mpq in the Data folder just now (Windows error 32)" x1, expected 1..1  ok
+N5h what it holds waits a minute (close, 3 gusts)        log "its archive could not be read just now" x4, expected 4..4  ok
+N6 snow indoors: its loop cannot be built either         channels = 0, expected 0  ok
+N6b and that is logged once                              log "cannot build indoor_snow_medium" x1, expected 1..1  ok
+N7 the engine closes under a DLL with nothing built      log "FSOUND_Close intercepted" x1, expected 1..1  ok
+N8 no crash                                              still alive  ok
+25 no FMOD file callback off the game's thread           control 179, this thread 180, others 0 (last 0; the worker is 356)  ok
+0 check(s) failed
