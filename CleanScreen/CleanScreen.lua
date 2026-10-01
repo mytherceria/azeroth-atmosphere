@@ -76,6 +76,27 @@ local function MouseMoved()
   return moved
 end
 
+-- pfQuest's tracker fades its own title strip by reading the strip's alpha back and stepping it 0.1 toward a goal
+-- (pfQuest tracker.lua). While this UI is part faded, what the client reads back is not what pfQuest set, and the
+-- strip flickered on and off; with Clean Screen off it did not. So that one frame is handed back exactly the alpha
+-- pfQuest last gave it, kept between 0 and 1. Nothing else reads it.
+local pfGuarded = false
+local function GuardPfQuest()
+  local b = pfQuestMapTracker and pfQuestMapTracker.backdrop
+  if not b then return end
+  pfGuarded = true
+  if b.cleanScreenAlpha then return end
+  local set = b.SetAlpha
+  b.cleanScreenAlpha = 1
+  b.SetAlpha = function(self, a)
+    a = math.max(0, math.min(1, tonumber(a) or 1))
+    self.cleanScreenAlpha = a
+    return set(self, a)
+  end
+  b.GetAlpha = function(self) return self.cleanScreenAlpha end
+  set(b, 1)
+end
+
 local function Apply(a)
   if a <= 0 then
     alpha = 0
@@ -185,6 +206,7 @@ frame:SetScript("OnUpdate", function()
   if t < POLL then return end
   local dt = t; t = 0
   if not db then return end
+  if not pfGuarded then GuardPfQuest() end
   if not db.enabled then if alpha ~= 1 or hiddenByUs then Restore() end; return end
   if not hiddenByUs and not UIParent:IsShown() then return end   -- the player hid the UI (Alt+Z)
   local active = busy or MouseMoved() or PlayerMoved() or MouseOverUI() or AnyWindowOpen() or idle == 0
