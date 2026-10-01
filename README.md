@@ -10,7 +10,7 @@ running VanillaFixes; it should suit any Turtle-based 1.12 client with the same 
   flash, and the rain loops lose the thunder the game had recorded into them on a fixed cycle. Every one of these
   sounds is built in memory when the game starts, from the game's own files on your machine: the pack contains no
   game audio at all. Details in [IndoorRain/README.md](IndoorRain/README.md).
-- **Atmosphere Director** (addon). A written mood and a preset for every zone, city, dungeon and raid in the client,
+- **The zone moods** (the addon shown in game as Azeroth Atmosphere, folder `AtmosphereDirector`). A written mood and a preset for every zone, city, dungeon and raid in the client,
   118 of them, using comfyatmosphere's fog, sun rays, night and clouds, plus a colour wash over the world. Where
   footage of WoW Forever exists, the preset is measured from it. `/atmos` opens one window with every switch and
   slider of the pack.
