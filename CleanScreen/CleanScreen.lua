@@ -97,6 +97,36 @@ local function GuardPfQuest()
   set(b, 1)
 end
 
+-- Minimap icons whose addon sets their alpha on every update (Gatherer's herb and ore notes, pfQuest's minimap
+-- pins): in this client that undoes the UI's fade, so they blinked on and off as the screen faded, the fade putting
+-- them down ten times a second and their addon putting them back up. Each is given the fade on top of what its
+-- addon asks for.
+local fadeGuarded = {}
+local function GuardFade(r)
+  if not r or r.cleanScreenWant then return end
+  local set = r.SetAlpha
+  r.cleanScreenWant, r.cleanScreenSet = 1, set
+  r.SetAlpha = function(self, a)
+    self.cleanScreenWant = tonumber(a) or 1
+    return set(self, self.cleanScreenWant * alpha)
+  end
+  table.insert(fadeGuarded, r)
+end
+
+local function GuardIcons()
+  for i = 1, (GATHERER_MAXNUMNOTES or 0) do GuardFade(getglobal("GatherNote" .. i)) end
+  if pfMap and pfMap.mpins then
+    for _, pin in pairs(pfMap.mpins) do GuardFade(pin.pic) end
+  end
+end
+
+local function FadeIcons()
+  for i = 1, table.getn(fadeGuarded) do
+    local r = fadeGuarded[i]
+    r.cleanScreenSet(r, r.cleanScreenWant * alpha)
+  end
+end
+
 local function Apply(a)
   if a <= 0 then
     alpha = 0
@@ -107,12 +137,14 @@ local function Apply(a)
   if hiddenByUs then UIParent:Show(); hiddenByUs = false end
   alpha = a
   UIParent:SetAlpha(a)
+  FadeIcons()
 end
 
 local function Restore()
   if hiddenByUs then UIParent:Show(); hiddenByUs = false end
   alpha = 1
   UIParent:SetAlpha(1)
+  FadeIcons()
 end
 
 local function BuildOptions()
@@ -207,6 +239,7 @@ frame:SetScript("OnUpdate", function()
   local dt = t; t = 0
   if not db then return end
   if not pfGuarded then GuardPfQuest() end
+  GuardIcons()
   if not db.enabled then if alpha ~= 1 or hiddenByUs then Restore() end; return end
   if not hiddenByUs and not UIParent:IsShown() then return end   -- the player hid the UI (Alt+Z)
   local active = busy or MouseMoved() or PlayerMoved() or MouseOverUI() or AnyWindowOpen() or idle == 0
