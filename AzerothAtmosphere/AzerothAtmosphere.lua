@@ -12,10 +12,20 @@
 -- never saves a zone's look as the player's setting. A slider the player moves while in the zone is
 -- theirs and stays where they put it.
 --
+-- Indoors the lamps have their own values. comfy keeps every candle and torch at full night strength under a
+-- roof at any hour and adds the mist of the ground outside, so an inn floods orange. While you are inside, the
+-- lamp glow and the mist around lamps are set to your indoor values (5 and 10 unless you choose others, in tenths
+-- if you like), and the zone's own come back when you step out. Moving comfy's two lamp sliders while inside sets
+-- the indoor values; outside, they set your own, which the zone moods leave alone until the layer next starts
+-- over (a zone without a mood, /atmos off and on, or logging out). A storm never touches the
+-- lamps, so the indoor values hold through one. Being inside is read from IsIndoors (SuperWoW or ClassicAPI);
+-- without it the lamps are never set apart indoors.
+--
 --   /atmos            the Atmosphere window: every switch and slider of the pack in one place
 --   /atmos status     status
 --   /atmos on | off   the whole layer
 --   /atmos 0-100      strength: 100 is the zone as designed, 0 is the player's own settings
+--   /atmos indoor     the indoor lamp values; /atmos indoor <glow 0-100> [<mist 0-200>] sets them, tenths too
 --   /aa               the same, and always this addon's
 -- comfyatmosphere (since 0.7) answers to /atmos too, for its settings window and its tuning commands. The two
 -- share it: plain /atmos and this addon's own words come here, every other word goes on to comfy (/atmos options,
@@ -24,13 +34,19 @@
 local PROFILES = AtmosphereDirector_Zones or {}   -- Zones.lua: every zone's mood and preset
 
 local RAMP_SECONDS = 5
+local INDOOR_SECONDS = 1.0          -- stepping through a door: the lamps settle in a second, as Indoor Weather does
+local INDOOR_SETTLE = 0.75          -- seconds the reading must hold first: IsIndoors flickers in a doorway
 local STEP = 0.2
--- Every control any zone sets, gathered from Zones.lua so the two can never disagree. comfy 0.6 and older have
--- comfyFogThickness; 0.7 and 0.8 have the mist, shadow, lamp and night controls instead. A control the installed
--- comfy does not have reads as nil and is left alone, so one table serves every version.
+-- The two lamp controls the indoor cap holds down, each with the setting that holds its cap.
+local LAMPS = { comfyLampGlow = "indoorGlow", comfyMistLamps = "indoorMist" }
+-- Every control any zone sets, gathered from Zones.lua so the two can never disagree, and the lamps, which the
+-- indoor cap needs even where no zone sets them. comfy 0.6 and older have comfyFogThickness; 0.7 and 0.8 have
+-- the mist, shadow, lamp and night controls instead. A control the installed comfy does not have reads as nil
+-- and is left alone, so one table serves every version.
 local MANAGED = {}
 do
   local seen = {}
+  for name in pairs(LAMPS) do seen[name] = true; table.insert(MANAGED, name) end
   for _, p in pairs(PROFILES) do
     for name in pairs(p.cvars) do
       if not seen[name] then seen[name] = true; table.insert(MANAGED, name) end
@@ -49,6 +65,9 @@ local from, to = {}, {}             -- ramp endpoints per CVar
 local washFrom, washTo = { 1, 1, 1 }, { 1, 1, 1 }
 local written = {}                  -- what this addon last wrote, to notice a player's own change
 local rampT, stepT = 1, 0
+local rampLen, lampRamp = RAMP_SECONDS, false   -- the running fade's length, and whether it moves only the lamps
+local capped = nil                  -- the indoor cap is on: you are inside and the layer is on (nil: look again now)
+local seenInside, seenAt = nil, 0   -- the last indoor reading, and since when it has held
 local repairUntil
 
 local function Say(msg) DEFAULT_CHAT_FRAME:AddMessage("|cff88bbccatmosphere|r: " .. msg) end
@@ -60,13 +79,26 @@ local function CVarNum(name)
 end
 
 local function SetNum(name, v)
-  local s = tostring(math.floor(v + 0.5))
+  -- whole numbers, but tenths for the lamps: comfy reads its CVars as decimals, and indoor lamps want the detail
+  local s = tostring(LAMPS[name] and math.floor(v * 10 + 0.5) / 10 or math.floor(v + 0.5))
   if pcall(SetCVar, name, s) then written[name] = tonumber(s); return true end
   return false
 end
 
 local function StormActive()
   return IndoorRainDB and IndoorRainDB.active and true or false
+end
+
+-- A slider Indoor Weather's storm is holding: it moved it, not the player, and puts it back when the storm ends.
+local function StormHolds(name)
+  return StormActive() and IndoorRainDB.base and IndoorRainDB.base[name] ~= nil
+end
+
+-- Whether you are under a roof, from IsIndoors (SuperWoW or ClassicAPI). nil without it: then there is no indoor
+-- cap, never a guess. (Indoor Weather's own copy is no help: it reads the same IsIndoors, and says "0" without it.)
+local function Indoors()
+  if IsIndoors then return (IsIndoors() and true or false), "IsIndoors" end
+  return nil
 end
 
 local function PanelOpen()
@@ -93,7 +125,8 @@ end
 
 local function Strength() return (db and db.strength or 100) / 100 end
 
--- Where the layer wants each slider now: between the player's own value and the zone's, by strength.
+-- Where the layer wants each slider now: between the player's own value and the zone's, by strength. Indoors
+-- the two lamp controls go no higher than their caps.
 local function Targets()
   local t, w = {}, { 1, 1, 1 }
   local k = (db.enabled and profile) and Strength() or 0
@@ -101,8 +134,9 @@ local function Targets()
     local name = MANAGED[i]
     local base = db.base[name]
     if base then
-      local zv = profile and profile.cvars[name]
+      local zv = profile and not db.mine[name] and profile.cvars[name]
       t[name] = zv and (base + (zv - base) * k) or base
+      if capped and db.enabled and LAMPS[name] then t[name] = db[LAMPS[name]] end
     end
   end
   if profile and profile.wash then
@@ -111,28 +145,63 @@ local function Targets()
   return t, w
 end
 
-local function StartRamp()
+-- A fade from where every slider is now to Targets(), over the given seconds (the zone's five by default).
+-- lampsOnly moves the two lamp controls and nothing else; it is only started once every other slider has
+-- arrived, and it may run through a storm, since a storm never touches the lamps.
+-- A lamp slider the player moved: inside, it sets the indoor value; outside, it becomes their own, kept in
+-- every zone. Returns false for any other slider, which the caller lets go as before.
+local function Moved(name, now)
+  if not LAMPS[name] then return false end
+  if capped then db[LAMPS[name]] = now else db.base[name] = now; db.mine[name] = true end
+  written[name] = now
+  return true
+end
+
+-- A lamp slider the player moved is filed on the side of the door where they moved it, so the two are looked
+-- at every tick, before the indoor check can step through the door (a fade only notices the others).
+local function SweepLamps()
+  for name in pairs(LAMPS) do
+    local now = CVarNum(name)
+    if now and written[name] and math.abs(now - written[name]) > 0.5 then
+      Moved(name, now); to[name] = nil   -- and a fade under way stops moving it
+    end
+  end
+end
+
+-- The indoor lamp values, in tenths, from /atmos indoor or the window. Inside now: the next tick fades to them.
+local function SetIndoor(glow, mist)
+  local function tenths(v, hi) return math.max(0, math.min(hi, math.floor(v * 10 + 0.5) / 10)) end
+  if db.active then SweepLamps() end   -- a comfy slider moved just before is filed first, then this wins
+  if glow then db.indoorGlow = tenths(glow, 100) end
+  if mist then db.indoorMist = tenths(mist, 200) end
+  if capped then capped = nil end
+end
+
+local function StartRamp(seconds, lampsOnly)
   -- a slider the player moved since this addon last wrote it is theirs: leave it and never put it back
   for i = 1, table.getn(MANAGED) do
     local name = MANAGED[i]
-    local now = CVarNum(name)
+    local now = (not lampsOnly or LAMPS[name]) and not StormHolds(name) and CVarNum(name)
     if now and written[name] and math.abs(now - written[name]) > 0.5 then
-      db.base[name] = nil; written[name] = nil
+      if not Moved(name, now) then db.base[name] = nil; written[name] = nil end
     end
   end
   local t, w = Targets()
   from, to = {}, {}
-  for name, v in pairs(t) do from[name] = CVarNum(name) or v; to[name] = v end
+  for name, v in pairs(t) do
+    if not lampsOnly or LAMPS[name] then from[name] = CVarNum(name) or v; to[name] = v end
+  end
   for i = 1, 3 do washFrom[i] = washTo[i] and (washFrom[i] + (washTo[i] - washFrom[i]) * rampT) or 1 end
   washTo = w
   rampT, stepT = 0, 0
+  rampLen, lampRamp = seconds or RAMP_SECONDS, lampsOnly and true or false
 end
 
 -- Take the player's own values the first time a layer starts (never while a storm has moved them).
 local function TakeBase()
   if db.active then return true end
   local any = false
-  db.base = {}
+  db.base, db.mine = {}, {}
   for i = 1, table.getn(MANAGED) do
     local v = CVarNum(MANAGED[i])
     if v then db.base[MANAGED[i]] = v; written[MANAGED[i]] = v; any = true end
@@ -147,7 +216,7 @@ local function RestoreNow()
   if db.active then
     for name, v in pairs(db.base or {}) do pcall(SetCVar, name, tostring(v)) end
   end
-  db.active, db.base = false, {}
+  db.active, db.base, db.mine = false, {}, {}
   written = {}
 end
 
@@ -163,6 +232,25 @@ local function ZoneCheck()
   if UpdateMood then UpdateMood() end
 end
 
+-- Stepping in or out of a building: cap the lamps or let them go. Alone and quickly once every other slider
+-- has arrived; inside the zone's fade while that is still under way. A zone's fade that a storm has paused
+-- waits, and the lamps wait with it. capped is nil after the caps change: the next tick looks again.
+local function IndoorCheck()
+  if not db.enabled then capped = false; return end   -- switching off has already faded every slider back
+  local inside = Indoors() and true or false
+  if inside ~= seenInside then seenInside, seenAt = inside, GetTime() end
+  if inside == capped or PanelOpen() then return end
+  if capped ~= nil and GetTime() - seenAt < INDOOR_SETTLE then return end   -- nil: the caps changed, act now
+  if rampT < 1 and not lampRamp and StormActive() then return end   -- try again on the next tick
+  if inside and not db.active then
+    if StormActive() then return end   -- as for a zone: never take the player's values while a storm has moved them
+    TakeBase()
+  end
+  capped = inside
+  if not db.active then return end    -- no comfyatmosphere: nothing to hold down
+  if rampT >= 1 or lampRamp then StartRamp(INDOOR_SECONDS, true) else StartRamp() end
+end
+
 local frame = CreateFrame("Frame", "AtmosphereDirectorFrame")
 frame:RegisterEvent("VARIABLES_LOADED")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -175,6 +263,10 @@ frame:SetScript("OnEvent", function()
     db = AtmosphereDirectorDB
     if db.enabled == nil then db.enabled = true end
     db.strength = db.strength or 100
+    if db.indoorV ~= 2 then db.indoorGlow, db.indoorMist, db.indoorV = nil, nil, 2 end   -- the first draft's 10 and 0
+    db.indoorGlow = db.indoorGlow or 5    -- the indoor values: comfy's lamp glow and its mist around lamps
+    db.indoorMist = db.indoorMist or 10
+    db.mine = db.mine or {}
     db.base = db.base or {}
     if db.active then repairUntil = GetTime() + 30 end   -- a layer was on at the last logout or crash
   elseif event == "PLAYER_LOGOUT" then
@@ -204,18 +296,21 @@ frame:SetScript("OnUpdate", function()
   stepT = stepT + arg1
   if stepT < STEP then return end
   local dt = stepT; stepT = 0
+  if db.active then SweepLamps() end
+  IndoorCheck()
   ZoneCheck()
   if rampT >= 1 then
-    if db.active and not profile and not StormActive() then RestoreNow() end
+    if db.active and not profile and capped == false and not StormActive() then RestoreNow() end
     return
   end
-  if StormActive() or PanelOpen() then return end
-  rampT = math.min(1, rampT + dt / RAMP_SECONDS)
+  if (StormActive() and not lampRamp) or PanelOpen() then return end   -- the lamps alone may move in a storm
+  rampT = math.min(1, rampT + dt / rampLen)
   for name, v in pairs(to) do
     local now = CVarNum(name)
-    if now and written[name] and math.abs(now - written[name]) > 0.5 then
+    if now and written[name] and math.abs(now - written[name]) > 0.5 and not StormHolds(name) then
       -- the player moved it: theirs from now on, and not put back
-      to[name] = nil; db.base[name] = nil
+      to[name] = nil
+      if not Moved(name, now) then db.base[name] = nil end
     elseif now then
       SetNum(name, from[name] + (v - from[name]) * rampT)
     end
@@ -274,7 +369,7 @@ end
 
 local function BuildWindow()
   local f = CreateFrame("Frame", "AtmosphereOptions", UIParent)
-  f:SetWidth(360); f:SetHeight(580)
+  f:SetWidth(360); f:SetHeight(690)
   f:SetPoint("CENTER", UIParent, "CENTER", 0, 40)
   f:SetFrameStrata("DIALOG")
   f:SetBackdrop({ bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
@@ -338,23 +433,30 @@ local function BuildWindow()
   end
   add({ refresh = UpdateMood })
 
+  -- Indoor lamps: finer than comfy's own sliders, which step by 5 and 10
+  Heading(f, "Lamps indoors", -362)
+  add(Slide(f, "AtmosphereOptIndoorGlow", "Lamp glow inside", 26, -398, 0, 20, 0.5, "none", "20 (comfy's)",
+    function() return db.indoorGlow end, function(v) SetIndoor(v, nil) end, ""))
+  add(Slide(f, "AtmosphereOptIndoorMist", "Lamps in mist inside", 26, -442, 0, 50, 1, "none", "50 (comfy's)",
+    function() return db.indoorMist end, function(v) SetIndoor(nil, v) end, ""))
+
   -- Clean screen
-  Heading(f, "Clean screen", -362)
+  Heading(f, "Clean screen", -472)
   if CleanScreenDB then
-    add(Check(f, "AtmosphereOptClean", "Fade the UI away when idle", 20, -378,
+    add(Check(f, "AtmosphereOptClean", "Fade the UI away when idle", 20, -488,
       function() return CleanScreenDB.enabled end, function(v) CleanScreenDB.enabled = v end))
-    add(Slide(f, "AtmosphereOptCleanTime", "Fade time", 26, -424, 5, 120, 5, "5 s", "2 min",
+    add(Slide(f, "AtmosphereOptCleanTime", "Fade time", 26, -534, 5, 120, 5, "5 s", "2 min",
       function() return CleanScreenDB.seconds or 60 end,
       function(v) CleanScreenDB.seconds = math.max(5, math.min(120, v)) end, " s"))
   else
-    Note(f, "Clean Screen is not installed.", -384)
+    Note(f, "Clean Screen is not installed.", -494)
   end
 
-  Heading(f, "Fog, light and shadow", -462)
-  Note(f, "comfyatmosphere's own settings. Zone moods move them for you.", -482)
+  Heading(f, "Fog, light and shadow", -572)
+  Note(f, "comfyatmosphere's own settings. Zone moods move them for you.", -592)
   local cs = CreateFrame("Button", "AtmosphereOptComfy", f, "UIPanelButtonTemplate")
   cs:SetWidth(150); cs:SetHeight(22)
-  cs:SetPoint("TOPLEFT", f, "TOPLEFT", 24, -500)
+  cs:SetPoint("TOPLEFT", f, "TOPLEFT", 24, -610)
   cs:SetText("comfy's settings")
   cs:SetScript("OnClick", function() if not ComfyOptions() then Say("comfyatmosphere is not installed.") end end)
 
@@ -394,6 +496,21 @@ local function OwnCommand(msg)
     end
     Say((db.enabled and "on" or "off") .. ", strength " .. db.strength .. "%, layer: " .. (zone or "none")
       .. (StormActive() and " (a storm layer is on; waiting)" or "") .. ". " .. table.concat(parts, " "))
+    local inside, source = Indoors()
+    Say("indoor lamps: glow " .. db.indoorGlow .. ", mist " .. db.indoorMist .. ". "
+      .. (not source and "No indoor detection (it needs SuperWoW or ClassicAPI), so lamps are never set apart indoors."
+        or ((capped and db.active and "Inside, lamps at the indoor values now" or (inside and "Inside" or "Outside"))
+          .. " (from " .. source .. ")."))
+      .. (StormActive() and " Lamps have nothing to do with the storm, so the indoor values hold through it." or ""))
+  elseif string.find(msg, "^indoor") then
+    local _, _, glow, mist = string.find(msg, "^indoor%s*(%S*)%s*(%S*)$")
+    glow, mist = tonumber(glow or ""), tonumber(mist or "")
+    if glow then
+      SetIndoor(glow, mist)
+    elseif msg ~= "indoor" then
+      Say("/atmos indoor <glow 0-100> [<mist 0-200>], tenths too (2.5): how bright lamps are inside. comfy's own are 20 and 50.")
+    end
+    Say("indoor lamps: glow " .. db.indoorGlow .. ", mist " .. db.indoorMist .. ".")
   else
     return false
   end
@@ -421,5 +538,5 @@ end
 
 SLASH_AZATMOS1 = "/aa"
 SlashCmdList["AZATMOS"] = function(msg)
-  if not OwnCommand(msg) then Say("/aa: the window. /aa on | off | status | 0-100.") end
+  if not OwnCommand(msg) then Say("/aa: the window. /aa on | off | status | 0-100 | indoor <glow> [<mist>].") end
 end

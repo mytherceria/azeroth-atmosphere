@@ -345,6 +345,10 @@ LAMP_OPEN = [(v, w, z, dawn, d) for v in (0, 10, 25) for w in (0, 1) for z in (0
              for dawn in (0, 1) for d in (1, 3, 6)]
 LAMP_ROCK = [(v, 0, -r, dawn, d) for v in (0, 25) for r in range(5, 105, 5) for dawn in (0, 1) for d in (1, 3, 6)]
 LAMP_STREET = (0, 0, 3, 0, 6)
+# Lamps the player has set by eye in game, which win over the rule: (Lamp Glow, Lamps in Mist).
+LAMP_PICKS = {
+    "Duskwood": (40, 40),   # Darkshire at night, the Night Watch's torches: "good" (30 Sep 2026)
+}
 
 def lamp_glow(c, valley, wet, z, dawn, d):
     """comfy's glow from a lamp at that spot, up to a constant that cancels."""
@@ -427,6 +431,8 @@ def derive_v8(name):
     top = 20 * LAMP_CEILING / worst
     glow = 5 * round(min(20 * want / street, top) / 5.0)
     out["comfyLampGlow"] = int(max(5, glow if glow <= top else 5 * int(top / 5)))
+    if name in LAMP_PICKS:   # set by eye in game: wins over the rule
+        out["comfyLampGlow"], out["comfyMistLamps"] = LAMP_PICKS[name]
     # Night.
     if not has("indoor"):
         dark = 35
