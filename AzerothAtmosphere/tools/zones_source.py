@@ -1,4 +1,4 @@
-"""Every zone's intent, and the preset that goes for it. The source of AtmosphereDirector's Zones.lua.
+"""Every zone's intent, and the preset that goes for it. The source of AzerothAtmosphere's Zones.lua.
 
 Run build_zones.py to regenerate the Lua. Edit HERE, never the generated file.
 

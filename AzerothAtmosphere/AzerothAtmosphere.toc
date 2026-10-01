@@ -4,4 +4,4 @@
 ## SavedVariables: AtmosphereDirectorDB
 ## OptionalDeps: ComfyAtmosphere, IndoorRain
 Zones.lua
-AtmosphereDirector.lua
+AzerothAtmosphere.lua

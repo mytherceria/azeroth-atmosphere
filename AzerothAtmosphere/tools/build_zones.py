@@ -1,4 +1,4 @@
-"""Generate AtmosphereDirector's Zones.lua from zones_source.py. Usage: python3 build_zones.py <out Zones.lua>"""
+"""Generate AzerothAtmosphere's Zones.lua from zones_source.py. Usage: python3 build_zones.py <out Zones.lua>"""
 import sys
 from zones_source import Z, derive_v8
 

@@ -42,11 +42,11 @@ python3 RainTextures/make_patch_mpq.py dist/patch-R.MPQ dist/stage/RainDrop01.bl
 
 # The player's zip, laid out like the game folder.
 P=dist/pack
-mkdir -p "$P/Interface/AddOns/AtmosphereDirector" "$P/Data"
+mkdir -p "$P/Interface/AddOns/AzerothAtmosphere" "$P/Data"
 cp dist/IndoorRain.dll "$P/"
 cp -r IndoorRain/addon/IndoorRain "$P/Interface/AddOns/"
-cp AtmosphereDirector/AtmosphereDirector.toc AtmosphereDirector/AtmosphereDirector.lua AtmosphereDirector/Zones.lua \
-   "$P/Interface/AddOns/AtmosphereDirector/"
+cp AzerothAtmosphere/AzerothAtmosphere.toc AzerothAtmosphere/AzerothAtmosphere.lua AzerothAtmosphere/Zones.lua \
+   "$P/Interface/AddOns/AzerothAtmosphere/"
 cp -r CleanScreen "$P/Interface/AddOns/"
 cp dist/patch-R.MPQ "$P/Data/"
 # Never any audio: the game's sounds are read from the player's own client at run time.

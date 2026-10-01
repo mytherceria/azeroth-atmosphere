@@ -10,7 +10,7 @@ running VanillaFixes; it should suit any Turtle-based 1.12 client with the same 
   flash, and the rain loops lose the thunder the game had recorded into them on a fixed cycle. Every one of these
   sounds is built in memory when the game starts, from the game's own files on your machine: the pack contains no
   game audio at all. Details in [IndoorRain/README.md](IndoorRain/README.md).
-- **The zone moods** (the addon shown in game as Azeroth Atmosphere, folder `AtmosphereDirector`). A written mood and a preset for every zone, city, dungeon and raid in the client,
+- **The zone moods** (the `AzerothAtmosphere` addon). A written mood and a preset for every zone, city, dungeon and raid in the client,
   118 of them, using comfyatmosphere's fog, sun rays, night and clouds, plus a colour wash over the world. Where
   footage of WoW Forever exists, the preset is measured from it. `/atmos` opens one window with every switch and
   slider of the pack.
@@ -38,7 +38,7 @@ running VanillaFixes; it should suit any Turtle-based 1.12 client with the same 
 4. Start the game. `/indoorrain status`, `/atmos` and `/cleanscreen` show that everything is there.
 
 To remove it: delete `IndoorRain.dll` and its line in `dlls.txt`, the folders `Interface\AddOns\IndoorRain`,
-`AtmosphereDirector` and `CleanScreen`, and `Data\patch-R.MPQ`. Indoor Weather also leaves `IndoorRain.ini` next to
+`AzerothAtmosphere` and `CleanScreen`, and `Data\patch-R.MPQ`. Indoor Weather also leaves `IndoorRain.ini` next to
 `WoW.exe` and `Logs\IndoorRain.log`.
 
 ## Building it
@@ -46,7 +46,7 @@ To remove it: delete `IndoorRain.dll` and its line in `dlls.txt`, the folders `I
 `tools/make_release.sh` builds everything into `dist/`: the DLL (with `i686-w64-mingw32-gcc`), the textures (Python
 with numpy and Pillow), the archive (through StormLib: set `STORMLIB` to the path of `libstorm.so`), the zips and
 `SHA256SUMS`. Each part has its own notes: [IndoorRain/README.md](IndoorRain/README.md) for the DLL, its Wine test
-harness and its native self-tests; `AtmosphereDirector/tools/` for the zone presets (edit `zones_source.py`, then
+harness and its native self-tests; `AzerothAtmosphere/tools/` for the zone presets (edit `zones_source.py`, then
 run `build_zones.py`); `RainTextures/` for the textures.
 
 ## License
