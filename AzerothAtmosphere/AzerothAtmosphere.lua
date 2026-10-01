@@ -2,8 +2,9 @@
 -- zone's mood in WoW Forever. Every zone, city, dungeon and raid in the client has a written intent (its
 -- mood: Duskwood is dark, moody and haunted) and a preset that goes for it, in Zones.lua. Where Forever
 -- footage exists the preset is measured from it; elsewhere it follows the zone's known look. Weather
--- layers on top: while IndoorRain's storm is thickening the fog, this addon waits, so the two never fight
--- over a slider.
+-- layers on top: a slider Indoor Weather's storm is holding is faded underneath the storm, in the value the
+-- storm keeps for it, so the storm thickens the zone's own fog and lands on it when the rain is over. The two
+-- never write the same slider, and a zone, a door or a lamp never waits for the rain.
 --
 -- The layer moves comfyatmosphere's own sliders (they are CVars: fog, sun rays, volumetric light, night
 -- and clouds) and draws one colour wash over the 3D
@@ -94,6 +95,24 @@ local function StormHolds(name)
   return StormActive() and IndoorRainDB.base and IndoorRainDB.base[name] ~= nil
 end
 
+-- A slider's value under any storm: the one the storm will put back, or the slider itself.
+local function Under(name)
+  if StormHolds(name) then return IndoorRainDB.base[name].v end
+  return CVarNum(name)
+end
+
+-- Sets a slider, or, while a storm holds it, the value the storm keeps for it: the storm works from that value
+-- every tick, so the zone's fog is thickened rather than fought over, and the storm lands on it at the end.
+local function Put(name, v)
+  if StormHolds(name) then
+    local r = math.floor(v + 0.5)
+    IndoorRainDB.base[name] = { v = r, s = tostring(r) }
+    written[name] = r
+    return true
+  end
+  return SetNum(name, v)
+end
+
 -- Whether you are under a roof, from IsIndoors (SuperWoW or ClassicAPI). nil without it: then there is no indoor
 -- cap, never a guess. (Indoor Weather's own copy is no help: it reads the same IsIndoors, and says "0" without it.)
 local function Indoors()
@@ -181,7 +200,7 @@ local function StartRamp(seconds, lampsOnly)
   -- a slider the player moved since this addon last wrote it is theirs: leave it and never put it back
   for i = 1, table.getn(MANAGED) do
     local name = MANAGED[i]
-    local now = (not lampsOnly or LAMPS[name]) and not StormHolds(name) and CVarNum(name)
+    local now = (not lampsOnly or LAMPS[name]) and Under(name)
     if now and written[name] and math.abs(now - written[name]) > 0.5 then
       if not Moved(name, now) then db.base[name] = nil; written[name] = nil end
     end
@@ -189,7 +208,7 @@ local function StartRamp(seconds, lampsOnly)
   local t, w = Targets()
   from, to = {}, {}
   for name, v in pairs(t) do
-    if not lampsOnly or LAMPS[name] then from[name] = CVarNum(name) or v; to[name] = v end
+    if not lampsOnly or LAMPS[name] then from[name] = Under(name) or v; to[name] = v end
   end
   for i = 1, 3 do washFrom[i] = washTo[i] and (washFrom[i] + (washTo[i] - washFrom[i]) * rampT) or 1 end
   washTo = w
@@ -197,13 +216,13 @@ local function StartRamp(seconds, lampsOnly)
   rampLen, lampRamp = seconds or RAMP_SECONDS, lampsOnly and true or false
 end
 
--- Take the player's own values the first time a layer starts (never while a storm has moved them).
+-- Take the player's own values the first time a layer starts (under any storm, never the storm's).
 local function TakeBase()
   if db.active then return true end
   local any = false
   db.base, db.mine = {}, {}
   for i = 1, table.getn(MANAGED) do
-    local v = CVarNum(MANAGED[i])
+    local v = Under(MANAGED[i])
     if v then db.base[MANAGED[i]] = v; written[MANAGED[i]] = v; any = true end
   end
   if not any then db.base = {}; return false end   -- no comfyatmosphere: the wash still works
@@ -214,7 +233,11 @@ end
 local function RestoreNow()
   if not db then return end
   if db.active then
-    for name, v in pairs(db.base or {}) do pcall(SetCVar, name, tostring(v)) end
+    for name, v in pairs(db.base or {}) do
+      -- a slider the player moved since this addon last wrote it is theirs: it stays where they put it
+      local now = Under(name)
+      if not (now and written[name] and math.abs(now - written[name]) > 0.5) then Put(name, v) end
+    end
   end
   db.active, db.base, db.mine = false, {}, {}
   written = {}
@@ -225,7 +248,7 @@ local function ZoneCheck()
   local z = GetRealZoneText and GetRealZoneText() or nil
   local p = db.enabled and z and PROFILES[z] or nil
   if p == profile then return end
-  if StormActive() or PanelOpen() then return end   -- try again on the next tick
+  if PanelOpen() then return end   -- try again on the next tick
   if p and not db.active then TakeBase() end
   zone, profile = p and z or nil, p
   StartRamp()
@@ -241,11 +264,7 @@ local function IndoorCheck()
   if inside ~= seenInside then seenInside, seenAt = inside, GetTime() end
   if inside == capped or PanelOpen() then return end
   if capped ~= nil and GetTime() - seenAt < INDOOR_SETTLE then return end   -- nil: the caps changed, act now
-  if rampT < 1 and not lampRamp and StormActive() then return end   -- try again on the next tick
-  if inside and not db.active then
-    if StormActive() then return end   -- as for a zone: never take the player's values while a storm has moved them
-    TakeBase()
-  end
+  if inside and not db.active then TakeBase() end
   capped = inside
   if not db.active then return end    -- no comfyatmosphere: nothing to hold down
   if rampT >= 1 or lampRamp then StartRamp(INDOOR_SECONDS, true) else StartRamp() end
@@ -300,19 +319,19 @@ frame:SetScript("OnUpdate", function()
   IndoorCheck()
   ZoneCheck()
   if rampT >= 1 then
-    if db.active and not profile and capped == false and not StormActive() then RestoreNow() end
+    if db.active and not profile and capped == false then RestoreNow() end
     return
   end
-  if (StormActive() and not lampRamp) or PanelOpen() then return end   -- the lamps alone may move in a storm
+  if PanelOpen() then return end
   rampT = math.min(1, rampT + dt / rampLen)
   for name, v in pairs(to) do
-    local now = CVarNum(name)
-    if now and written[name] and math.abs(now - written[name]) > 0.5 and not StormHolds(name) then
+    local now = Under(name)
+    if now and written[name] and math.abs(now - written[name]) > 0.5 then
       -- the player moved it: theirs from now on, and not put back
       to[name] = nil
       if not Moved(name, now) then db.base[name] = nil end
     elseif now then
-      SetNum(name, from[name] + (v - from[name]) * rampT)
+      Put(name, from[name] + (v - from[name]) * rampT)
     end
   end
   SetWash(washFrom[1] + (washTo[1] - washFrom[1]) * rampT,
@@ -495,7 +514,7 @@ local function OwnCommand(msg)
       if v then table.insert(parts, MANAGED[i] .. "=" .. tostring(v)) end
     end
     Say((db.enabled and "on" or "off") .. ", strength " .. db.strength .. "%, layer: " .. (zone or "none")
-      .. (StormActive() and " (a storm layer is on; waiting)" or "") .. ". " .. table.concat(parts, " "))
+      .. (StormActive() and " (a storm is on: its sliders fade underneath it)" or "") .. ". " .. table.concat(parts, " "))
     local inside, source = Indoors()
     Say("indoor lamps: glow " .. db.indoorGlow .. ", mist " .. db.indoorMist .. ". "
       .. (not source and "No indoor detection (it needs SuperWoW or ClassicAPI), so lamps are never set apart indoors."

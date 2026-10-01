@@ -37,7 +37,8 @@ zone("Westfall", "Golden autumn farmland under a big sky: warm dusty haze, brigh
 zone("Redridge Mountains", "Crisp autumn highlands around Lake Everstill: clear air, warm reds and golds.",
      "known", fog=25, rays=40, vol=20, tint=(240, 190, 150), k=0.12)
 zone("Duskwood", "Dark, moody, haunted forest: thick low fog, teal gloom, pale moonlight.",
-     "measured", fog=90, rays=15, vol=40, night=35, wash=(0.80, 0.90, 0.95))
+     "measured", fog=90, rays=15, vol=40, night=10, wash=(0.80, 0.90, 0.95))   # night 35 lit shafts of moonlight
+                                                                            # rising out of the ground (30 Sep 2026)
 zone("Stranglethorn Vale", "Steamy jungle: humid cream haze, deep shade under the canopy, sun shafts through leaves.",
      "measured", fog=55, rays=55, vol=45, tint=(215, 210, 160), k=0.20, dark=0.05)
 zone("Swamp of Sorrows", "Oppressive, sickly bog: low green mist, dim light, stagnant air.",
