@@ -21,6 +21,8 @@ THE CONTROLS (comfyatmosphere's own CVars, plus our wash):
 A control left out is not touched: the player's own value stands in that zone.
 """
 
+import math
+
 Z = {}
 def zone(name, mood, src, fog=None, rays=None, vol=None, night=None, clouds=None, tint=None, k=0.0, dark=0.0,
          wash=None):
@@ -322,6 +324,39 @@ traits("Molten Core; Ragefire Chasm; Blackrock Depths; Blackrock Spire; Hateforg
 traits("Scholomance; Stratholme; Naxxramas; The Upper Necropolis; Razorfen Downs; Karazhan Crypt; Shadowfang Keep; Gilneas City", "haunted")
 traits("Wailing Caverns; The Temple of Atal'Hakkar; The Black Morass; Blackfathom Deeps", "swamp")
 
+# Lamps (30 Sep 2026: the Darkshire glare). comfy 0.8.2 adds each lamp's glow on top of the picture with no cap
+# (lampglow.cpp:389-428): glow ~ Lamp Glow x (1 + Lamps in Mist/100 x T), dimmed by the mist between, where T, the
+# mist's thickness at the lamp (volume.cpp:1574-1592), grows with Mist in Low Ground (hollows), Mist over Water and
+# a low Mist Height, and below the ground under a city's or a cave's rock. The two settings MULTIPLY, and Duskwood's
+# 55 x 120 turned Darkshire's torches into a wall of orange. So each zone is held to comfy's own defaults, which
+# the player is happy with: no lamp, at any of the spots below, glows more than LAMP_CEILING times what comfy's defaults
+# give at that same spot.
+LAMP_DEFAULT = dict(comfyLampGlow=20, comfyMistLamps=50, comfyMistDensity=25, comfyMistLow=150,
+                    comfyMistWater=210, comfyMistHeight=25, comfyMistMorning=100)
+LAMP_CEILING = 1.5
+# Spots: (valley yards under the ground around it, over water, lamp yards above the ground, negative = under
+# rock; at dawn, when Mist at Dawn thickens the mist; the lamp's distance in yards). Every zone is held to the open
+# ground ones, in hollows up to the 25 yards comfy's Mist in Low Ground works over. Cities and dungeons, where lamps
+# really do hang under rock (Undercity, Ironforge, the Cleft of Shadow), are also held under rock, every 5 yards
+# down to 100: the excess peaks where the zone's own mist stops thickening (4 Mist Heights down), so sparse depths
+# miss it. A cave or a ravine deeper than 25 yards in an open zone is not held: comfy's own defaults are already
+# far brighter there than on a street, and holding to them cost swamps their glow over water.
+LAMP_OPEN = [(v, w, z, dawn, d) for v in (0, 10, 25) for w in (0, 1) for z in (0.5, 1, 2, 4)
+             for dawn in (0, 1) for d in (1, 3, 6)]
+LAMP_ROCK = [(v, 0, -r, dawn, d) for v in (0, 25) for r in range(5, 105, 5) for dawn in (0, 1) for d in (1, 3, 6)]
+LAMP_STREET = (0, 0, 3, 0, 6)
+
+def lamp_glow(c, valley, wet, z, dawn, d):
+    """comfy's glow from a lamp at that spot, up to a constant that cancels."""
+    def thick(z):
+        mult = (1 + c["comfyMistLow"] / 100.0 * min(valley / 25.0, 1.0)) * (1 + c["comfyMistWater"] / 100.0 * wet)
+        return mult * math.exp(min((valley / 2.0 - z) / c["comfyMistHeight"], 4.0))
+    density = c["comfyMistDensity"] * 1e-4 * (1 + c["comfyMistMorning"] / 100.0 * dawn)
+    return c["comfyLampGlow"] * math.exp(-density * thick(z + 0.5) * d) * (1 + c["comfyMistLamps"] / 100.0 * thick(z))
+
+def lamp_ratio(c, spots):
+    return max(lamp_glow(c, *s) / lamp_glow(LAMP_DEFAULT, *s) for s in spots)
+
 def r5(v, lo, hi):
     """Rounded to comfy's own slider step of 5, inside its range."""
     return int(max(lo, min(hi, 5 * round(v / 5.0))))
@@ -374,10 +409,24 @@ def derive_v8(name):
     if has("snow"): bright = 150
     if has("desert"): bright = 140
     out["comfyMistBrightness"] = r5(bright, 0, 200)
-    out["comfyMistLamps"] = 120 if (has("city") or has("lamps")) and not has("indoor") else 100 if has("haunted") else 50
+    out["comfyMistLamps"] = 50   # set with Lamp Glow below, from the mist above
     out["comfyMistWind"] = 0 if has("indoor") else 45 if has("windy") else 5 if has("swamp") else 10 if (has("forest") or has("jungle")) else 15
-    # Lamps: the glow around lamps, candles and torches.
-    out["comfyLampGlow"] = 60 if has("indoor") else 50 if has("city") else 55 if (has("lamps") and has("haunted")) else 40 if has("lamps") else 25
+    # Lamps: the glow around lamps, candles and torches, and how much brighter it is in thick mist. Lamps belong to
+    # cities and lamp-lit zones, so their street lamps glow a quarter over comfy's; elsewhere as comfy's. The mist
+    # boost is the largest (never above comfy's own 50) that keeps the zone's worst spot under LAMP_CEILING.
+    want = 1.25 if (has("city") or has("lamps")) and not has("indoor") else 1.0
+    spots = LAMP_OPEN + (LAMP_ROCK if (has("city") or has("indoor")) else [])
+    c = {**LAMP_DEFAULT, **out}   # Mist Height, Low Ground, Water, Dawn and Density are set above
+    for mist in range(50, -1, -10):
+        c["comfyMistLamps"], c["comfyLampGlow"] = mist, 20
+        street, worst = lamp_ratio(c, [LAMP_STREET]), lamp_ratio(c, spots)
+        if want * worst / street <= LAMP_CEILING:
+            break
+    out["comfyMistLamps"] = mist
+    # On comfy's slider step of 5: the nearest step to the street target, or the step below if that breaks the ceiling.
+    top = 20 * LAMP_CEILING / worst
+    glow = 5 * round(min(20 * want / street, top) / 5.0)
+    out["comfyLampGlow"] = int(max(5, glow if glow <= top else 5 * int(top / 5)))
     # Night.
     if not has("indoor"):
         dark = 35
