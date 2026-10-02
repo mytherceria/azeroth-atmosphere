@@ -4,7 +4,7 @@ drawn for, centred, with its sides filled by a blurred, darkened, wider copy of 
 seams; the continents' two screens can be the test pattern instead (--test-continents).
 
 Usage: STORMLIB=/path/to/libstorm.so python3 make_pack.py <client Data dir> <out dir> <shape> <screen w> <screen h>
-       [--test-continents] [--art <map file>]
+       [--test-continents] [--art <map file>] [--bar <dir>]
    e.g. ... make_pack.py ~/Games/RavenCraft-fogtest/Data out 21x9 5120 2160 --test-continents
 """
 import concurrent.futures as cf, ctypes, glob, io, os, struct, sys, tempfile
@@ -153,6 +153,11 @@ if __name__ == '__main__':
         for path, blp in ex.map(build_one, jobs):
             files.append((blp, path))
             print(f'  {len(files)}/{len(jobs)} {path.split(chr(92))[-1]}', flush=True)
+    if '--bar' in sys.argv:                             # --bar <dir>: the loading bar's Loading-Bar*.blp, as they are
+        bar = sys.argv[sys.argv.index('--bar') + 1]
+        for n in sorted(os.listdir(bar)):
+            if n.lower().startswith('loading-bar') and n.lower().endswith('.blp'):
+                files.append((os.path.join(bar, n), 'Interface\\Glues\\LoadingBar\\' + n))
     mpq = os.path.join(out, 'Data', 'WideLoading', f'LoadingScreens-{shape}.MPQ')
     os.makedirs(os.path.dirname(mpq), exist_ok=True)
     pack(mpq, files)
