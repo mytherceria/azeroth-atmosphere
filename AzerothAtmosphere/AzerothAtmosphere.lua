@@ -203,21 +203,22 @@ local function Targets()
 end
 
 -- WHERE COMFY'S GROUND MIST GOES WRONG. comfyatmosphere works out the ground under its mist from the map's terrain
--- around you, and fills the view wherever that guess is wrong. Three kinds of place, all found on 1 Oct 2026:
+-- around you, and fills the view wherever that guess is wrong. Two kinds of place, both found on 1 Oct 2026:
 --   aboard a ship or a zeppelin: comfy reads your place on the deck, measured from the ship's middle, as your place
 --     in the world (/atmos stats: 6577.5, 768.9 on the Auberdine pier, -7.7, -2.5 on the deck; 6420.3, 816.5 and
 --     1.5, 1.6 for the Stormwind ship), so its ground is near the map's origin. It walled the deck in at strength 0,
 --     with stock comfy 0.8.2 and nothing of ours;
 --   inside: comfy 0.8.2 has no indoor rule, so under a roof, in a mine or a city under the land its ground is the
---     land above you, and you are buried in its mist (the Deadmines tunnel under Moonbrook, Undercity, Ironforge);
---   no map under you: a dungeon built as one building has no terrain tiles, and comfy guesses (comfy publishes how
---     many of its 128 x 128 ground cells had no tile; the Stormwind ship showed 12288).
--- In all three the ground mist is taken out at once, and it fades back over a few seconds once you have left. Every
+--     land above you, and you are buried in its mist (the Deadmines tunnel under Moonbrook, Undercity, Ironforge).
+--     A dungeon built as one building reads as inside too (every room of the Deadmines did, in Indoor Weather's log).
+-- Both are read from things that keep coming while the mist is off: comfy's position (written every second, fog or
+-- no fog) and IsIndoors. Not comfy's count of ground cells with no map tile: comfy stops measuring the ground while
+-- its mist is 0 (FogOn is density > 0), so that count froze at the Feathermoon ferry's and the mist never came back
+-- (found in game, 1 Oct 2026). In both the ground mist is taken out at once, and it fades back over a few seconds once you have left. Every
 -- zone at once, nothing to tune per zone. Going back on waits a second, and so does a reading of "inside", since
 -- IsIndoors flickers in a doorway. db.mistFix ("/atmos mistfix off", or the window) leaves comfy's mist alone.
 -- A spot on land within ABOARD_YARDS of a continent's origin loses its mist too, which costs nothing.
 local ABOARD_YARDS = 60
-local NO_GROUND = 8192                -- half of comfy's 128 x 128 ground cells with no map tile under them
 local SETTLE = 1.0
 local STATS_PATTERN = "x=(%-?[%d%.]+);y=(%-?[%d%.]+);z=%-?[%d%.]+;pos=1;"
 
@@ -241,8 +242,6 @@ local function MistWhy()
   x, y = tonumber(x), tonumber(y)
   if x and y and math.abs(x) < ABOARD_YARDS and math.abs(y) < ABOARD_YARDS then return "aboard a ship" end
   if Indoors() then return "inside" end
-  local _, _, missing = string.find(stats, "notile=(%d+);")
-  if (tonumber(missing) or 0) >= NO_GROUND then return "no map under you" end
   return nil
 end
 
@@ -380,8 +379,8 @@ local function IndoorCheck()
   if rampT >= 1 or lampRamp then StartRamp(INDOOR_SECONDS, true) else StartRamp() end
 end
 
--- Twice a second, since comfy's figures change once a second (see MistWhy). Aboard or with no map under you the mist
--- goes at once; "inside", and coming back on, have to hold for SETTLE first.
+-- Twice a second, since comfy's figures change once a second (see MistWhy). Aboard the mist goes at once; "inside",
+-- and coming back on, have to hold for SETTLE first.
 local function GroundCheck(dt)
   groundSince = groundSince + dt
   if groundSince < 0.5 then return end
@@ -389,7 +388,7 @@ local function GroundCheck(dt)
   local why = MistWhy()
   if (why ~= nil) == mistOff then mistWhy = why or mistWhy; pendingAt = nil; return end
   if pendingAt == nil or (pendingWhy ~= nil) ~= (why ~= nil) then pendingWhy, pendingAt = why, GetTime() end
-  local now = why == "aboard a ship" or why == "no map under you"
+  local now = why == "aboard a ship"
   if not now and GetTime() - pendingAt < SETTLE then return end
   if PanelOpen() then return end
   pendingAt = nil
@@ -706,7 +705,7 @@ local function OwnCommand(msg)
       .. (StormActive() and " Lamps have nothing to do with the storm, so the indoor values hold through it." or ""))
   elseif msg == "mistfix on" or msg == "mistfix off" then
     db.mistFix = (msg == "mistfix on")
-    Say(db.mistFix and "mist fix on: comfy's ground mist is taken out aboard ships, inside and where there is no map under you."
+    Say(db.mistFix and "mist fix on: comfy's ground mist is taken out aboard ships and inside."
       or "mist fix off: comfy's ground mist is left alone everywhere, walls and all.")
   elseif string.find(msg, "^rain") then
     local _, _, n = string.find(msg, "^rain%s+(%d)$")
