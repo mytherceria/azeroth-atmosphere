@@ -338,6 +338,26 @@ local function StormCheck()
   if db.active then StartRamp(STORM_SECONDS) end
 end
 
+-- An older copy of this addon from before its rename (the AtmosphereDirector folder, in the 0.1.0 zip) would run
+-- beside this one: two layers moving the same sliders and two colour washes over the world. The launcher never
+-- deletes a folder, so it is silenced here for this session, switched off for the next login, and the player is
+-- told once that its folder can go. The two share their saved settings, so nothing of the player's is lost.
+-- Its folder name sorts first, so it has normally loaded by now; the login looks again in case it had not.
+local oldCopy = false
+local function SilenceOldCopy(own)
+  if not (IsAddOnLoaded and IsAddOnLoaded("AtmosphereDirector")) then return end
+  local f = getglobal("AtmosphereDirectorFrame")
+  if f and f ~= own then
+    f:UnregisterAllEvents()
+    f:SetScript("OnEvent", nil)
+    f:SetScript("OnUpdate", nil)
+    f:Hide()
+  end
+  if DisableAddOn then DisableAddOn("AtmosphereDirector") end
+  oldCopy = true
+end
+SilenceOldCopy(nil)
+
 local frame = CreateFrame("Frame", "AtmosphereDirectorFrame")
 frame:RegisterEvent("VARIABLES_LOADED")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -356,6 +376,11 @@ frame:SetScript("OnEvent", function()
     -- storm fog, on unless the player had switched Indoor Weather's off (read once, before this addon owns it)
     if db.stormFog == nil then db.stormFog = not (IndoorRainDB and IndoorRainDB.fog == false) end
     ShareIndoorRain()
+    SilenceOldCopy(frame)
+    if oldCopy then
+      Say("an older copy of this addon was also installed (Interface\\AddOns\\AtmosphereDirector, from before its rename). "
+        .. "It is switched off now and does nothing; you can delete that folder.")
+    end
     db.mine = db.mine or {}
     db.base = db.base or {}
     if db.active then repairUntil = GetTime() + 30 end   -- a layer was on at the last logout or crash
