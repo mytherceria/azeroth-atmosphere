@@ -1,12 +1,17 @@
 /* Runs CinderLoad.dll's own code (dll/cinderload.c) against fake game folders, on POSIX through tests/shim:
- *   gcc -std=c99 -Wall -Wno-unused-function -Itests/shim -o /tmp/test_switch tests/test_switch.c && /tmp/test_switch <scratch dir>
- * Each case is a fresh folder under <scratch dir>; nothing outside it is touched. */
+ *   gcc -std=c99 -Wall -Wno-unused-function -Itests/shim -I../IndoorRain/dll -o /tmp/test_switch tests/test_switch.c \
+ *       ../IndoorRain/dll/mpq.c ../IndoorRain/dll/inflate.c && /tmp/test_switch <scratch dir> [<client folder>]
+ * Each case is a fresh folder under <scratch dir>; nothing outside it is touched. With a client folder (one holding
+ * Data/patch.MPQ and Data/sound.MPQ, opened for reading only), the fire sound is also built from that client's own
+ * files and played through the mock's timeline into <scratch dir>/fire-timeline.wav, for listening to. */
 #include "../dll/cinderload.c"
 #include <stdio.h>
 #include <sys/stat.h>
 
 char shim_gamedir[512];
-unsigned char shim_module[0x400000];
+unsigned char shim_module[SHIM_MODULE_SIZE];
+int shim_threads;
+DWORD shim_ticks;
 int shim_screen_w = 3440, shim_screen_h = 1440;
 
 static int fails, checks;
@@ -26,7 +31,10 @@ static void Fresh(const char *name)
     memcpy(shim_module + PATCH_RVA, kStock, sizeof kStock);
     memcpy(shim_module + BAR_FILL_RVA, kFillStock, 16);
     memcpy(shim_module + BAR_BORDER_RVA, kBorderStock, 16);
+    for (int i = 0; i < FIRE_CODE_COUNT; i++)
+        memcpy(shim_module + kFireCode[i].rva, kFireCode[i].bytes, (size_t)kFireCode[i].n);
     shim_screen_w = 3440; shim_screen_h = 1440;
+    shim_threads = 0;
 }
 static void Put(const char *rel, const char *text)
 {
@@ -62,6 +70,370 @@ static int LogSays(const char *words) { const char *g = Get("Logs/CinderLoad.log
 #define MARK "Data/patch-~.cinderload"
 #define OLDMARK "Data/CinderLoad/installed.txt"
 #define RES(w) "SET gxWindow \"1\"\r\nSET gxResolution \"" w "\"\r\n"
+
+/* ---- the fire sound ---- */
+#include <math.h>
+
+static int Near(double a, double b, double tol) { return fabs(a - b) <= tol; }
+
+/* A fake fmod.dll: every call is written down, in order. */
+static char g_calls[4096];
+static void Called(const char *what) { strcat(g_calls, what); strcat(g_calls, " "); }
+static fn_StreamCallback g_cb;
+static unsigned g_mode;
+static int g_rate = 8000, g_pan = 999, g_createOk = 1, g_streamTag;
+static void *WINAPI FakeCreate(fn_StreamCallback cb, int len, unsigned int mode, int rate, void *user)
+{
+    (void)len; (void)user; Called("create"); g_cb = cb; g_mode = mode; g_rate = rate; return g_createOk ? &g_streamTag : NULL;
+}
+static void *WINAPI FakeGetSample(void *st) { (void)st; return NULL; }
+static int WINAPI FakePlayEx(int ch, void *st, void *dsp, signed char paused) { (void)ch; (void)st; (void)dsp; Called(paused ? "start-paused" : "start"); return 3; }
+static signed char WINAPI FakePriority(int ch, int pri) { (void)ch; (void)pri; Called("priority"); return 1; }
+static signed char WINAPI FakeReserved(int ch, signed char r) { (void)ch; Called(r ? "reserve" : "unreserve"); return 1; }
+static signed char WINAPI FakePan(int ch, int pan) { (void)ch; g_pan = pan; Called("pan"); return 1; }
+static signed char WINAPI FakeVolume(int ch, int v) { (void)ch; (void)v; Called("volume"); return 1; }
+static signed char WINAPI FakePaused(int ch, signed char p) { (void)ch; Called(p ? "pause" : "unpause"); return 1; }
+static signed char WINAPI FakeStop(int ch) { (void)ch; Called("stop"); return 1; }
+static signed char WINAPI FakeClose(void *st) { (void)st; Called("close"); return 1; }
+static int WINAPI FakeRate(void) { return 8000; }
+static float WINAPI FakeVersion(void) { return 3.75f; }
+static int WINAPI FakeError(void) { return 0; }
+static void FakeFmod(void)
+{
+    F.Stream_Create = FakeCreate; F.Stream_GetSample = FakeGetSample; F.Sample_SetDefaults = NULL; F.Stream_PlayEx = FakePlayEx;
+    F.SetPriority = FakePriority; F.SetReserved = FakeReserved; F.SetPan = FakePan; F.SetVolume = FakeVolume;
+    F.SetPaused = FakePaused; F.StopSound = FakeStop; F.Stream_Close = FakeClose; F.GetOutputRate = FakeRate;
+    F.GetVersion = FakeVersion; F.GetError = FakeError;
+    g_calls[0] = 0;
+}
+static void Client(unsigned layer, float progress, int soundUp)
+{
+    memcpy(shim_module + FIRE_LAYER_RVA, &layer, 4);
+    memcpy(shim_module + FIRE_PROGRESS_RVA, &progress, 4);
+    shim_module[FIRE_SOUNDUP_RVA] = (unsigned char)soundUp;
+}
+static float Published(void) { union { LONG bits; float f; } v; v.bits = g_fire.fillBits; return v.f; }
+
+/* A loop that is a constant: what a mixer test hears is then only the levels, the pan and the fade. */
+static float g_dc[64];
+static void DcMix(FireMix *m, int rate, int which, float value)
+{
+    memset(m, 0, sizeof *m);
+    FireSetRate(m, rate);
+    for (int i = 0; i < 64; i++) g_dc[i] = value;
+    m->loop[which] = g_dc;
+    m->len[which] = 64;
+}
+static short g_pcm[2 * 48000];
+/* frames rendered at one gate and fill; the last frame's left and right */
+static void Run(FireMix *m, int gate, float fill, int frames, int *l, int *r)
+{
+    while (frames > 0) {
+        int n = frames < 48000 ? frames : 48000;
+        FireRender(m, gate, fill, g_pcm, n);
+        frames -= n;
+        if (l) *l = g_pcm[2 * n - 2];
+        if (r) *r = g_pcm[2 * n - 1];
+    }
+}
+static size_t Wav(unsigned char *out, int format, int channels, int bits, int rate, const short *s, int frames)
+{
+    unsigned data = (unsigned)(frames * channels * bits / 8);
+    unsigned char *p = out;
+    memcpy(p, "RIFF", 4); p += 4; unsigned v = 36 + 12 + data; memcpy(p, &v, 4); p += 4; memcpy(p, "WAVE", 4); p += 4;
+    memcpy(p, "LIST", 4); p += 4; v = 4; memcpy(p, &v, 4); p += 4; memcpy(p, "INFO", 4); p += 4;   /* a chunk to skip */
+    memcpy(p, "fmt ", 4); p += 4; v = 16; memcpy(p, &v, 4); p += 4;
+    unsigned short h[8] = { (unsigned short)format, (unsigned short)channels, (unsigned short)(rate & 0xFFFF), (unsigned short)(rate >> 16),
+                            0, 0, (unsigned short)(channels * bits / 8), (unsigned short)bits };
+    unsigned bps = (unsigned)(rate * channels * bits / 8);
+    h[4] = (unsigned short)(bps & 0xFFFF); h[5] = (unsigned short)(bps >> 16);
+    memcpy(p, h, 16); p += 16;
+    memcpy(p, "data", 4); p += 4; memcpy(p, &data, 4); p += 4;
+    memcpy(p, s, data); p += data;
+    return (size_t)(p - out);
+}
+
+static void FireTests(void)
+{
+    float l, r;
+    int il, ir;
+
+    /* the pan curve: equal power, 80/20 by loudness at both ends */
+    Check(Near(FirePan(0), 0.295, 1e-6) && Near(FirePan(1), 0.705, 1e-6) && Near(FirePan(0.5f), 0.5, 1e-6) &&
+          Near(FirePan(-1), 0.295, 1e-6) && Near(FirePan(2), 0.705, 1e-6), "pan: 0.295 at an empty bar, 0.705 at a full one");
+    int power = 1;
+    for (int i = 0; i <= 20; i++) {
+        FireGains(i / 20.0f, &l, &r);
+        power &= Near(l * l + r * r, 1, 1e-5);
+    }
+    Check(power, "pan: equal power, left^2 + right^2 = 1 all the way along");
+    FireGains(0, &l, &r);
+    int ends = Near(l * l, 0.80, 0.002);
+    FireGains(1, &l, &r);
+    ends &= Near(r * r, 0.80, 0.002);
+    FireGains(0.5f, &l, &r);
+    Check(ends && Near(l, r, 1e-6), "pan: 80% of the loudness left at the start, 80% right at the end, even halfway");
+    double worst = 0;
+    for (int i = 0; i <= 1000; i++) {
+        double x = i * (M_PI / 2) / 1000;
+        worst = fmax(worst, fmax(fabs(FireSin((float)x) - sin(x)), fabs(FireCos((float)x) - cos(x))));
+    }
+    Check(worst < 1e-6 && Near(FireExp(-0.001), exp(-0.001), 1e-15) && Near(FireExp(-3), exp(-3), 1e-12),
+          "the arithmetic without a C runtime: sin, cos and exp as the library's");
+
+    /* the glide: a jump in the bar moves the sound over about a third of a second, never at once */
+    FireMix m;
+    DcMix(&m, 1000, 0, 0.1f);
+    Run(&m, 1, 0, 10, NULL, NULL);
+    Run(&m, 1, 1, 1, NULL, NULL);
+    float first = m.front;
+    Run(&m, 1, 1, 299, NULL, NULL);
+    float at300 = m.front;
+    Run(&m, 1, 1, 50, NULL, NULL);
+    Check(first < 0.005f && Near(at300, 1 - exp(-1), 0.01) && Near(m.front, 1 - exp(-0.35 / 0.3), 0.01),
+          "glide: one frame after a jump the front has hardly moved; 63% at 0.3 s, 69% at 0.35 s");
+    DcMix(&m, 1000, 0, 0.1f);
+    Run(&m, 1, 0, 1000, &il, &ir);
+    double startRight = (double)ir * ir / ((double)il * il + (double)ir * ir);
+    Run(&m, 1, 1, 3000, &il, &ir);
+    double endRight = (double)ir * ir / ((double)il * il + (double)ir * ir);
+    Check(Near(startRight, 0.2, 0.002) && Near(endRight, 0.8, 0.002), "glide: the sound itself goes from 20% right to 80% right");
+    DcMix(&m, 1000, 0, 0.1f);
+    Run(&m, 1, 0.7f, 1, NULL, NULL);
+    Check(Near(m.front, 0.7, 1e-6), "glide: a screen starts where its bar is, with no sweep across");
+
+    /* the crackle: loud while the fill moves, soft while it stalls */
+    Check(Near(FireBedLevel(0), 0.85, 1e-6) && Near(FireBedLevel(1 / 3.0f), 1.15, 1e-5) && Near(FireBedLevel(1), 1.15, 1e-6),
+          "bed: 0.85 at an empty bar, 1.15 from a third on");
+    DcMix(&m, 1000, 4, 0.1f);                               /* UndeadFireLarge alone: the crackle */
+    Run(&m, 1, 0, 500, NULL, NULL);
+    for (int step = 0; step < 100; step++) Run(&m, 1, step * 0.005f, 20, NULL, NULL);   /* 0.25 a second, in 20 ms steps */
+    float moving = FireCrackleLevel(m.speed);
+    Run(&m, 1, 0.5f, 1, &il, &ir);
+    double loudMoving = sqrt((double)il * il + (double)ir * ir);
+    Run(&m, 1, 0.5f, 2000, &il, &ir);
+    float stalled = FireCrackleLevel(m.speed);
+    double loudStalled = sqrt((double)il * il + (double)ir * ir);
+    Check(Near(moving, 1, 0.1) && stalled < 0.02f && loudMoving > 20 * loudStalled,
+          "crackle: at a quarter of the bar a second it is at 1; two seconds of stall and it has all but gone");
+    DcMix(&m, 1000, 4, 0.1f);
+    Run(&m, 1, 0, 100, NULL, NULL);
+    float peak = 0;
+    for (int i = 0; i < 2000; i++) {
+        Run(&m, 1, 1, 1, NULL, NULL);
+        if (m.speed > peak) peak = m.speed;
+    }
+    Check(peak <= FIRE_MOVE_CAP + 1e-6f && FireCrackleLevel(10) == FIRE_MOVE_MAX, "crackle: a leap of the whole bar is held to its cap");
+
+    /* the fades */
+    DcMix(&m, 1000, 0, 0.1f);
+    Run(&m, 1, 0.5f, 200, NULL, NULL);
+    float half = m.env;
+    Run(&m, 1, 0.5f, 200, NULL, NULL);
+    float full = m.env;
+    Run(&m, 0, 0.5f, 200, NULL, NULL);
+    float out = m.env;
+    int going = FireRender(&m, 0, 0.5f, g_pcm, 199);
+    int quiet = !FireRender(&m, 0, 0.5f, g_pcm, 10) && g_pcm[18] == 0 && g_pcm[19] == 0;
+    Check(Near(half, 0.5, 0.01) && Near(full, 1, 1e-6) && Near(out, 0.5, 0.01) && going && quiet,
+          "fades: in over 0.4 s as a screen comes up, out over 0.4 s when it goes, then silence");
+
+    /* the fill the worker passes on */
+    FireFill ff;
+    FireFillStart(&ff, 0);
+    float a = FireFillRead(&ff, 0.5f), b = FireFillRead(&ff, 0), c = FireFillRead(&ff, 0.2f), d = FireFillRead(&ff, 0.55f);
+    Check(a == 0.5f && b == 0.5f && c == 0.5f && d == 0.55f, "fill: the client's passing 0 (and part sums) never reach the sound");
+    FireFillRead(&ff, 0.05f); FireFillRead(&ff, 0.05f);
+    float e = FireFillRead(&ff, 0.05f);
+    Check(e == 0.05f, "fill: a fall that lasts three reads is a new screen in the same window, and is taken");
+    Check(FireFillRead(&ff, NAN) == 0.05f && FireFillRead(&ff, 1.7f) == 1, "fill: NaN counts as 0, over 1 as 1");
+
+    /* the loops, made as the mock made them */
+    static float src[4000], loop[9000];
+    for (int i = 0; i < 1000; i++) src[i] = 0.5f;
+    unsigned period = FireMakeLoop(src, 1000, 1000, 1000, 0, loop);
+    int flat = period == 1000 - 120;
+    for (unsigned i = 0; i < period; i++) flat &= Near(loop[i], 0.5, 1e-6);
+    Check(flat, "loop: n - 0.12 s long, and a steady sound stays steady through the seam");
+    for (int i = 0; i < 1000; i++) src[i] = (float)i;
+    period = FireMakeLoop(src, 1000, 1000, 1000, 300, loop);
+    Check(period == 880 && loop[120] == 420 && loop[500] == 800 && loop[700] == 0 && loop[0] == 180,
+          "loop: started 300 frames in, as the mock's roll, with the seam laid over that start");
+    period = FireMakeLoop(src, 1000, 1000, 2000, 0, loop);
+    int line = period == 2000 - 240;
+    for (unsigned j = 240; j < period; j++) line &= Near(loop[j], j / 2.0, 1e-3);
+    Check(line, "loop: 1 kHz to 2 kHz by straight lines between frames");
+    Check(FireResampledLength(66152, 22050, 44100) == 132304 && FireResampledLength(66152, 22050, 48000) == 144004,
+          "loop: as many frames at the mixer's rate as the mock's resampler makes");
+    Check(FireMakeLoop(src, 200, 1000, 1000, 0, loop) == 0, "loop: one too short to cross-fade is refused");
+
+    /* the source files */
+    static unsigned char wav[20000];
+    static short pcm[4000];
+    for (int i = 0; i < 4000; i++) pcm[i] = (short)(i * 8);
+    int rate = 0, ch = 0;
+    unsigned frames = 0;
+    const unsigned char *data = NULL;
+    size_t n = Wav(wav, 1, 1, 16, 22050, pcm, 2000);
+    int ok = FireWavInfo(wav, (unsigned)n, &rate, &ch, &data, &frames) && rate == 22050 && ch == 1 && frames == 2000;
+    FireWavRead(data, ch, frames, src);
+    Check(ok && Near(src[1000], 8000 / 32768.0, 1e-7), "wav: 16-bit mono PCM, as the client's fire loops are");
+    n = Wav(wav, 1, 2, 16, 44100, pcm, 1000);
+    ok = FireWavInfo(wav, (unsigned)n, &rate, &ch, &data, &frames) && ch == 2 && frames == 1000;
+    FireWavRead(data, ch, frames, src);
+    Check(ok && Near(src[10], (160 + 168) / 2 / 32768.0, 1e-7), "wav: stereo is taken as the average of its sides");
+    Check(!FireWavInfo(wav, (unsigned)Wav(wav, 1, 1, 8, 22050, pcm, 2000), &rate, &ch, &data, &frames) &&
+          !FireWavInfo(wav, (unsigned)Wav(wav, 0x11, 1, 16, 22050, pcm, 2000), &rate, &ch, &data, &frames) &&
+          !FireWavInfo(wav, (unsigned)Wav(wav, 1, 1, 16, 22050, pcm, 2000) - 2, &rate, &ch, &data, &frames) &&
+          !FireWavInfo((const unsigned char *)"RIFF\4\0\0\0WAVE", 12, &rate, &ch, &data, &frames),
+          "wav: 8-bit, ADPCM, a cut-off file and one with no sound in it are refused");
+
+    /* the places the sound relies on: all must hold their bytes, or no sound at all */
+    Fresh("fire-on");
+    Put(UW, "AAAA"); Put("WTF/Config.wtf", RES("5120x2160"));
+    Start();
+    Check(shim_threads == 1 && LogSays("fire sound on") && On() && BarWide(), "the client's bytes all there: the fire's thread starts");
+    int silent = 1;
+    for (int i = 0; i < FIRE_CODE_COUNT; i++) {
+        Fresh("fire-other");
+        Put(UW, "AAAA"); Put("WTF/Config.wtf", RES("5120x2160"));
+        shim_module[kFireCode[i].rva + (unsigned)kFireCode[i].n - 1] ^= 0x40;
+        Start();
+        char words[80];
+        snprintf(words, sizeof words, "other bytes at RVA 0x%lX (%s)", (unsigned long)kFireCode[i].rva, kFireCode[i].what);
+        silent &= shim_threads == 0 && LogSays(words) && On() && BarWide();
+    }
+    Check(silent, "any one of the eight places changed: no thread, no sound, the log names it; screens and bar unchanged");
+
+    /* the stream's life, against a fake fmod.dll */
+    Fresh("fire-stream");
+    GameDir();                                              /* the log goes to this folder */
+    FakeFmod();
+    memset(&g_fire, 0, sizeof g_fire);
+    g_fire.base = shim_module;
+    g_fire.channel = -1;
+    DcMix(&g_fire.mix, 8000, 0, 0.1f);
+    g_fire.built = 1;
+    shim_ticks = 1000;
+    Client(0x1234, 0.1f, 0);
+    FireStep(shim_ticks);
+    Check(!g_calls[0] && !g_fire.stream, "sound engine down (sound off in the game): a loading screen gets no FMOD call");
+    Client(0, 0, 1);
+    FireStep(shim_ticks);
+    Check(!g_calls[0], "no loading screen: no FMOD call");
+    Client(0x1234, 0.1f, 1);
+    FireStep(shim_ticks);
+    Check(!strcmp(g_calls, "create start-paused priority reserve pan volume unpause ") && g_pan == FSOUND_STEREOPAN &&
+          g_mode == (FSOUND_16BITS | FSOUND_SIGNED | FSOUND_STEREO | FSOUND_2D) && g_rate == 8000 && g_fire.gate == 1 &&
+          Published() == 0.1f, "a loading screen comes up: one stereo stream, our own pan, started silent and let go");
+    g_calls[0] = 0;
+    Client(0x1234, 0, 1); FireStep(shim_ticks += 20);
+    float held = Published();
+    Client(0x1234, 0.6f, 1); FireStep(shim_ticks += 20);
+    Check(held == 0.1f && Published() == 0.6f && !g_calls[0], "while it shows: the fill passed on, a passing 0 ignored, no FMOD calls");
+    static short buf[2 * FIRE_BLOCK_FRAMES];
+    signed char more = g_cb(&g_streamTag, buf, (int)sizeof buf, NULL);
+    Check(more == 1 && buf[2 * FIRE_BLOCK_FRAMES - 2] != 0 && !g_fire.quiet, "FMOD asks for sound: it gets the fire, fading in");
+    Client(0, 0.6f, 1); FireStep(shim_ticks += 20);
+    Check(g_fire.gate == 0 && g_fire.stream && !g_calls[0] && LogSays("the fire burned for") && LogSays("the bar reached 60%"),
+          "the screen goes: the fire fades out, and the log says how long it burned");
+    for (int i = 0; i < 5; i++) g_cb(&g_streamTag, buf, (int)sizeof buf, NULL);
+    FireStep(shim_ticks += 20);
+    Check(!strcmp(g_calls, "unreserve stop close ") && !g_fire.stream && g_fire.quiet, "faded out: the stream closed, the channel given back");
+    g_calls[0] = 0;
+    Client(0x1234, 0, 1); FireStep(shim_ticks += 20);
+    Client(0, 1, 1); FireStep(shim_ticks += 20);
+    FireStep(shim_ticks += 1000);
+    Check(!strstr(g_calls, "close"), "a fade FMOD has not played yet: the stream is left to finish");
+    FireStep(shim_ticks += 600);
+    Check(strstr(g_calls, "close") && !g_fire.stream, "but closed after 1.5 s at most");
+    g_calls[0] = 0;
+    Client(0x1234, 0.2f, 1); FireStep(shim_ticks += 20);
+    Client(0x1234, 0.2f, 0); FireStep(shim_ticks += 20);
+    Client(0, 0.2f, 0); FireStep(shim_ticks += 2000);
+    Check(!strcmp(g_calls, "create start-paused priority reserve pan volume unpause ") && !g_fire.stream &&
+          LogSays("closed its sound engine"), "the game closes its sound engine mid-screen: the stream is forgotten, never called");
+    g_calls[0] = 0;
+    g_createOk = 0;
+    Client(0x1234, 0.2f, 1); FireStep(shim_ticks += 20);
+    Client(0x1234, 0.4f, 1); FireStep(shim_ticks += 20);
+    Check(!strcmp(g_calls, "create ") && !g_fire.stream && LogSays("would not make the stream"),
+          "the engine will not make the stream: logged, silent for that screen");
+    g_createOk = 1;
+    g_calls[0] = 0;
+    Client(0, 0.4f, 1); FireStep(shim_ticks += 20);
+    Client(0x1234, 0, 1); FireStep(shim_ticks += 20);
+    Check(strstr(g_calls, "create start-paused") && g_fire.stream, "and tried again at the next screen");
+
+    Fresh("fire-no-files");
+    GameDir();                                              /* the log goes to this folder */
+    FakeFmod();
+    memset(&g_fire, 0, sizeof g_fire);
+    g_fire.base = shim_module;
+    g_fire.channel = -1;
+    Client(0x1234, 0.1f, 1);
+    FireStep(shim_ticks += 20);
+    Client(0x1234, 0.2f, 1);
+    FireStep(shim_ticks += 20);
+    Check(!g_calls[0] && g_fire.built == -1 && LogSays("none of its 6 loops"),
+          "the client's fire sounds are not to be had: logged once, no FMOD call, the screens as ever");
+}
+
+/* The mock's timeline (render_frames.py KEYS) through the sound built from a real client's files, polled as the game
+ * would be: the fill changes every 20 ms. Written as 16-bit stereo for listening; a few checks on the way. */
+static void FireRealClient(const char *client)
+{
+    static const float keys[][2] = { { 0, 0 }, { 0.6f, 0.02f }, { 1.6f, 0.15f }, { 2.8f, 0.18f }, { 3.1f, 0.42f }, { 5.8f, 0.55f },
+                                     { 6.2f, 0.80f }, { 9.6f, 0.94f }, { 11.2f, 1.04f }, { 12.5f, 1.04f } };
+    /* the places the sound relies on, against the real WoW.exe on disk (its .text sits at file offset = RVA) */
+    char exe[1024];
+    snprintf(exe, sizeof exe, "%s/WoW.exe", client);
+    FILE *x = fopen(exe, "rb");
+    int match = x != NULL;
+    for (int i = 0; x && i < FIRE_CODE_COUNT; i++) {
+        unsigned char got[32];
+        match &= !fseek(x, (long)kFireCode[i].rva, SEEK_SET) && fread(got, 1, (size_t)kFireCode[i].n, x) == (size_t)kFireCode[i].n &&
+                 !memcmp(got, kFireCode[i].bytes, (size_t)kFireCode[i].n);
+        if (!match) { printf("FAIL: RVA 0x%lX (%s) differs in %s\n", (unsigned long)kFireCode[i].rva, kFireCode[i].what, exe); break; }
+    }
+    if (x) fclose(x);
+    Check(match, "a real client: all eight places hold the bytes the sound expects, in its WoW.exe");
+
+    Fresh("fire-real");
+    GameDir();                                              /* the log goes to this folder */
+    char from[1024], to[1024];
+    const char *arch[] = { "patch.MPQ", "sound.MPQ" };
+    for (int i = 0; i < 2; i++) {
+        snprintf(from, sizeof from, "%s/Data/%s", client, arch[i]);
+        snprintf(to, sizeof to, "%sData/%s", shim_gamedir, arch[i]);
+        if (symlink(from, to)) { printf("FAIL: could not link %s\n", from); fails++; return; }
+    }
+    memset(&g_fire, 0, sizeof g_fire);
+    int built = FireBuild(44100), all = 1;
+    for (int i = 0; i < FIRE_LOOPS; i++) all &= g_fire.mix.loop[i] != NULL;
+    Check(built && all && LogSays("6 of 6 loops"), "a real client: all six loops made from its own files");
+    if (!all) return;
+    FireReset(&g_fire.mix);
+    int total = (int)(12.5 * 44100), pollFrames = 882, done = 0;
+    static short pcm[2 * 12 * 44100 + 2 * 44100];
+    short peak = 0;
+    for (int poll = 0; done < total; poll++) {
+        float t = poll * 0.02f, fill = 0;
+        for (int k = 0; k + 1 < 10; k++)
+            if (t >= keys[k][0] && t <= keys[k + 1][0]) fill = keys[k][1] + (keys[k + 1][1] - keys[k][1]) * (t - keys[k][0]) / (keys[k + 1][0] - keys[k][0]);
+        int n = total - done < pollFrames ? total - done : pollFrames;
+        FireRender(&g_fire.mix, t < 11.6f, fill, pcm + 2 * done, n);
+        done += n;
+    }
+    for (int i = 0; i < 2 * total; i++) if (abs(pcm[i]) > peak) peak = (short)abs(pcm[i]);
+    Check(peak > 8000 && peak < 32767, "a real client: the timeline is loud as the mock and never clips");
+    char path[1024];
+    snprintf(path, sizeof path, "%s/fire-timeline.wav", g_root);
+    static unsigned char out[sizeof pcm + 64];
+    size_t len = Wav(out, 1, 2, 16, 44100, pcm, total);
+    FILE *f = fopen(path, "wb");
+    if (f) { fwrite(out, 1, len, f); fclose(f); printf("wrote %s (peak %d)\n", path, peak); }
+}
 
 int main(int argc, char **argv)
 {
@@ -194,6 +566,9 @@ int main(int argc, char **argv)
     }
     Check(!On() && Gone(ACTIVE) && Gone(MARK) && LogSays("could not put"),
           "the copy fails: the old shape's screens taken out too, never left squeezed");
+
+    FireTests();
+    if (argc > 2) FireRealClient(argv[2]);
 
     if (fails) printf("%d of %d checks FAILED\n", fails, checks); else printf("all %d checks passed\n", checks);
     return fails != 0;

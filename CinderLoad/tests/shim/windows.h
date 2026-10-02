@@ -3,6 +3,7 @@
  * set by the test. */
 #ifndef SHIM_WINDOWS_H
 #define SHIM_WINDOWS_H
+#define _DEFAULT_SOURCE                     /* pread, symlink, M_PI under -std=c99 */
 #include <fcntl.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -13,6 +14,7 @@
 
 typedef unsigned long DWORD;
 typedef int BOOL;
+typedef int LONG;                           /* 32 bits, as on Windows */
 typedef void *HANDLE, *HINSTANCE, *LPVOID, *HMODULE;
 typedef const void *LPCVOID;
 typedef char *LPSTR;
@@ -45,8 +47,11 @@ typedef struct { void *BaseAddress, *AllocationBase; DWORD AllocationProtect; si
 #define SM_CXSCREEN 0
 #define SM_CYSCREEN 1
 
-extern char shim_gamedir[];                 /* "/tmp/x/" */
-extern unsigned char shim_module[0x400000]; /* WoW.exe's image, as far as the bar's size table */
+#define SHIM_MODULE_SIZE 0x900000
+extern char shim_gamedir[];                          /* "/tmp/x/" */
+extern unsigned char shim_module[SHIM_MODULE_SIZE];  /* WoW.exe's image, as far as the sound engine's flag */
+extern int shim_threads;                             /* threads CreateThread was asked for (none is run) */
+extern DWORD shim_ticks;                             /* what GetTickCount says */
 extern int shim_screen_w, shim_screen_h;
 
 static void ShimPath(char *out, const char *in) { strcpy(out, in); for (char *p = out; *p; p++) if (*p == '\\') *p = '/'; }
@@ -64,9 +69,14 @@ static HANDLE CreateFileA(const char *path, DWORD access, DWORD share, void *sa,
     if (disp == CREATE_ALWAYS) o |= O_CREAT | O_TRUNC;
     return ToHandle(open(p, o, 0644));
 }
-static BOOL CloseHandle(HANDLE h) { return close(Fd(h)) == 0; }
-static DWORD GetFileSize(HANDLE h, DWORD *hi) { (void)hi; struct stat st; return fstat(Fd(h), &st) ? INVALID_FILE_SIZE : (DWORD)st.st_size; }
-static BOOL ReadFile(HANDLE h, void *buf, DWORD n, DWORD *got, void *ov) { (void)ov; long r = read(Fd(h), buf, n); *got = r < 0 ? 0 : (DWORD)r; return r >= 0; }
+static BOOL CloseHandle(HANDLE h) { return (long)h == 1000 ? TRUE : close(Fd(h)) == 0; }   /* 1000: a thread */
+static DWORD GetFileSize(HANDLE h, DWORD *hi) { if (hi) *hi = 0; struct stat st; return fstat(Fd(h), &st) ? INVALID_FILE_SIZE : (DWORD)st.st_size; }
+typedef struct { DWORD Internal, InternalHigh, Offset, OffsetHigh; HANDLE hEvent; } OVERLAPPED;
+static BOOL ReadFile(HANDLE h, void *buf, DWORD n, DWORD *got, OVERLAPPED *ov)
+{
+    long r = ov ? pread(Fd(h), buf, n, (off_t)((unsigned long long)ov->OffsetHigh << 32 | ov->Offset)) : read(Fd(h), buf, n);
+    *got = r < 0 ? 0 : (DWORD)r; return r >= 0;
+}
 static BOOL WriteFile(HANDLE h, const void *buf, DWORD n, DWORD *put, void *ov) { (void)ov; long r = write(Fd(h), buf, n); *put = r < 0 ? 0 : (DWORD)r; return r >= 0; }
 static DWORD GetFileAttributesA(const char *path) { char p[1024]; ShimPath(p, path); struct stat st; return stat(p, &st) ? INVALID_FILE_ATTRIBUTES : (S_ISDIR(st.st_mode) ? FILE_ATTRIBUTE_DIRECTORY : FILE_ATTRIBUTE_NORMAL); }
 static BOOL DeleteFileA(const char *path) { char p[1024]; ShimPath(p, path); return unlink(p) == 0; }
@@ -94,7 +104,7 @@ static int wsprintfA(char *out, const char *fmt, ...) { va_list a; va_start(a, f
 static int GetSystemMetrics(int i) { return i == SM_CXSCREEN ? shim_screen_w : shim_screen_h; }
 static size_t VirtualQuery(const void *at, MEMORY_BASIC_INFORMATION *m, size_t n)
 {
-    (void)at; memset(m, 0, n); m->BaseAddress = shim_module; m->RegionSize = sizeof shim_module;
+    (void)at; memset(m, 0, n); m->BaseAddress = shim_module; m->RegionSize = SHIM_MODULE_SIZE;
     m->State = MEM_COMMIT; m->Protect = PAGE_EXECUTE_READ; return n;
 }
 typedef size_t SIZE_T;
@@ -102,4 +112,12 @@ static BOOL VirtualProtect(void *at, size_t n, DWORD prot, DWORD *old) { (void)a
 static BOOL FlushInstructionCache(HANDLE p, const void *at, size_t n) { (void)p; (void)at; (void)n; return TRUE; }
 static HANDLE GetCurrentProcess(void) { return (HANDLE)1; }
 static BOOL DisableThreadLibraryCalls(HINSTANCE h) { (void)h; return TRUE; }
+typedef void (*FARPROC)(void);
+static FARPROC GetProcAddress(HMODULE h, const char *n) { (void)h; (void)n; return NULL; }
+typedef DWORD (*LPTHREAD_START_ROUTINE)(LPVOID);
+static HANDLE CreateThread(void *sa, size_t st, LPTHREAD_START_ROUTINE f, LPVOID arg, DWORD fl, DWORD *id)
+{ (void)sa; (void)st; (void)f; (void)arg; (void)fl; (void)id; shim_threads++; return (HANDLE)(long)1000; }
+static void Sleep(DWORD ms) { (void)ms; }
+static DWORD GetTickCount(void) { return shim_ticks; }
+static LONG InterlockedExchange(volatile LONG *at, LONG v) { LONG old = *at; *at = v; return old; }
 #endif
