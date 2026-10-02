@@ -221,8 +221,20 @@ local NO_GROUND = 8192                -- half of comfy's 128 x 128 ground cells 
 local SETTLE = 1.0
 local STATS_PATTERN = "x=(%-?[%d%.]+);y=(%-?[%d%.]+);z=%-?[%d%.]+;pos=1;"
 
+-- comfy writes those figures into comfyStats only while the CVar holds exactly STATS_LEN characters, its default of
+-- spaces, and its own addon sets that up only when its stats window is opened: after a reload it comes back empty and
+-- comfy stops writing (found 1 Oct 2026, when the fix went quiet after a /reload). So this addon arms it the same
+-- way, whenever it is not that long. At logout it is emptied: comfy then stops writing, and the game saves a short
+-- line instead of 600 characters, which overflow the line Config.wtf is written with and lose the next setting.
+local STATS_LEN = 600
+local function ArmStats()
+  local ok, v = pcall(GetCVar, "comfyStats")
+  if ok and v and string.len(v) ~= STATS_LEN then pcall(SetCVar, "comfyStats", string.rep(" ", STATS_LEN)) end
+end
+
 local function MistWhy()
   if not db.mistFix then return nil end
+  ArmStats()
   local ok, stats = pcall(GetCVar, "comfyStats")
   stats = ok and stats or ""
   local _, _, x, y = string.find(stats, STATS_PATTERN)
@@ -446,6 +458,7 @@ frame:SetScript("OnEvent", function()
     db.base = db.base or {}
     if db.active then repairUntil = GetTime() + 30 end   -- a layer was on at the last logout or crash
   elseif event == "PLAYER_LOGOUT" then
+    pcall(SetCVar, "comfyStats", "")   -- see ArmStats: comfy stops writing, and no 600-character line is saved
     if db and db.active then
       -- IndoorRain puts its own snapshot back at logout too; make that snapshot the player's values.
       if IndoorRainDB and IndoorRainDB.active and IndoorRainDB.base then
