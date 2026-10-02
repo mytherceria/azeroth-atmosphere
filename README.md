@@ -16,8 +16,9 @@ running VanillaFixes; it should suit any Turtle-based 1.12 client with the same 
   slider of the pack. **For now every preset is held back:** fog, mist over water, glare, colour and night
   darkness all sit well under comfy's own defaults, so nothing hides the world while each place waits to be
   checked by eye in game. Lamps glow no brighter than comfy's own (Duskwood's torches were picked by eye in
-  game), and inside a building they take calmer values of their own (`/atmos indoor`, in tenths). Zone moods carry on through Indoor Weather's storms: the storm thickens
-  the zone's own fog rather than pausing it.
+  game), and inside a building they take calmer values of their own (`/atmos indoor`, in tenths). Storms are made here too, from the rain Indoor Weather reports: the
+  mist thickens on top of the zone's own (held back like everything else) and clears when the rain stops, so
+  every fog decision in the pack is made in one place and two mods never both add a storm.
 - **Clean Screen** (addon). The whole interface fades away after a minute of doing nothing; any activity brings it
   straight back. `/cleanscreen`. Minimap icons and pfQuest's tracker that set their own transparency fade with
   the rest instead of blinking.
@@ -31,7 +32,8 @@ running VanillaFixes; it should suit any Turtle-based 1.12 client with the same 
 - For the Director's looks: **comfyatmosphere** (fog, sun rays, volumetric light) and, if you like, **comfygrass**
   (moving grass), both by aloofbit and both needing DXVK. They are not included; get them from
   https://github.com/aloofbit/comfyatmosphere and https://github.com/aloofbit/comfygrass. Without comfyatmosphere
-  the Director still applies its colour wash, and Indoor Weather works on its own (only its storm fog needs comfy).
+  the Director still applies its colour wash, and Indoor Weather works on its own (the storm's fog needs both comfy and the
+  Director).
 
 ## Installing by hand
 

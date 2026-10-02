@@ -1,10 +1,12 @@
 -- Atmosphere Director: each zone gets its own layer of fog, light and colour, the way Blizzard authors a
 -- zone's mood in WoW Forever. Every zone, city, dungeon and raid in the client has a written intent (its
 -- mood: Duskwood is dark, moody and haunted) and a preset that goes for it, in Zones.lua. Where Forever
--- footage exists the preset is measured from it; elsewhere it follows the zone's known look. Weather
--- layers on top: a slider Indoor Weather's storm is holding is faded underneath the storm, in the value the
--- storm keeps for it, so the storm thickens the zone's own fog and lands on it when the rain is over. The two
--- never write the same slider, and a zone, a door or a lamp never waits for the rain.
+-- footage exists the preset is measured from it; elsewhere it follows the zone's known look. Storms layer on
+-- top, and they are made here too, so every fog decision in the pack is made in one place: Indoor Weather's
+-- DLL reports how hard it is raining, and this addon thickens the fog and dims the sun on top of the zone's
+-- own values while it rains, putting them back when it stops. Indoor Weather 0.14 and older thickened the fog
+-- themselves; their storm fog is kept switched off, and their "fog on|off" command sets the switch here, so
+-- the two can never both add a storm.
 --
 -- The layer moves comfyatmosphere's own sliders (they are CVars: fog, sun rays, volumetric light, night
 -- and clouds) and draws one colour wash over the 3D
@@ -40,14 +42,35 @@ local INDOOR_SETTLE = 0.75          -- seconds the reading must hold first: IsIn
 local STEP = 0.2
 -- The two lamp controls the indoor cap holds down, each with the setting that holds its cap.
 local LAMPS = { comfyLampGlow = "indoorGlow", comfyMistLamps = "indoorMist" }
--- Every control any zone sets, gathered from Zones.lua so the two can never disagree, and the lamps, which the
--- indoor cap needs even where no zone sets them. comfy 0.6 and older have comfyFogThickness; 0.7 and 0.8 have
--- the mist, shadow, lamp and night controls instead. A control the installed comfy does not have reads as nil
--- and is left alone, so one table serves every version.
+-- A storm, by the rain level Indoor Weather's DLL reports (1 light, 2 steady, 3 heavy): the fog thickens and
+-- the sun goes behind cloud, so its light on the mist, its shafts, its shadows and its brightening all weaken.
+-- The fog it adds is held back like the zone presets until storms have been set by eye in game (his rule,
+-- 1 Oct 2026: nothing that keeps a player from seeing to play). The weakening is Indoor Weather 0.14's own.
+local STORM = {
+  { name = "comfyFogThickness",      add = { 4, 7, 10 } },
+  { name = "comfyMistDensity",       add = { 5, 10, 15 }, max = 200 },
+  { name = "comfyRaysStrength",      mul = { 0.70, 0.45, 0.25 } },
+  { name = "comfyVolumeStrength",    mul = { 0.70, 0.45, 0.25 } },
+  { name = "comfyMistSun",           mul = { 0.70, 0.50, 0.35 } },
+  { name = "comfySunShadowStrength", mul = { 0.60, 0.40, 0.25 } },
+  { name = "comfySunlight",          mul = { 0.60, 0.40, 0.25 } },
+}
+local STORM_SECONDS = 6             -- the fog thickens or clears over this when the rain changes
+-- Indoor Weather's report, IndoorRain_Storm: k strike distance, l rain level, n the session (two digits, the
+-- one in IndoorRain_Session) and the strike count, d the thunder's delay. Only Indoor Weather writes it.
+local STORM_PATTERN = "^IRS1:k%d:l(%d):n(%d%d)%d:d%d%d$"
+-- Every control any zone sets, gathered from Zones.lua so the two can never disagree, the lamps, which the
+-- indoor cap needs even where no zone sets them, and the storm's. comfy 0.6 and older have comfyFogThickness;
+-- 0.7 and 0.8 have the mist, shadow, lamp and night controls instead. A control the installed comfy does not
+-- have reads as nil and is left alone, so one table serves every version.
 local MANAGED = {}
 do
   local seen = {}
   for name in pairs(LAMPS) do seen[name] = true; table.insert(MANAGED, name) end
+  for i = 1, table.getn(STORM) do
+    local name = STORM[i].name
+    if not seen[name] then seen[name] = true; table.insert(MANAGED, name) end
+  end
   for _, p in pairs(PROFILES) do
     for name in pairs(p.cvars) do
       if not seen[name] then seen[name] = true; table.insert(MANAGED, name) end
@@ -59,6 +82,7 @@ local SOURCES = { ["measured"] = "measured from WoW Forever", ["known"] = "from 
   ["turtlecraft"] = "from turtlecraft.gg", ["inferred"] = "a first guess" }
 local UpdateMood                    -- the window's line about the zone you are in
 local ShareAtmos                    -- shares /atmos with comfyatmosphere; defined with the commands, below
+local ShareIndoorRain               -- takes /indoorrain fog on|off for the storm fog here; the same place
 
 local db
 local zone, profile                 -- the layer being shown (nil = none)
@@ -70,6 +94,7 @@ local rampLen, lampRamp = RAMP_SECONDS, false   -- the running fade's length, an
 local capped = nil                  -- the indoor cap is on: you are inside and the layer is on (nil: look again now)
 local seenInside, seenAt = nil, 0   -- the last indoor reading, and since when it has held
 local repairUntil
+local rain = 0                      -- the storm being shown: Indoor Weather's rain level, 0 when none or off
 
 local function Say(msg) DEFAULT_CHAT_FRAME:AddMessage("|cff88bbccatmosphere|r: " .. msg) end
 
@@ -144,8 +169,8 @@ end
 
 local function Strength() return (db and db.strength or 100) / 100 end
 
--- Where the layer wants each slider now: between the player's own value and the zone's, by strength. Indoors
--- the two lamp controls go no higher than their caps.
+-- Where the layer wants each slider now: between the player's own value and the zone's, by strength, with the
+-- storm on top while it rains. Indoors the two lamp controls go no higher than their caps.
 local function Targets()
   local t, w = {}, { 1, 1, 1 }
   local k = (db.enabled and profile) and Strength() or 0
@@ -158,10 +183,43 @@ local function Targets()
       if capped and db.enabled and LAMPS[name] then t[name] = db[LAMPS[name]] end
     end
   end
+  if rain > 0 then
+    local l = math.min(3, rain)
+    for i = 1, table.getn(STORM) do
+      local c, v = STORM[i], t[STORM[i].name]
+      if v then
+        if c.add then t[c.name] = math.min(c.max or 100, v + c.add[l]) else t[c.name] = v * c.mul[l] end
+      end
+    end
+  end
   if profile and profile.wash then
     for i = 1, 3 do w[i] = 1 - (1 - profile.wash[i]) * k end
   end
   return t, w
+end
+
+-- How hard it is raining, from Indoor Weather's report: 0 without Indoor Weather, while it is switched off, before
+-- its DLL has answered this session, or with storm fog switched off here. Read twice: the DLL writes it from another
+-- thread, and two equal reads are never half of a write; a reading caught mid-write keeps the last one.
+local function RainLevel()
+  if not db.stormFog then return 0 end
+  local ok, v = pcall(GetCVar, "IndoorRain_Storm")
+  if not ok or not v then return 0 end
+  local ok2, again = pcall(GetCVar, "IndoorRain_Storm")
+  if not ok2 or again ~= v then return rain end
+  local _, _, l, session = string.find(v, STORM_PATTERN)
+  if not l then return 0 end
+  local okS, s = pcall(GetCVar, "IndoorRain_Session")
+  if not okS or tonumber(session) ~= tonumber(s) then return 0 end
+  local okE, on = pcall(GetCVar, "IndoorRain_Enabled")
+  if okE and tonumber(on) == 0 then return 0 end   -- /indoorrain off means off: no storm either
+  return math.max(0, math.min(3, tonumber(l) or 0))
+end
+
+-- Indoor Weather 0.14 and older thickened the fog in storms themselves. That is this addon's job now, so theirs is
+-- kept switched off (their own setting, which they read every tick), and the two can never both add a storm.
+local function OwnStormFog()
+  if IndoorRainDB and IndoorRainDB.fog then IndoorRainDB.fog = false end
 end
 
 -- A fade from where every slider is now to Targets(), over the given seconds (the zone's five by default).
@@ -270,6 +328,16 @@ local function IndoorCheck()
   if rampT >= 1 or lampRamp then StartRamp(INDOOR_SECONDS, true) else StartRamp() end
 end
 
+-- The rain starting, changing or stopping: the fog thickens or clears over STORM_SECONDS, on top of whatever
+-- the zone is doing, in a zone with no mood too. Not while an options panel is open: the next tick tries again.
+local function StormCheck()
+  local r = RainLevel()
+  if r == rain or PanelOpen() then return end
+  if r > 0 and not db.active and not TakeBase() then return end   -- no comfyatmosphere: no fog to thicken
+  rain = r
+  if db.active then StartRamp(STORM_SECONDS) end
+end
+
 local frame = CreateFrame("Frame", "AtmosphereDirectorFrame")
 frame:RegisterEvent("VARIABLES_LOADED")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -285,6 +353,9 @@ frame:SetScript("OnEvent", function()
     if db.indoorV ~= 2 then db.indoorGlow, db.indoorMist, db.indoorV = nil, nil, 2 end   -- the first draft's 10 and 0
     db.indoorGlow = db.indoorGlow or 5    -- the indoor values: comfy's lamp glow and its mist around lamps
     db.indoorMist = db.indoorMist or 10
+    -- storm fog, on unless the player had switched Indoor Weather's off (read once, before this addon owns it)
+    if db.stormFog == nil then db.stormFog = not (IndoorRainDB and IndoorRainDB.fog == false) end
+    ShareIndoorRain()
     db.mine = db.mine or {}
     db.base = db.base or {}
     if db.active then repairUntil = GetTime() + 30 end   -- a layer was on at the last logout or crash
@@ -315,11 +386,13 @@ frame:SetScript("OnUpdate", function()
   stepT = stepT + arg1
   if stepT < STEP then return end
   local dt = stepT; stepT = 0
+  OwnStormFog()
   if db.active then SweepLamps() end
   IndoorCheck()
   ZoneCheck()
+  StormCheck()
   if rampT >= 1 then
-    if db.active and not profile and capped == false then RestoreNow() end
+    if db.active and not profile and capped == false and rain == 0 then RestoreNow() end
     return
   end
   if PanelOpen() then return end
@@ -419,7 +492,7 @@ local function BuildWindow()
     add(Check(f, "AtmosphereOptFlash", "Lightning flash", 20, -162,
       function() return IndoorRainDB.flash end, function(v) IndoorRainDB.flash = v end))
     add(Check(f, "AtmosphereOptFog", "Thicker fog in storms", 20, -186,
-      function() return IndoorRainDB.fog end, function(v) IndoorRainDB.fog = v end))
+      function() return db.stormFog end, function(v) db.stormFog = v end))
     local test = CreateFrame("Button", "AtmosphereOptThunder", f, "UIPanelButtonTemplate")
     test:SetWidth(110); test:SetHeight(22)
     test:SetPoint("TOPLEFT", f, "TOPLEFT", 222, -164)
@@ -514,7 +587,9 @@ local function OwnCommand(msg)
       if v then table.insert(parts, MANAGED[i] .. "=" .. tostring(v)) end
     end
     Say((db.enabled and "on" or "off") .. ", strength " .. db.strength .. "%, layer: " .. (zone or "none")
-      .. (StormActive() and " (a storm is on: its sliders fade underneath it)" or "") .. ". " .. table.concat(parts, " "))
+      .. ", storm fog " .. (db.stormFog and "on" or "off") .. (rain > 0 and (" (raining, level " .. rain .. ")") or "")
+      .. (StormActive() and " (Indoor Weather's own storm is still fading out underneath)" or "") .. ". "
+      .. table.concat(parts, " "))
     local inside, source = Indoors()
     Say("indoor lamps: glow " .. db.indoorGlow .. ", mist " .. db.indoorMist .. ". "
       .. (not source and "No indoor detection (it needs SuperWoW or ClassicAPI), so lamps are never set apart indoors."
@@ -552,6 +627,29 @@ ShareAtmos = function()
     SlashCmdList["COMFYATMOS"] = function(msg) if not OwnCommand(msg) then comfyAtmos(msg) end end
   elseif not theirs then
     SLASH_AZATMOS2 = "/atmos"           -- no comfy: /atmos is this addon's alone
+  end
+end
+
+-- Indoor Weather's "/indoorrain fog on|off" sets the storm fog switch here, since the storm's fog is made here now;
+-- every other word goes on to Indoor Weather, and its status gains a line saying so. Safe to run again.
+local indoorRainSlash
+ShareIndoorRain = function()
+  local theirs = SlashCmdList["INDOORRAIN"]
+  if not theirs or indoorRainSlash then return end
+  indoorRainSlash = theirs
+  SlashCmdList["INDOORRAIN"] = function(msg)
+    local m = string.lower(string.gsub(msg or "", "^%s*(.-)%s*$", "%1"))
+    local _, _, word = string.find(m, "^fog%s+(%a+)$")
+    if db and (word == "on" or word == "off") then
+      db.stormFog = (word == "on")
+      Say("storm fog " .. word .. ". Azeroth Atmosphere makes the storm's fog now (/atmos for its window).")
+      return
+    end
+    indoorRainSlash(msg)
+    if db and m == "status" then
+      Say("storm fog " .. (db.stormFog and "on" or "off") .. ", made by Azeroth Atmosphere"
+        .. (rain > 0 and (", raining at level " .. rain) or "") .. ".")
+    end
   end
 end
 
