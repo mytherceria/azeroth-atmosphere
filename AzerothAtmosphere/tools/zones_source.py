@@ -365,13 +365,17 @@ LAMP_PICKS = {
 # Every control that can hide the world, glare, oversaturate or darken it keeps a share of its zone's value
 # (SAFE_KEEP) and can never pass a ceiling (SAFE_CEILING), each well under comfy's own default (in the comments).
 # Nothing here ever raises a value. What he has set by eye in game (LAMP_PICKS) is kept as he set it.
+# The mist's height is left as it is: it shapes the fog rather than thinning it. comfy's mist at depth d under its
+# ground is density * exp(min(d / height, 4)) (volume.cpp FogAt), so a lower height thickens caves and hollows,
+# up to 3.7 times at 80 yards in the Badlands when this table first capped it at 20 (caught in review, 1 Oct).
+# build_zones.py checks the thickness itself, at every depth, never just the numbers.
 # To give a zone its full preset back once it has been set by hand, add it to SET_BY_HAND.
 SAFE_KEEP = dict(comfyFogThickness=0.4, comfyMistDensity=0.4, comfyRaysStrength=0.5, comfyVolumeStrength=0.5,
                  comfyVolumeDensity=0.5)
 SAFE_CEILING = dict(
     comfyFogThickness=25,        # comfy 0.6's distance fog (0.7 and 0.8 do not have it)
     comfyMistDensity=15,         # comfy 25: how thick the fog is at the ground
-    comfyMistHeight=20,          # comfy 25: how deep the fog layer is
+    comfyMistPatches=50,         # comfy 50: the thickest patches 1.5 times the plain fog, not up to 1.75
     comfyMistLow=75,             # comfy 150: extra mist in valleys
     comfyMistWater=75,           # comfy 210: extra mist over rivers, lakes and the sea (the harbours)
     comfyMistMorning=50,         # comfy 100: extra mist at dawn

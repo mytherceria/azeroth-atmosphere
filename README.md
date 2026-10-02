@@ -12,11 +12,11 @@ running VanillaFixes; it should suit any Turtle-based 1.12 client with the same 
   game audio at all. Details in [IndoorRain/README.md](IndoorRain/README.md).
 - **The zone moods** (the `AzerothAtmosphere` addon). A written mood and a preset for every zone, city, dungeon and raid in the client,
   118 of them, using comfyatmosphere's fog, sun rays, night and clouds, plus a colour wash over the world. Where
-  footage of WoW Forever exists, the preset is measured from it. `/atmos` opens one window with every switch and
-  slider of the pack. **For now every preset is held back:** fog, mist over water, glare, colour and night
-  darkness all sit well under comfy's own defaults, so nothing hides the world while each place waits to be
-  checked by eye in game. Lamps glow no brighter than comfy's own (Duskwood's torches were picked by eye in
-  game), and inside a building they take calmer values of their own (`/atmos indoor`, in tenths). Storms are made here too, from the rain Indoor Weather reports: the
+  footage of WoW Forever exists, the preset was measured from it. `/atmos` opens one window with every switch and
+  slider of the pack. **For now every preset is held back** while each place waits to be checked by eye in game:
+  the mist is thinner than the zone's full preset at every height and depth, and within 20 yards of the ground it
+  is under comfy's own default in every zone; glare, colour and night darkness sit at or under comfy's own defaults too. Lamps glow no brighter than comfy's own (Duskwood's torches were picked by eye in
+  game), and inside a building they take values of their own, picked by eye in an inn (`/atmos indoor`, in tenths). Storms are made here too, from the rain Indoor Weather reports: the
   mist thickens on top of the zone's own (held back like everything else) and clears when the rain stops, so
   every fog decision in the pack is made in one place and two mods never both add a storm.
 - **Clean Screen** (addon). The whole interface fades away after a minute of doing nothing; any activity brings it

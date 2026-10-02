@@ -1,6 +1,14 @@
 """Generate AzerothAtmosphere's Zones.lua from zones_source.py. Usage: python3 build_zones.py <out Zones.lua>"""
 import sys
+from math import exp
 from zones_source import Z, derive_v8, safe, safe_wash, LAMP_PICKS
+
+def mist_at(cv, d):
+    """comfy's ground mist at d yards under its ground (negative: above it), at its thickest patch, over water in
+    a hollow: density * exp(min(d / height, 4)) (volume.cpp FogAt), times the patches, the water and the low ground."""
+    g = lambda c, dflt: cv.get(c, dflt)
+    return (g("comfyMistDensity", 25) * exp(min(d / g("comfyMistHeight", 25), 4.0)) * (1 + g("comfyMistPatches", 50) / 100.0)
+            * (1 + g("comfyMistWater", 210) / 100.0) * (1 + g("comfyMistLow", 150) / 100.0))
 
 def wash_of(z):
     if z["wash"]:
@@ -34,6 +42,8 @@ def main():
         for c, v in held.items():   # held back, never raised; what was set by eye stays as set
             assert isinstance(v, int) and 0 <= v <= full[c], (name, c, full[c], v)
             assert c not in LAMP_PICKS.get(name, {}) or v == full[c], (name, c)
+        for d in range(-100, 201, 5):  # never thicker than the full preset, at any height or depth
+            assert mist_at(held, d) <= mist_at(full, d) + 1e-9, (name, d, mist_at(full, d), mist_at(held, d))
         cv = ", ".join(f"{c} = {v}" for c, v in held.items())
         w = safe_wash(name, wash_of(z))
         ws = ", wash = { %.2f, %.2f, %.2f }" % w if w else ""
