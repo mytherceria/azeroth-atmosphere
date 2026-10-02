@@ -198,11 +198,13 @@ local function Targets()
     end
   end
   if mistOff and t.comfyMistDensity then   -- see MistWhy: comfy's ground mist goes wrong here
+    local hadMist = t.comfyMistDensity > 0
     t.comfyMistDensity = 0
     -- comfy runs its volume pass while Volumetric Light Strength is above 0 or its mist is on (volume.cpp
     -- VolumeActive), and sun shadows and lamp glow need that pass: with the mist out, a strength of 0 would put
-    -- them out at every door and on every ship. 1 keeps the pass with next to no light of its own.
-    if t.comfyVolumeStrength and t.comfyVolumeStrength < 1 then t.comfyVolumeStrength = 1 end
+    -- them out at every door and on every ship. 1 keeps the pass with next to no light of its own, and only where
+    -- the mist was keeping it: a player with both at 0 has the pass off everywhere and keeps it off (review, 1 Oct).
+    if hadMist and t.comfyVolumeStrength and t.comfyVolumeStrength < 1 then t.comfyVolumeStrength = 1 end
   end
   if profile and profile.wash then
     for i = 1, 3 do w[i] = 1 - (1 - profile.wash[i]) * k end
@@ -292,7 +294,14 @@ local function Moved(name, now)
   -- fix can still take it out aboard and inside: dropping it, as other sliders are, switched the fix off for the
   -- session while the status still claimed it (caught in review, 1 Oct 2026).
   if name == "comfyMistDensity" then
-    db.base[name] = now; db.mine[name] = true; written[name] = now
+    -- in a storm what the player sees includes the storm's extra: their own is what is left without it (review)
+    local own = now
+    if rain > 0 then
+      for i = 1, table.getn(STORM) do
+        if STORM[i].name == name and STORM[i].add then own = math.max(0, now - STORM[i].add[math.min(3, rain)]) end
+      end
+    end
+    db.base[name] = own; db.mine[name] = true; written[name] = now
     return true
   end
   if not LAMPS[name] then return false end
@@ -339,6 +348,14 @@ local function StartRamp(seconds, lampsOnly)
   washTo = w
   rampT, stepT = 0, 0
   rampLen, lampRamp = seconds or RAMP_SECONDS, lampsOnly and true or false
+end
+
+-- A mist the player moves while the fix holds it at 0 aboard or inside: theirs from now on, and the fix takes it out
+-- again at once, whether or not a fade is running (it only did during one; caught in review, 1 Oct 2026).
+local function SweepMist()
+  if not mistOff then return end
+  local now, w = CVarNum("comfyMistDensity"), written.comfyMistDensity
+  if now and w and math.abs(now - w) > 0.5 then Moved("comfyMistDensity", now); StartRamp(0.4) end
 end
 
 -- Take the player's own values the first time a layer starts (under any storm, never the storm's).
@@ -388,15 +405,21 @@ local function IndoorCheck()
   local inside = Indoors() and true or false
   if inside ~= seenInside then seenInside, seenAt = inside, GetTime() end
   if inside == capped or PanelOpen() then return end
-  if capped ~= nil and GetTime() - seenAt < INDOOR_SETTLE then return end   -- nil: the caps changed, act now
+  -- Going in acts at once: comfy lights every candle at full strength under a roof, so waiting for the reading to
+  -- settle and then fading flared the candles for a second and a half (seen at the Scarlet Raven, 1 Oct 2026).
+  -- Coming out waits for the reading to hold, since IsIndoors flickers in a doorway; nil: the caps changed, act now.
+  if capped ~= nil and not inside and GetTime() - seenAt < INDOOR_SETTLE then return end
   if inside and not db.active then TakeBase() end
   capped = inside
   if not db.active then return end    -- no comfyatmosphere: nothing to hold down
+  if inside then   -- the indoor values at once, so no candle burns at the outdoor ones on the way in
+    for name, key in pairs(LAMPS) do if db.base[name] then Put(name, db[key]) end end
+  end
   if rampT >= 1 or lampRamp then StartRamp(INDOOR_SECONDS, true) else StartRamp() end
 end
 
--- Twice a second, since comfy's figures change once a second (see MistWhy). Aboard the mist goes at once; "inside",
--- and coming back on, have to hold for SETTLE first.
+-- Twice a second, since comfy's figures change once a second (see MistWhy). Aboard or inside the mist goes at once;
+-- coming back on has to hold for SETTLE first, so a doorway's flicker leaves it off rather than flapping.
 local function GroundCheck(dt)
   groundSince = groundSince + dt
   if groundSince < 0.5 then return end
@@ -404,7 +427,7 @@ local function GroundCheck(dt)
   local why = MistWhy()
   if (why ~= nil) == mistOff then mistWhy = why or mistWhy; pendingAt = nil; return end
   if pendingAt == nil or (pendingWhy ~= nil) ~= (why ~= nil) then pendingWhy, pendingAt = why, GetTime() end
-  local now = why == "aboard a ship"
+  local now = why ~= nil
   if not now and GetTime() - pendingAt < SETTLE then return end
   if PanelOpen() then return end
   pendingAt = nil
@@ -538,7 +561,7 @@ frame:SetScript("OnUpdate", function()
   if stepT < STEP then return end
   local dt = stepT; stepT = 0
   OwnStormFog()
-  if db.active then SweepLamps() end
+  if db.active then SweepLamps(); SweepMist() end
   IndoorCheck()
   ZoneCheck()
   StormCheck()

@@ -381,7 +381,8 @@ SAFE_CEILING = dict(
     comfyMistMorning=50,         # comfy 100: extra mist at dawn
     comfyMistBrightness=100,     # comfy 120: 100 is the game's own fog colour
     comfyMistSun=30,             # how brightly the sun lights the fog
-    comfyMistLamps=20,           # comfy 50: how much brighter lamps glow in thick mist
+    comfyMistLamps=0,            # comfy 50: how much brighter lamps glow in thick mist. 0: lamps light the ground but
+                                 # never fill the air (a Darkshire storm turned every torch into a golden wall, 1 Oct)
     comfyLampGlow=20,            # comfy 20
     comfyRaysStrength=25,        # comfy 40
     comfyVolumeStrength=20,      # comfy 25: how bright the lit fog is
@@ -396,13 +397,17 @@ SAFE_CEILING = dict(
 )
 SAFE_WASH = 0.25                 # a colour wash keeps a quarter of its darkening
 SET_BY_HAND = set()              # zones whose full preset has been checked by eye in game
+HELD_EVEN_BY_EYE = {"comfyLampGlow", "comfyMistLamps"}   # see safe(): picked on the fork, held on stock comfy
 
 
 def safe(name, cv):
     """The zone's controls held back (see SAFE_KEEP). Never raises a value; keeps what was set by eye."""
     if name in SET_BY_HAND:
         return dict(cv)
-    by_eye = LAMP_PICKS.get(name, {})
+    # His Duskwood torches were picked on the comfy fork, where Lamp Reach 30 kept each glow to a globe of about
+    # 5 yards. Stock comfy, which players run, has no Lamp Reach, and the same glow and mist values flooded Darkshire
+    # in a storm (1 Oct 2026), so those two are held like everywhere else until picked again on stock comfy.
+    by_eye = dict((c, v) for c, v in LAMP_PICKS.get(name, {}).items() if c not in HELD_EVEN_BY_EYE)
     out = {}
     for c, v in cv.items():
         if c in by_eye:
