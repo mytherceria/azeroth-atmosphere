@@ -95,6 +95,7 @@ local capped = nil                  -- the indoor cap is on: you are inside and 
 local seenInside, seenAt = nil, 0   -- the last indoor reading, and since when it has held
 local repairUntil
 local rain = 0                      -- the storm being shown: Indoor Weather's rain level, 0 when none or off
+local testRain                      -- /atmos rain 1-3: a storm's fog shown without rain, until /atmos rain 0 or a reload
 
 local function Say(msg) DEFAULT_CHAT_FRAME:AddMessage("|cff88bbccatmosphere|r: " .. msg) end
 
@@ -202,6 +203,7 @@ end
 -- its DLL has answered this session, or with storm fog switched off here. Read twice: the DLL writes it from another
 -- thread, and two equal reads are never half of a write; a reading caught mid-write keeps the last one.
 local function RainLevel()
+  if testRain then return testRain end   -- a preview the player asked for, with or without Indoor Weather
   if not db.stormFog then return 0 end
   local ok, v = pcall(GetCVar, "IndoorRain_Storm")
   if not ok or not v then return 0 end
@@ -622,7 +624,7 @@ local function OwnCommand(msg)
     end
     Say((db.enabled and "on" or "off") .. ", strength " .. db.strength .. "%, layer: " .. (zone or "none")
       .. ", storm fog " .. (not IndoorRainDB and "needs Indoor Weather" or (db.stormFog and "on" or "off"))
-      .. (rain > 0 and (" (raining, level " .. rain .. ")") or "")
+      .. (rain > 0 and (testRain and (" (storm preview, level " .. rain .. ")") or (" (raining, level " .. rain .. ")")) or "")
       .. (StormActive() and " (Indoor Weather's own storm is still fading out underneath)" or "") .. ". "
       .. table.concat(parts, " "))
     local inside, source = Indoors()
@@ -631,6 +633,16 @@ local function OwnCommand(msg)
         or ((capped and db.active and "Inside, lamps at the indoor values now" or (inside and "Inside" or "Outside"))
           .. " (from " .. source .. ")."))
       .. (StormActive() and " Lamps have nothing to do with the storm, so the indoor values hold through it." or ""))
+  elseif string.find(msg, "^rain") then
+    local _, _, n = string.find(msg, "^rain%s+(%d)$")
+    n = tonumber(n)
+    if n and n <= 3 then
+      testRain = (n > 0) and n or nil
+      Say(testRain and ("storm preview: the fog of rain level " .. n .. " (1 light, 2 steady, 3 heavy), until /atmos rain 0 or a reload.")
+        or "storm preview off: the real weather again.")
+    else
+      Say("/atmos rain 0-3: preview a storm's fog (1 light, 2 steady, 3 heavy); 0 ends the preview.")
+    end
   elseif string.find(msg, "^indoor") then
     local _, _, glow, mist = string.find(msg, "^indoor%s*(%S*)%s*(%S*)$")
     glow, mist = tonumber(glow or ""), tonumber(mist or "")
@@ -690,5 +702,5 @@ end
 
 SLASH_AZATMOS1 = "/aa"
 SlashCmdList["AZATMOS"] = function(msg)
-  if not OwnCommand(msg) then Say("/aa: the window. /aa on | off | status | 0-100 | indoor <glow> [<mist>].") end
+  if not OwnCommand(msg) then Say("/aa: the window. /aa on | off | status | 0-100 | indoor <glow> [<mist>] | rain 0-3 (a storm preview).") end
 end
