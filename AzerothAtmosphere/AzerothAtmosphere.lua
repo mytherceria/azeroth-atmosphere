@@ -96,6 +96,7 @@ local seenInside, seenAt = nil, 0   -- the last indoor reading, and since when i
 local repairUntil
 local rain = 0                      -- the storm being shown: Indoor Weather's rain level, 0 when none or off
 local testRain                      -- /atmos rain 1-3: a storm's fog shown without rain, until /atmos rain 0 or a reload
+local aboard, aboardSince = false, 0   -- on a ship or zeppelin, by comfy's own position (see Aboard)
 
 local function Say(msg) DEFAULT_CHAT_FRAME:AddMessage("|cff88bbccatmosphere|r: " .. msg) end
 
@@ -193,10 +194,29 @@ local function Targets()
       end
     end
   end
+  if aboard and t.comfyMistDensity then t.comfyMistDensity = 0 end   -- see Aboard: comfy's ground mist goes wrong there
   if profile and profile.wash then
     for i = 1, 3 do w[i] = 1 - (1 - profile.wash[i]) * k end
   end
   return t, w
+end
+
+-- Aboard a ship or a zeppelin. comfyatmosphere reads your position straight out of the game's memory, and on a
+-- transport that is your place on the deck, measured from the ship's middle, not your place in the world (measured
+-- 1 Oct 2026 at Auberdine with /atmos stats: 6577.5, 768.9 on the pier, -7.7, -2.5 on the deck, while the game's own
+-- map position stayed right). Its ground fog then puts the ground near the map's origin and buries you in a wall of
+-- fog, whatever the settings. comfy publishes that position in comfyStats once a second, so while it lies within
+-- ABOARD_YARDS of the origin the ground mist is taken out, and it fades back in once you are off. A spot that close
+-- to a continent's origin on land loses its mist too, which costs nothing.
+local ABOARD_YARDS = 60
+local ABOARD_PATTERN = "x=(%-?[%d%.]+);y=(%-?[%d%.]+);z=%-?[%d%.]+;pos=1;"
+local function Aboard()
+  local ok, stats = pcall(GetCVar, "comfyStats")
+  if not ok or not stats then return false end
+  local _, _, x, y = string.find(stats, ABOARD_PATTERN)
+  x, y = tonumber(x), tonumber(y)
+  if not x or not y then return false end
+  return math.abs(x) < ABOARD_YARDS and math.abs(y) < ABOARD_YARDS
 end
 
 -- How hard it is raining, from Indoor Weather's report: 0 without Indoor Weather, while it is switched off, before
@@ -333,6 +353,19 @@ local function IndoorCheck()
   if rampT >= 1 or lampRamp then StartRamp(INDOOR_SECONDS, true) else StartRamp() end
 end
 
+-- Stepping on or off a ship: the mist goes at once and comes back over a few seconds (see Aboard). Twice a second,
+-- since comfy's figure changes once a second.
+local function AboardCheck(dt)
+  aboardSince = aboardSince + dt
+  if aboardSince < 0.5 then return end
+  aboardSince = 0
+  local a = Aboard()
+  if a == aboard or PanelOpen() then return end
+  if a and not db.active and not TakeBase() then aboard = a; return end   -- no comfyatmosphere: nothing to fix
+  aboard = a
+  if db.active then StartRamp(a and 0.4 or 3) end
+end
+
 -- The rain starting, changing or stopping: the fog thickens or clears over STORM_SECONDS, on top of whatever
 -- the zone is doing, in a zone with no mood too. Not while an options panel is open: the next tick tries again.
 local function StormCheck()
@@ -427,8 +460,9 @@ frame:SetScript("OnUpdate", function()
   IndoorCheck()
   ZoneCheck()
   StormCheck()
+  AboardCheck(dt)
   if rampT >= 1 then
-    if db.active and not profile and capped == false and rain == 0 then RestoreNow() end
+    if db.active and not profile and capped == false and rain == 0 and not aboard then RestoreNow() end
     return
   end
   if PanelOpen() then return end
@@ -625,6 +659,7 @@ local function OwnCommand(msg)
     Say((db.enabled and "on" or "off") .. ", strength " .. db.strength .. "%, layer: " .. (zone or "none")
       .. ", storm fog " .. (not IndoorRainDB and "needs Indoor Weather" or (db.stormFog and "on" or "off"))
       .. (rain > 0 and (testRain and (" (storm preview, level " .. rain .. ")") or (" (raining, level " .. rain .. ")")) or "")
+      .. (aboard and ", aboard a ship (comfy's ground mist off until you step off)" or "")
       .. (StormActive() and " (Indoor Weather's own storm is still fading out underneath)" or "") .. ". "
       .. table.concat(parts, " "))
     local inside, source = Indoors()
