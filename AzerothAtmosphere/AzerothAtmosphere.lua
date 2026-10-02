@@ -776,5 +776,8 @@ end
 
 SLASH_AZATMOS1 = "/aa"
 SlashCmdList["AZATMOS"] = function(msg)
-  if not OwnCommand(msg) then Say("/aa: the window. /aa on | off | status | 0-100 | indoor <glow> [<mist>] | rain 0-3 (a storm preview) | mistfix on | off.") end
+  if OwnCommand(msg) then return end
+  -- every other word goes on to comfy, as it does under /atmos (/aa stats, /aa options, /aa debug and its tuning)
+  if comfyAtmos then comfyAtmos(msg); return end
+  Say("/aa: the window. /aa on | off | status | 0-100 | indoor <glow> [<mist>] | rain 0-3 (a storm preview) | mistfix on | off.")
 end
