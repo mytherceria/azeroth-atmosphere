@@ -217,9 +217,12 @@ local function RainLevel()
 end
 
 -- Indoor Weather 0.14 and older thickened the fog in storms themselves. That is this addon's job now, so theirs is
--- kept switched off (their own setting, which they read every tick), and the two can never both add a storm.
+-- kept switched off (their own setting, which they read every tick), and the two can never both add a storm. It is
+-- set to nil, which 0.14 reads as off while it runs and turns back into its default at its next load, when this is
+-- run again before any storm (at login and every tick). false is left alone: that was the player's own choice, made
+-- before this addon took the job over, and it is what the switch here starts from.
 local function OwnStormFog()
-  if IndoorRainDB and IndoorRainDB.fog then IndoorRainDB.fog = false end
+  if IndoorRainDB and IndoorRainDB.fog then IndoorRainDB.fog = nil end
 end
 
 -- A fade from where every slider is now to Targets(), over the given seconds (the zone's five by default).
@@ -333,7 +336,8 @@ end
 local function StormCheck()
   local r = RainLevel()
   if r == rain or PanelOpen() then return end
-  if r > 0 and not db.active and not TakeBase() then return end   -- no comfyatmosphere: no fog to thicken
+  if r > 0 and not db.active and not TakeBase() then rain = r; return end   -- no comfyatmosphere: nothing to thicken,
+                                                                             -- and no asking again until the rain changes
   rain = r
   if db.active then StartRamp(STORM_SECONDS) end
 end
@@ -376,6 +380,7 @@ frame:SetScript("OnEvent", function()
     -- storm fog, on unless the player had switched Indoor Weather's off (read once, before this addon owns it)
     if db.stormFog == nil then db.stormFog = not (IndoorRainDB and IndoorRainDB.fog == false) end
     ShareIndoorRain()
+    OwnStormFog()                         -- before Indoor Weather 0.14 can run a storm tick of its own
     SilenceOldCopy(frame)
     if oldCopy then
       Say("an older copy of this addon was also installed (Interface\\AddOns\\AtmosphereDirector, from before its rename). "
@@ -405,7 +410,11 @@ frame:SetScript("OnUpdate", function()
   if repairUntil then
     local any = false
     for i = 1, table.getn(MANAGED) do if CVarNum(MANAGED[i]) then any = true; break end end
-    if any or GetTime() > repairUntil then repairUntil = nil; RestoreNow() end
+    if any or GetTime() > repairUntil then
+      repairUntil = nil; RestoreNow()
+      -- the zone's fade started at login was set up from the old state: start the zone over from the player's own
+      to = {}; rampT = 1; profile = nil; zone = nil; capped = nil
+    end
     return
   end
   stepT = stepT + arg1
@@ -600,7 +609,7 @@ local function OwnCommand(msg)
   local n = tonumber(msg)
   if msg == "" then ToggleWindow()
   elseif msg == "on" then db.enabled = true; profile = nil; ZoneCheck(); Say("on.")
-  elseif msg == "off" then db.enabled = false; profile = nil; zone = nil; StartRamp(); Say("off: fading back to your own settings.")
+  elseif msg == "off" then db.enabled = false; profile = nil; zone = nil; StartRamp(); Say("zone moods off: fading back to your own settings." .. (db.stormFog and IndoorRainDB and " Storms still thicken the fog; switch that off in the window." or ""))
   elseif n then
     db.strength = math.max(0, math.min(100, n)); StartRamp(); Say("strength " .. db.strength .. "%.")
   elseif msg == "status" then
@@ -612,7 +621,8 @@ local function OwnCommand(msg)
       if v then table.insert(parts, MANAGED[i] .. "=" .. tostring(v)) end
     end
     Say((db.enabled and "on" or "off") .. ", strength " .. db.strength .. "%, layer: " .. (zone or "none")
-      .. ", storm fog " .. (db.stormFog and "on" or "off") .. (rain > 0 and (" (raining, level " .. rain .. ")") or "")
+      .. ", storm fog " .. (not IndoorRainDB and "needs Indoor Weather" or (db.stormFog and "on" or "off"))
+      .. (rain > 0 and (" (raining, level " .. rain .. ")") or "")
       .. (StormActive() and " (Indoor Weather's own storm is still fading out underneath)" or "") .. ". "
       .. table.concat(parts, " "))
     local inside, source = Indoors()

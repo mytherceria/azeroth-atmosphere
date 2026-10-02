@@ -216,7 +216,7 @@ SlashCmdList["INDOORRAIN"] = function(msg)
   elseif what == "storm" and (word == "on" or word == "off") then
     SetCVar("IndoorRain_Storms", word == "on" and "1" or "0"); Say("thunder and wind " .. word .. ".")
   elseif what == "fog" then
-    Say("the storm's fog is made by Azeroth Atmosphere now: /atmos (or /aa) for its window.")
+    Say("the storm's fog is made by the Azeroth Atmosphere addon now (with comfyatmosphere); /atmos opens its window when it is installed.")
   elseif what == "flash" and (word == "on" or word == "off") then
     IndoorRainDB.flash = OnOff(word, IndoorRainDB.flash); Say("lightning flashes " .. word .. ".")
   elseif msg == "thunder" then
