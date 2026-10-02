@@ -59,7 +59,8 @@ static int LogSays(const char *words) { const char *g = Get("Logs/CinderLoad.log
 #define UW "Data/CinderLoad/LoadingScreens-21x9.MPQ"
 #define HD "Data/CinderLoad/LoadingScreens-16x9.MPQ"
 #define ACTIVE "Data/patch-~.MPQ"
-#define MARK "Data/CinderLoad/installed.txt"
+#define MARK "Data/patch-~.cinderload"
+#define OLDMARK "Data/CinderLoad/installed.txt"
 #define RES(w) "SET gxWindow \"1\"\r\nSET gxResolution \"" w "\"\r\n"
 
 int main(int argc, char **argv)
@@ -107,8 +108,8 @@ int main(int argc, char **argv)
     Put(UW, "AAAA"); Put("WTF/Config.wtf", RES("5120x2160"));
     shim_module[PATCH_RVA + 1] = 0x11;
     Start();
-    Check(Is(ACTIVE, "AAAA") && shim_module[PATCH_RVA] == 0xE8 && shim_module[PATCH_RVA + 1] == 0x11 &&
-          LogSays("not the client this was made for"), "another WoW.exe: its code is never changed");
+    Check(Gone(ACTIVE) && shim_module[PATCH_RVA] == 0xE8 && shim_module[PATCH_RVA + 1] == 0x11 &&
+          LogSays("not the client this was made for"), "another WoW.exe: nothing put in place, its code never changed");
 
     Fresh("already-wide");
     Put(UW, "AAAA"); Put("WTF/Config.wtf", RES("5120x2160"));
@@ -155,8 +156,44 @@ int main(int argc, char **argv)
     Put(UW, "AAAA"); Put("WTF/Config.wtf", RES("5120x2160"));
     shim_module[BAR_BORDER_RVA + 8] = 0x11;
     Start();
-    Check(On() && shim_module[BAR_BORDER_RVA + 8] == 0x11 && Same(shim_module + BAR_FILL_RVA, kFillStock, 16) &&
-          LogSays("holds other numbers"), "a size table with other numbers: never changed");
+    Check(!On() && Gone(ACTIVE) && shim_module[BAR_BORDER_RVA + 8] == 0x11 && Same(shim_module + BAR_FILL_RVA, kFillStock, 16) &&
+          LogSays("not the client this was made for"), "a bar size table with other numbers: nothing put in place, never changed");
+
+    Fresh("from-0.1.2");
+    Put(UW, "AAAA"); Put(ACTIVE, "AAAA"); Put(OLDMARK, "21x9 4"); Put("WTF/Config.wtf", RES("5120x2160"));
+    Start();
+    Check(On() && Is(MARK, "21x9 4") && Gone(OLDMARK), "0.1.2's record in Data/CinderLoad: moved beside the archive");
+
+    Fresh("from-0.1.2-update");
+    Put(UW, "BBBBBB"); Put(ACTIVE, "AAAA"); Put(OLDMARK, "21x9 4"); Put("WTF/Config.wtf", RES("5120x2160"));
+    Start();
+    Check(On() && Is(ACTIVE, "BBBBBB") && Is(MARK, "21x9 6") && Gone(OLDMARK), "0.1.2's record still makes ours known: updated");
+
+    Fresh("packs-removed");
+    Put(ACTIVE, "AAAA"); Put(MARK, "21x9 4"); Put("WTF/Config.wtf", RES("5120x2160"));
+    Start();
+    Check(!On() && Gone(ACTIVE) && Gone(MARK), "packs removed, DLL still there: ours taken out, the game's own");
+
+    Fresh("no-temp-left");
+    Put(UW, "AAAA"); Put("WTF/Config.wtf", RES("5120x2160"));
+    Start();
+    {
+        char t[64];
+        snprintf(t, sizeof t, "Data/CinderLoad/pending-%lu.tmp", (unsigned long)getpid());
+        Check(On() && Is(ACTIVE, "AAAA") && Gone(t), "put in place through its own temporary file, none left behind");
+    }
+
+    Fresh("copy-fails");
+    Put(UW, "AAAA"); Put(HD, "HHHHH"); Put(ACTIVE, "HHHHH"); Put(MARK, "16x9 5"); Put("WTF/Config.wtf", RES("5120x2160"));
+    {
+        char p[700];
+        snprintf(p, sizeof p, "%s%s", shim_gamedir, UW);
+        chmod(p, 0);
+        Start();
+        chmod(p, 0644);
+    }
+    Check(!On() && Gone(ACTIVE) && Gone(MARK) && LogSays("could not put"),
+          "the copy fails: the old shape's screens taken out too, never left squeezed");
 
     if (fails) printf("%d of %d checks FAILED\n", fails, checks); else printf("all %d checks passed\n", checks);
     return fails != 0;

@@ -79,6 +79,10 @@ static BOOL CopyFileA(const char *from, const char *to, BOOL failIfExists)
     fclose(in); fclose(out); return TRUE;
 }
 static DWORD GetLastError(void) { return 0; }
+#define MOVEFILE_REPLACE_EXISTING 0x1
+#define MOVEFILE_WRITE_THROUGH 0x8
+static BOOL MoveFileExA(const char *from, const char *to, DWORD flags) { (void)flags; char a[1024], b[1024]; ShimPath(a, from); ShimPath(b, to); return rename(a, b) == 0; }
+static DWORD GetCurrentProcessId(void) { return (DWORD)getpid(); }
 static void GetLocalTime(SYSTEMTIME *t) { memset(t, 0, sizeof *t); }
 static HANDLE GetProcessHeap(void) { return (HANDLE)1; }
 static void *HeapAlloc(HANDLE h, DWORD f, size_t n) { (void)h; (void)f; return malloc(n); }

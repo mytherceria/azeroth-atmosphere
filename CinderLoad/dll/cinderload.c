@@ -145,7 +145,9 @@ static DWORD FileSize(const char *path)
     return size;
 }
 
-/* installed.txt says which shape we put in place and how big that file was: "21x9 98765432". It counts only while
+/* The ownership record says which shape we put in place and how big that file was: "21x9 98765432". It lives beside
+ * the archive, as Data\patch-~.cinderload, so it stays with the file it describes even if Data\CinderLoad is removed
+ * (0.1.2 and earlier kept it at Data\CinderLoad\installed.txt, still read once and then moved). It counts only while
  * Data\patch-~.MPQ is still that size, so a file that replaced ours is never taken for ours. */
 static int MarkerMatches(const char *marker, const char *dst)
 {
@@ -170,13 +172,28 @@ static void WriteText(const char *path, const char *text)
     CloseHandle(f);
 }
 
+static int ClientIsOurs(void);
+
+/* Takes our archive out: only once it is really gone is the ownership record dropped, so a file that could not be
+ * deleted (another client has it open) is still known as ours next time. */
+static void TakeOut(const char *dst, const char *marker, const char *oldMarker)
+{
+    if (!Exists(dst) || DeleteFileA(dst) || !Exists(dst)) {
+        DeleteFileA(marker);
+        DeleteFileA(oldMarker);
+    }
+}
+
 /* Puts the loading screens for this screen's shape in place as Data\patch-~.MPQ. 1 when ours are in place, so the
  * switch can go on. */
 static int ChooseScreens(void)
 {
-    char dst[MAX_PATH], marker[MAX_PATH], cfg[MAX_PATH], src[MAX_PATH], m[320];
-    if (!Join(dst, g_dir, "Data\\patch-~.MPQ") || !Join(marker, g_dir, "Data\\CinderLoad\\installed.txt") ||
-        !Join(cfg, g_dir, "WTF\\Config.wtf"))
+    char dst[MAX_PATH], marker[MAX_PATH], oldMarker[MAX_PATH], cfg[MAX_PATH], src[MAX_PATH], tmp[MAX_PATH], m[320];
+    char pending[48];
+    wsprintfA(pending, "Data\\CinderLoad\\pending-%lu.tmp", GetCurrentProcessId());
+    if (!Join(dst, g_dir, "Data\\patch-~.MPQ") || !Join(marker, g_dir, "Data\\patch-~.cinderload") ||
+        !Join(oldMarker, g_dir, "Data\\CinderLoad\\installed.txt") || !Join(cfg, g_dir, "WTF\\Config.wtf") ||
+        !Join(tmp, g_dir, pending))
         return 0;
 
     int avail[SHAPE_COUNT], any = 0;
@@ -194,14 +211,22 @@ static int ChooseScreens(void)
     }
     if (text) HeapFree(GetProcessHeap(), 0, text);
     int pick = any ? ChooseShape(w, h, avail) : -1;
+    int client = ClientIsOurs();
+    if (!client) pick = -1;              /* never put widened screens in place where the switch cannot go on */
 
     int haveDst = Exists(dst);
     if (pick >= 0 && haveDst && VariantPath(src, pick) && SameContent(src, dst)) {
+        if (!MarkerMatches(marker, dst)) {             /* moved beside the archive from 0.1.2's place, or rewritten */
+            char note[64];
+            wsprintfA(note, "%s %lu", kShapes[pick].name, FileSize(dst));
+            WriteText(marker, note);
+        }
+        DeleteFileA(oldMarker);
         wsprintfA(m, "screen %dx%d (from %s): the %s loading screens are in place", w, h, from, kShapes[pick].name);
         Log(m);
         return 1;
     }
-    int ours = !haveDst || MarkerMatches(marker, dst);
+    int ours = !haveDst || MarkerMatches(marker, dst) || MarkerMatches(oldMarker, dst);
     for (int i = 0; !ours && i < SHAPE_COUNT; i++)
         if (avail[i] && VariantPath(src, i) && SameContent(src, dst)) ours = 1;
     if (!ours) {
@@ -211,22 +236,33 @@ static int ChooseScreens(void)
         return 0;
     }
     if (pick < 0) {
-        if (haveDst) DeleteFileA(dst);
-        DeleteFileA(marker);
-        wsprintfA(m, "screen %dx%d (from %s): no loading screens for this shape here, so the game's own, as it shows them",
-                  w, h, from);
+        TakeOut(dst, marker, oldMarker);
+        if (!client)
+            wsprintfA(m, "screen %dx%d (from %s): this WoW.exe is not the client this was made for, so the game's own "
+                      "loading screens, as it shows them", w, h, from);
+        else
+            wsprintfA(m, "screen %dx%d (from %s): no loading screens for this shape here, so the game's own, as it "
+                      "shows them", w, h, from);
         Log(m);
         return 0;
     }
-    if (!VariantPath(src, pick) || !CopyFileA(src, dst, FALSE)) {
-        wsprintfA(m, "screen %dx%d (from %s): could not copy the %s loading screens into place (error %lu); switch off",
-                  w, h, from, kShapes[pick].name, GetLastError());
+    /* Copied beside the archive first, then moved over it in one step: a copy cut short (the game killed while it
+     * starts, a power cut) never leaves a broken Data\patch-~.MPQ, and a second client starting at the same moment
+     * copies to its own file. */
+    if (!VariantPath(src, pick) || !CopyFileA(src, tmp, FALSE) ||
+        !MoveFileExA(tmp, dst, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
+        DWORD err = GetLastError();
+        DeleteFileA(tmp);
+        TakeOut(dst, marker, oldMarker);
+        wsprintfA(m, "screen %dx%d (from %s): could not put the %s loading screens in place (error %lu); the game's own",
+                  w, h, from, kShapes[pick].name, err);
         Log(m);
         return 0;
     }
     char note[64];
     wsprintfA(note, "%s %lu", kShapes[pick].name, FileSize(dst));
     WriteText(marker, note);
+    DeleteFileA(oldMarker);
     wsprintfA(m, "screen %dx%d (from %s): put the %s loading screens in place", w, h, from, kShapes[pick].name);
     Log(m);
     return 1;
@@ -248,6 +284,26 @@ static const unsigned char kFillWide[16]    = { 0x00, 0x00, 0x00, 0x3F, 0xEC, 0x
                                                 0x00, 0x00, 0x80, 0x3F, 0xF4, 0xFD, 0x54, 0x3D }; /* 1.0, 0.052 */
 static const unsigned char kBorderWide[16]  = { 0x00, 0x00, 0x00, 0x3F, 0xEC, 0x51, 0x38, 0x3D,   /* 0.5, 0.045 */
                                                 0x00, 0x00, 0x80, 0x3F, 0xEC, 0x51, 0xB8, 0x3D }; /* 1.0, 0.09 */
+
+/* Read only, before anything is put in place: is this the client CinderLoad was made for? Both places it changes must
+ * hold the stock bytes (or ours, from an earlier start in this process). */
+static int Readable(const unsigned char *at, int n)
+{
+    MEMORY_BASIC_INFORMATION mbi;
+    return VirtualQuery(at, &mbi, sizeof mbi) && mbi.State == MEM_COMMIT && !(mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD)) &&
+           (const unsigned char *)mbi.BaseAddress + mbi.RegionSize >= at + n;
+}
+static int ClientIsOurs(void)
+{
+    const unsigned char *base = (const unsigned char *)GetModuleHandleA(NULL);
+    const unsigned char *code = base + PATCH_RVA, *fill = base + BAR_FILL_RVA, *border = base + BAR_BORDER_RVA;
+    if (!Readable(code, (int)sizeof kStock) || !Readable(fill, (int)(border + 16 - fill))) return 0;
+    int codeOk = Same(code, kStock, sizeof kStock) ||
+                 (Same(code, kWide, sizeof kWide) && Same(code + 5, kStock + 5, (int)sizeof kStock - 5));
+    int barOk = (Same(fill, kFillStock, 16) && Same(border, kBorderStock, 16)) ||
+                (Same(fill, kFillWide, 16) && Same(border, kBorderWide, 16));
+    return codeOk && barOk;
+}
 
 static void WideBar(void)
 {
@@ -317,12 +373,27 @@ static int Apply(void)
     return on;
 }
 
+/* The switch failed after our screens went in (the code could not be made writable): take them out again, before the
+ * game opens its archives, so it never shows widened screens squeezed into 4:3. */
+static void TakeOutAfterAll(void)
+{
+    char dst[MAX_PATH], marker[MAX_PATH], oldMarker[MAX_PATH];
+    if (!Join(dst, g_dir, "Data\\patch-~.MPQ") || !Join(marker, g_dir, "Data\\patch-~.cinderload") ||
+        !Join(oldMarker, g_dir, "Data\\CinderLoad\\installed.txt"))
+        return;
+    if (MarkerMatches(marker, dst)) TakeOut(dst, marker, oldMarker);
+    Log("switch off, so our loading screens were taken out again: the game's own");
+}
+
 BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
 {
     (void)reserved;
     if (reason == DLL_PROCESS_ATTACH) {
         DisableThreadLibraryCalls(inst);
-        if (GameDir() && ChooseScreens() && Apply()) WideBar();
+        if (GameDir() && ChooseScreens()) {
+            if (Apply()) WideBar();
+            else TakeOutAfterAll();
+        }
     }
     return TRUE;
 }
