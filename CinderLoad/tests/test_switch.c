@@ -1,7 +1,7 @@
-/* Runs WideLoading.dll's own code (dll/wideloading.c) against fake game folders, on POSIX through tests/shim:
+/* Runs CinderLoad.dll's own code (dll/cinderload.c) against fake game folders, on POSIX through tests/shim:
  *   gcc -std=c99 -Wall -Wno-unused-function -Itests/shim -o /tmp/test_switch tests/test_switch.c && /tmp/test_switch <scratch dir>
  * Each case is a fresh folder under <scratch dir>; nothing outside it is touched. */
-#include "../dll/wideloading.c"
+#include "../dll/cinderload.c"
 #include <stdio.h>
 #include <sys/stat.h>
 
@@ -16,7 +16,7 @@ static const char *g_root;
 static void Fresh(const char *name)
 {
     snprintf(shim_gamedir, sizeof shim_gamedir, "%s/%s/", g_root, name);
-    const char *dirs[] = { "", "Data", "Data/WideLoading", "WTF", "Logs" };
+    const char *dirs[] = { "", "Data", "Data/CinderLoad", "WTF", "Logs" };
     for (int i = 0; i < 5; i++) {
         char p[700];
         snprintf(p, sizeof p, "%s%s", shim_gamedir, dirs[i]);
@@ -50,12 +50,12 @@ static int Is(const char *rel, const char *text) { const char *g = Get(rel); ret
 static int Gone(const char *rel) { return Get(rel) == NULL; }
 static int On(void) { return Same(shim_module + PATCH_RVA, kWide, sizeof kWide); }
 static void Start(void) { DllMain(NULL, DLL_PROCESS_ATTACH, NULL); }
-static int LogSays(const char *words) { const char *g = Get("Logs/WideLoading.log"); return g && strstr(g, words); }
+static int LogSays(const char *words) { const char *g = Get("Logs/CinderLoad.log"); return g && strstr(g, words); }
 
-#define UW "Data/WideLoading/LoadingScreens-21x9.MPQ"
-#define HD "Data/WideLoading/LoadingScreens-16x9.MPQ"
+#define UW "Data/CinderLoad/LoadingScreens-21x9.MPQ"
+#define HD "Data/CinderLoad/LoadingScreens-16x9.MPQ"
 #define ACTIVE "Data/patch-U.MPQ"
-#define MARK "Data/WideLoading/installed.txt"
+#define MARK "Data/CinderLoad/installed.txt"
 #define RES(w) "SET gxWindow \"1\"\r\nSET gxResolution \"" w "\"\r\n"
 
 int main(int argc, char **argv)

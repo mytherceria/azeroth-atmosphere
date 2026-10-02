@@ -43,7 +43,7 @@ def pattern_for(label, SW, SH):
     d.text((16 + a, cy - SH // 44), 'LEFT EDGE', font=mid, fill=(255, 255, 255))
     d.text((SW - 16 - a, cy - SH // 44), 'RIGHT EDGE', font=mid, fill=(255, 255, 255), anchor='ra')
     title = ImageFont.truetype(TITLE, SH // 14)
-    d.text((cx, SH * 0.08), 'Azeroth Atmosphere: wide loading screen test', font=title, fill=(232, 180, 60), anchor='mt')
+    d.text((cx, SH * 0.08), 'CinderLoad: loading screen test', font=title, fill=(232, 180, 60), anchor='mt')
     big = ImageFont.truetype(FONT, SH // 9)
     d.text((cx, cy), label, font=big, fill=(255, 255, 255), anchor='mm')
     note = ImageFont.truetype(FONT, SH // 34)

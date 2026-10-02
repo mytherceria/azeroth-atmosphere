@@ -1,4 +1,4 @@
-/* Native tests of WideLoading's shape choice (dll/shape.h): gcc -std=c99 -Wall -o /tmp/t test_shape.c && /tmp/t */
+/* Native tests of CinderLoad's shape choice (dll/shape.h): gcc -std=c99 -Wall -o /tmp/t test_shape.c && /tmp/t */
 #include <stdio.h>
 #include "../dll/shape.h"
 

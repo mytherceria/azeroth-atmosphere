@@ -1,4 +1,4 @@
-/* A stand-in for <windows.h> with just what wideloading.c calls, on POSIX files, so the DLL's own code runs in
+/* A stand-in for <windows.h> with just what cinderload.c calls, on POSIX files, so the DLL's own code runs in
  * tests/test_switch.c. Paths with backslashes are turned into slashes; the game folder and the module's code are
  * set by the test. */
 #ifndef SHIM_WINDOWS_H

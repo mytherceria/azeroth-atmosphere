@@ -1,6 +1,6 @@
-/* WideLoading.dll: loading screens at the shape of the screen, for the 32-bit 1.12.1 client.
+/* CinderLoad.dll: loading screens at the shape of the screen, for the 32-bit 1.12.1 client.
  *
- * The loading screens come in one archive per screen shape, Data\WideLoading\LoadingScreens-<shape>.MPQ (the game
+ * The loading screens come in one archive per screen shape, Data\CinderLoad\LoadingScreens-<shape>.MPQ (the game
  * reads no archive in that folder). As the game starts, before it opens its own archives, this DLL reads the
  * resolution the game saved (SET gxResolution in WTF\Config.wtf; the monitor's size when there is none yet), picks
  * the nearest shape (shape.h) and copies that archive to Data\patch-U.MPQ, which the game then loads over its own
@@ -14,8 +14,8 @@
  * are in place, since the game's own square ones would be stretched, and only when the eleven bytes there (the
  * call and the compare after it) are exactly the stock ones. WoW.exe on disk is never touched.
  *
- * A Data\patch-U.MPQ that is not ours (not the size Data\WideLoading\installed.txt recorded when we put it there,
- * and none of our archives) is left alone, and the switch stays off. Each start adds a line or two to Logs\WideLoading.log.
+ * A Data\patch-U.MPQ that is not ours (not the size Data\CinderLoad\installed.txt recorded when we put it there,
+ * and none of our archives) is left alone, and the switch stays off. Each start adds a line or two to Logs\CinderLoad.log.
  *
  * Built like IndoorRain.dll, with no C runtime (build.sh).
  */
@@ -24,7 +24,7 @@
 
 #include "shape.h"
 
-#define DLL_NAME  "WideLoading"
+#define DLL_NAME  "CinderLoad"
 #define PATCH_RVA 0x6AC4
 
 static const unsigned char kStock[11] = { 0xE8, 0xA7, 0x42, 0x01, 0x00,           /* call (the 4:3 decision)     */
@@ -59,7 +59,7 @@ static int GameDir(void)
     return 1;
 }
 
-/* One line, appended to Logs\WideLoading.log next to WoW.exe. */
+/* One line, appended to Logs\CinderLoad.log next to WoW.exe. */
 static void Log(const char *msg)
 {
     char path[MAX_PATH];
@@ -85,7 +85,7 @@ static int Exists(const char *path)
 
 static int VariantPath(char *out, int shape)
 {
-    return Join(out, g_dir, "Data\\WideLoading\\LoadingScreens-") && lstrlenA(out) + 16 < MAX_PATH &&
+    return Join(out, g_dir, "Data\\CinderLoad\\LoadingScreens-") && lstrlenA(out) + 16 < MAX_PATH &&
            lstrcatA(out, kShapes[shape].name) && lstrcatA(out, ".MPQ");
 }
 
@@ -170,7 +170,7 @@ static void WriteText(const char *path, const char *text)
 static int ChooseScreens(void)
 {
     char dst[MAX_PATH], marker[MAX_PATH], cfg[MAX_PATH], src[MAX_PATH], m[320];
-    if (!Join(dst, g_dir, "Data\\patch-U.MPQ") || !Join(marker, g_dir, "Data\\WideLoading\\installed.txt") ||
+    if (!Join(dst, g_dir, "Data\\patch-U.MPQ") || !Join(marker, g_dir, "Data\\CinderLoad\\installed.txt") ||
         !Join(cfg, g_dir, "WTF\\Config.wtf"))
         return 0;
 

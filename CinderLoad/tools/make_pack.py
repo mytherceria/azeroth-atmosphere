@@ -1,4 +1,4 @@
-"""Builds one screen shape's loading screens: Data/WideLoading/LoadingScreens-<shape>.MPQ, every loading screen the
+"""Builds one screen shape's loading screens: Data/CinderLoad/LoadingScreens-<shape>.MPQ, every loading screen the
 client names in LoadingScreens.dbc, at the shape of the screen. Each is the client's own picture at the 4:3 it was
 drawn for, centred, with its sides filled by a blurred, darkened, wider copy of itself, eased together at the
 seams; the continents' two screens can be the test pattern instead (--test-continents).
@@ -158,7 +158,7 @@ if __name__ == '__main__':
         for n in sorted(os.listdir(bar)):
             if n.lower().startswith('loading-bar') and n.lower().endswith('.blp'):
                 files.append((os.path.join(bar, n), 'Interface\\Glues\\LoadingBar\\' + n))
-    mpq = os.path.join(out, 'Data', 'WideLoading', f'LoadingScreens-{shape}.MPQ')
+    mpq = os.path.join(out, 'Data', 'CinderLoad', f'LoadingScreens-{shape}.MPQ')
     os.makedirs(os.path.dirname(mpq), exist_ok=True)
     pack(mpq, files)
     print(f'{len(files)} loading screens for {shape} ({sw}x{sh}) in {mpq}: {os.path.getsize(mpq) // 1048576} MB')

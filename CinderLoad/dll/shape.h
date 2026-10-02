@@ -1,13 +1,13 @@
-/* The screen-shape choice of WideLoading.dll, kept free of Windows calls so it can be tested on its own
- * (tests/test_shape.c). Included once, by wideloading.c.
+/* The screen-shape choice of CinderLoad.dll, kept free of Windows calls so it can be tested on its own
+ * (tests/test_shape.c). Included once, by cinderload.c.
  *
- * The loading screens come in one archive per screen shape, Data\WideLoading\LoadingScreens-<shape>.MPQ. The
+ * The loading screens come in one archive per screen shape, Data\CinderLoad\LoadingScreens-<shape>.MPQ. The
  * shape is read from the resolution the game saved (SET gxResolution "WxH" in WTF\Config.wtf) and the nearest
  * shape within 10% is used. The ultrawides are one shape: 2560x1080, 3440x1440, 3840x1600 and 5120x2160 are all
  * within 1.3% of 64:27.
  */
-#ifndef WIDELOADING_SHAPE_H
-#define WIDELOADING_SHAPE_H
+#ifndef CINDERLOAD_SHAPE_H
+#define CINDERLOAD_SHAPE_H
 
 static const struct { const char *name; int num, den; } kShapes[] = {
     { "16x10", 16, 10 },        /* 1.600 */
