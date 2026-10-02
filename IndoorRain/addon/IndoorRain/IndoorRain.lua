@@ -7,11 +7,12 @@
 --
 -- Storms (0.5, with IndoorRain.dll 0.13): the DLL plays thunder and gusts while it rains and
 -- reports each lightning strike in IndoorRain_Storm, a CVar it overwrites in place. This addon
--- flashes the sky when a strike lands (the thunder follows by the strike's distance) and, when
--- comfyatmosphere is installed, thickens its fog and dims its sun shafts while the rain lasts,
--- putting your own settings back afterwards. It must never SetCVar IndoorRain_Storm once the
--- DLL may be writing it. Off (/indoorrain off) means off: no flash, no fog, and your own fog
--- settings back at once.
+-- flashes the sky when a strike lands (the thunder follows by the strike's distance). It must never
+-- SetCVar IndoorRain_Storm once the DLL may be writing it. Off (/indoorrain off) means off: no flash.
+--
+-- Since 0.14.1 the storm's fog is made by Azeroth Atmosphere, which reads the rain level from the same
+-- CVar, so every fog decision in the pack is made in one place. This addon no longer touches comfy's
+-- sliders; it only puts back a player's own values that a 0.14 storm was holding at the last logout.
 --
 -- Since 0.14 this folder holds no sound files: the DLL builds every sound it plays from the
 -- client's own archives, the rain loops when the game starts and the rest when first wanted
@@ -109,47 +110,15 @@ flash:SetScript("OnUpdate", function()
   flash:SetAlpha(a * flashPeak)
 end)
 
--- Fog: comfyatmosphere reads its sliders as CVars about five times a second and applies a change at
--- once, so a smooth change is made here, one step at a time. The player's own values are kept in
--- IndoorRainDB until the rain is over (and put back at logout, so the client never saves a storm as
--- the player's setting). A slider the player moves during a storm is theirs again and stays put.
--- comfy 0.6 and older has comfyFogThickness; 0.7 and 0.8 have the ground mist (comfyMistDensity, ten-thousandths
--- a yard, up to 200) and sun shadows instead. A control the installed comfy lacks reads as nil and is left alone.
--- In a storm the sun goes behind cloud: its light on the mist, its shadows and its brightening all weaken.
--- The fog a storm adds is held back, like the zone presets, until storms have been set by eye in game (his rule,
--- 1 Oct 2026: nothing that keeps a player from seeing to play). It was 12/22/32 and 15/30/50; a heavy storm over a
--- held-back zone now stays near comfy's own default mist of 25.
-local FOG = {
-  { name = "comfyFogThickness",      add = { 4, 7, 10 } },
-  { name = "comfyMistDensity",       add = { 5, 10, 15 }, max = 200, step = 2 },
-  { name = "comfyRaysStrength",      mul = { 0.70, 0.45, 0.25 } },
-  { name = "comfyVolumeStrength",    mul = { 0.70, 0.45, 0.25 } },
-  { name = "comfyMistSun",           mul = { 0.70, 0.50, 0.35 } },
-  { name = "comfySunShadowStrength", mul = { 0.60, 0.40, 0.25 } },
-  { name = "comfySunlight",          mul = { 0.60, 0.40, 0.25 } },
-}
-local FOG_EVERY = 0.4
-local fogSince = 0
-local written = {}
+-- A storm under 0.14 held comfy's sliders and kept the player's own values in IndoorRainDB until the rain was
+-- over. If one was still on at the last logout, those values go back once comfyatmosphere is up; nothing else
+-- here writes comfy's sliders any more (Azeroth Atmosphere makes the storm's fog now).
 local repairUntil = nil
-
--- The options panels take a snapshot of the settings when they open and write it back on Cancel. The fog is
--- left alone while one is open, so the snapshot is always the value last written here, and a Cancel changes
--- nothing; a value the player chose there is theirs, as with any slider moved during a storm.
-local function PanelOpen()
-  return (OptionsFrame and OptionsFrame:IsVisible()) or (SoundOptionsFrame and SoundOptionsFrame:IsVisible())
-    or (UIOptionsFrame and UIOptionsFrame:IsVisible())
-end
 
 local function CVarNum(name)
   local ok, v = pcall(GetCVar, name)
-  if not ok or v == nil then return nil, nil end
-  return tonumber(v), v
-end
-
-local function SetCV(name, s)
-  if pcall(SetCVar, name, s) then written[name] = tonumber(s); return true end
-  return false
+  if not ok or v == nil then return nil end
+  return tonumber(v)
 end
 
 local function RestoreNow()
@@ -159,67 +128,13 @@ local function RestoreNow()
     for name, b in pairs(db.base) do pcall(SetCVar, name, b.s) end
   end
   db.active, db.base = false, nil
-  written = {}
 end
 
-local function FogTick()
-  local db = IndoorRainDB
-  if repairUntil then
-    -- a storm was still on at the last logout: put the player's values back once comfyatmosphere is up
-    local up = false
-    for i = 1, table.getn(FOG) do if CVarNum(FOG[i].name) then up = true; break end end
-    if up or GetTime() > repairUntil then repairUntil = nil; RestoreNow() end
-    return
-  end
-  if not On() then
-    -- the mod is off: no ramp, and the player's own values go back at once, as at logout (not while an
-    -- options panel is open, for the same reason as the ramp: its Cancel would write the storm back)
-    if db.active and not PanelOpen() then RestoreNow() end
-    return
-  end
-  local want = trusted and db.fog and rainLevel > 0
-  if want and not db.active then
-    db.base = {}
-    local any = false
-    for i = 1, table.getn(FOG) do
-      local n, s = CVarNum(FOG[i].name)
-      if n then db.base[FOG[i].name] = { v = n, s = s }; written[FOG[i].name] = n; any = true end
-    end
-    if not any then db.base = nil; return end   -- no comfyatmosphere
-    db.active = true
-  end
-  if not db.active or not db.base then return end
-  if PanelOpen() then return end
-  local busy = false
-  local l = math.max(1, math.min(3, rainLevel))
-  for i = 1, table.getn(FOG) do
-    local c = FOG[i]
-    local b = db.base[c.name]
-    local now = b and CVarNum(c.name)
-    if now and written[c.name] and math.abs(now - written[c.name]) > 0.5 then
-      db.base[c.name] = nil   -- the player moved it
-    elseif now then
-      if want then
-        local target
-        if c.add then target = math.min(c.max or 100, b.v + c.add[l]) else target = b.v * c.mul[l] end
-        target = math.floor(target + 0.5)
-        if now ~= target then
-          local size = c.step or 1
-          local step = target > now and size or -size
-          if math.abs(target - now) < size then step = target - now end
-          SetCV(c.name, string.format("%d", math.floor(now + step + 0.5)))
-          busy = true
-        end
-      elseif math.abs(now - b.v) > (c.step or 1) then
-        SetCV(c.name, string.format("%d", math.floor(now + (b.v > now and 1 or -1) * (c.step or 1) + 0.5)))
-        busy = true
-      elseif now ~= b.v then
-        SetCV(c.name, b.s)   -- the last step lands exactly on the player's own value
-        busy = true
-      end
-    end
-  end
-  if not want and not busy then db.active, db.base = false, nil end
+local function RepairTick()
+  if not repairUntil then return end
+  local up = false
+  for name in pairs(IndoorRainDB.base or {}) do if CVarNum(name) then up = true; break end end
+  if up or GetTime() > repairUntil then repairUntil = nil; RestoreNow() end
 end
 
 local function ReadStorm()
@@ -258,7 +173,6 @@ frame:SetScript("OnEvent", function()
   if event == "VARIABLES_LOADED" then
     RegisterSettings()
     if type(IndoorRainDB) ~= "table" then IndoorRainDB = {} end
-    if IndoorRainDB.fog == nil then IndoorRainDB.fog = true end
     if IndoorRainDB.flash == nil then IndoorRainDB.flash = true end
     if IndoorRainDB.active then repairUntil = GetTime() + 60 end
     StartSession()
@@ -275,8 +189,7 @@ frame:SetScript("OnUpdate", function()
   if not ready then return end
   stormSince = stormSince + arg1
   if stormSince >= STORM_POLL then stormSince = 0; ReadStorm() end
-  fogSince = fogSince + arg1
-  if fogSince >= FOG_EVERY then fogSince = 0; FogTick() end
+  RepairTick()
   since = since + arg1
   if since < POLL then return end
   since = 0
@@ -302,8 +215,8 @@ SlashCmdList["INDOORRAIN"] = function(msg)
     SetCVar("IndoorRain_Volume", tostring(vol)); Say("volume " .. vol .. "% of the weather outside.")
   elseif what == "storm" and (word == "on" or word == "off") then
     SetCVar("IndoorRain_Storms", word == "on" and "1" or "0"); Say("thunder and wind " .. word .. ".")
-  elseif what == "fog" and (word == "on" or word == "off") then
-    IndoorRainDB.fog = OnOff(word, IndoorRainDB.fog); Say("storm fog " .. word .. " (needs comfyatmosphere).")
+  elseif what == "fog" then
+    Say("the storm's fog is made by Azeroth Atmosphere now: /atmos (or /aa) for its window.")
   elseif what == "flash" and (word == "on" or word == "off") then
     IndoorRainDB.flash = OnOff(word, IndoorRainDB.flash); Say("lightning flashes " .. word .. ".")
   elseif msg == "thunder" then
@@ -312,12 +225,12 @@ SlashCmdList["INDOORRAIN"] = function(msg)
   elseif msg == "status" then
     Say("enabled=" .. tostring(GetCVar("IndoorRain_Enabled")) .. " volume=" .. tostring(GetCVar("IndoorRain_Volume")) .. "%"
       .. " indoors=" .. tostring(GetCVar("IndoorRain_Indoors")) .. " IsIndoors=" .. tostring(Indoors())
-      .. " storm=" .. tostring(GetCVar("IndoorRain_Storms")) .. " fog=" .. (IndoorRainDB.fog and "on" or "off")
+      .. " storm=" .. tostring(GetCVar("IndoorRain_Storms"))
       .. " flash=" .. (IndoorRainDB.flash and "on" or "off") .. " rain=" .. tostring(rainLevel)
       .. (trusted and "" or " (the DLL has not answered: is IndoorRain.dll 0.14 loaded?)")
       .. ". The DLL writes Logs\\IndoorRain.log.")
   else
     Say("/indoorrain on | off | volume 0-100 (percent of the weather outside, default 70) | storm on | storm off"
-      .. " | fog on | fog off | flash on | flash off | thunder (a test strike) | status")
+      .. " | flash on | flash off | thunder (a test strike) | status")
   end
 end
