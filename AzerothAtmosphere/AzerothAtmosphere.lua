@@ -295,8 +295,9 @@ local function Moved(name, now)
   -- fix can still take it out aboard and inside: dropping it, as other sliders are, switched the fix off for the
   -- session while the status still claimed it (caught in review, 1 Oct 2026).
   if name == "comfyMistDensity" then
-    -- In a storm what the player sets includes the storm's extra, and it is kept as set: taking the storm's part
-    -- off here could save a 0 and missed the common path (tried and dropped after review, 1 Oct 2026).
+    -- In a storm what the player sets includes the storm's extra, and it is kept as their own value: taking the
+    -- storm's part off here could save a 0 and missed the common path (tried and dropped after review, 1 Oct 2026).
+    -- So while that storm lasts, a later fade can add the storm's extra on top again; it is gone when the rain stops.
     db.base[name] = now; db.mine[name] = true; written[name] = now
     return true
   end
@@ -401,7 +402,8 @@ local function IndoorCheck()
   local inside = Indoors() and true or false
   if inside ~= seenInside then seenInside, seenAt = inside, GetTime() end
   if inside == capped or PanelOpen() then return end
-  -- Going in acts after a third of a second: comfy lights every candle at full strength under a roof, so the old
+  -- Going in acts within about half a second (the 0.3 s hold, checked on the 0.2 s tick): comfy lights every candle
+  -- at full strength under a roof, so the old
   -- settle and fade flared the candles for a second and a half (seen at the Scarlet Raven, 1 Oct 2026), while acting
   -- on the first reading flapped on a doorway's brief blips (review). Coming out waits for the reading to hold for
   -- INDOOR_SETTLE; nil: the caps changed, act now.

@@ -17,7 +17,7 @@ running VanillaFixes; it should suit any Turtle-based 1.12 client with the same 
   the mist is thinner than the zone's full preset at every height and depth, and within 20 yards of the ground it
   is under comfy's own default in every zone; glare, colour and night darkness sit at or under comfy's own defaults too. In every zone's mood lamps glow no brighter than comfy's own and never light up the mist around
   them, so no torch fills the air in a storm (Duskwood's torches too, until they are picked again on stock comfy), and inside a building
-  they take values of their own within a third of a second, picked by eye in an inn (`/atmos indoor`, in tenths). Storms are made here too, from the rain Indoor Weather reports: the
+  they take values of their own within about half a second, picked by eye in an inn (`/atmos indoor`, in tenths). Storms are made here too, from the rain Indoor Weather reports: the
   mist thickens on top of the zone's own (held back like everything else) and clears when the rain stops, so
   every fog decision in the pack is made in one place and two mods never both add a storm. `/atmos rain 1-3`
   shows a storm's fog without waiting for rain (`/atmos rain 0` ends it).
