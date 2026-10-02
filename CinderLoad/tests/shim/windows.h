@@ -40,12 +40,13 @@ typedef struct { void *BaseAddress, *AllocationBase; DWORD AllocationProtect; si
 #define PAGE_NOACCESS 1
 #define PAGE_GUARD 0x100
 #define PAGE_EXECUTE_READ 0x20
+#define PAGE_READWRITE 0x04
 #define PAGE_EXECUTE_READWRITE 0x40
 #define SM_CXSCREEN 0
 #define SM_CYSCREEN 1
 
 extern char shim_gamedir[];                 /* "/tmp/x/" */
-extern unsigned char shim_module[0x8000];   /* WoW.exe's first pages */
+extern unsigned char shim_module[0x400000]; /* WoW.exe's image, as far as the bar's size table */
 extern int shim_screen_w, shim_screen_h;
 
 static void ShimPath(char *out, const char *in) { strcpy(out, in); for (char *p = out; *p; p++) if (*p == '\\') *p = '/'; }
@@ -92,6 +93,7 @@ static size_t VirtualQuery(const void *at, MEMORY_BASIC_INFORMATION *m, size_t n
     (void)at; memset(m, 0, n); m->BaseAddress = shim_module; m->RegionSize = sizeof shim_module;
     m->State = MEM_COMMIT; m->Protect = PAGE_EXECUTE_READ; return n;
 }
+typedef size_t SIZE_T;
 static BOOL VirtualProtect(void *at, size_t n, DWORD prot, DWORD *old) { (void)at; (void)n; (void)prot; *old = PAGE_EXECUTE_READ; return TRUE; }
 static BOOL FlushInstructionCache(HANDLE p, const void *at, size_t n) { (void)p; (void)at; (void)n; return TRUE; }
 static HANDLE GetCurrentProcess(void) { return (HANDLE)1; }

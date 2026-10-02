@@ -232,37 +232,89 @@ static int ChooseScreens(void)
     return 1;
 }
 
-static void Apply(void)
+/* The loading bar. The client draws it from a table of {texture, is fill, cx, cy, w, h} in screen fractions measured
+ * from the bottom (VA 0x7FFD34, two entries of 0x18 bytes): the fill at 0.5, 0.075, 0.525 x 0.025 and the border
+ * (the charred log in our packs) at 0.5, 0.075, 0.6 x 0.05; the fill is drawn from its left edge to progress * w.
+ * With our set in place the bar spans the whole width at 0.09 of the height, flush with the bottom of the screen; the
+ * fill runs wall to wall too, 0.052 high, the log's solid band, where
+ * the cracks the fire shows through run (our packs carry a border drawn for exactly these proportions). */
+#define BAR_FILL_RVA   0x3FFD3C   /* cx, cy, w, h of Loading-BarFill */
+#define BAR_BORDER_RVA 0x3FFD54   /* cx, cy, w, h of Loading-BarBorder */
+static const unsigned char kFillStock[16]   = { 0x00, 0x00, 0x00, 0x3F, 0x9A, 0x99, 0x99, 0x3D,   /* 0.5, 0.075 */
+                                                0x66, 0x66, 0x06, 0x3F, 0xCD, 0xCC, 0xCC, 0x3C }; /* 0.525, 0.025 */
+static const unsigned char kBorderStock[16] = { 0x00, 0x00, 0x00, 0x3F, 0x9A, 0x99, 0x99, 0x3D,   /* 0.5, 0.075 */
+                                                0x9A, 0x99, 0x19, 0x3F, 0xCD, 0xCC, 0x4C, 0x3D }; /* 0.6, 0.05 */
+static const unsigned char kFillWide[16]    = { 0x00, 0x00, 0x00, 0x3F, 0xEC, 0x51, 0x38, 0x3D,   /* 0.5, 0.045 */
+                                                0x00, 0x00, 0x80, 0x3F, 0xF4, 0xFD, 0x54, 0x3D }; /* 1.0, 0.052 */
+static const unsigned char kBorderWide[16]  = { 0x00, 0x00, 0x00, 0x3F, 0xEC, 0x51, 0x38, 0x3D,   /* 0.5, 0.045 */
+                                                0x00, 0x00, 0x80, 0x3F, 0xEC, 0x51, 0xB8, 0x3D }; /* 1.0, 0.09 */
+
+static void WideBar(void)
+{
+    unsigned char *base = (unsigned char *)GetModuleHandleA(NULL);
+    unsigned char *fill = base + BAR_FILL_RVA, *border = base + BAR_BORDER_RVA;
+    MEMORY_BASIC_INFORMATION mbi;
+    if (!VirtualQuery(fill, &mbi, sizeof mbi) || mbi.State != MEM_COMMIT || (mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD)) ||
+        (unsigned char *)mbi.BaseAddress + mbi.RegionSize < border + 16) {
+        Log("bar left as it is: its size table could not be read");
+        return;
+    }
+    if (Same(fill, kFillWide, 16) && Same(border, kBorderWide, 16)) {
+        Log("bar already full width: nothing to do");
+        return;
+    }
+    if (!Same(fill, kFillStock, 16) || !Same(border, kBorderStock, 16)) {
+        Log("bar left as it is: its size table holds other numbers, not the client this was made for");
+        return;
+    }
+    DWORD old;
+    if (!VirtualProtect(fill, (SIZE_T)(border + 16 - fill), PAGE_READWRITE, &old)) {
+        Log("bar left as it is: its size table could not be made writable");
+        return;
+    }
+    for (int i = 0; i < 16; i++) {
+        fill[i] = kFillWide[i];
+        border[i] = kBorderWide[i];
+    }
+    VirtualProtect(fill, (SIZE_T)(border + 16 - fill), old, &old);
+    Log(Same(fill, kFillWide, 16) && Same(border, kBorderWide, 16)
+            ? "bar on: the whole width, flush with the bottom (its size table, in memory only)"
+            : "bar left as it is: the numbers read back differ");
+}
+
+static int Apply(void)
 {
     unsigned char *at = (unsigned char *)GetModuleHandleA(NULL) + PATCH_RVA;
     MEMORY_BASIC_INFORMATION mbi;
     if (!VirtualQuery(at, &mbi, sizeof mbi) || mbi.State != MEM_COMMIT || (mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD)) ||
         (unsigned char *)mbi.BaseAddress + mbi.RegionSize < at + sizeof kStock) {
         Log("switch left off: the code there could not be read");
-        return;
+        return 0;
     }
     if (Same(at, kWide, sizeof kWide) && Same(at + 5, kStock + 5, (int)sizeof kStock - 5)) {
         Log("switch already on: nothing to do");
-        return;
+        return 1;
     }
     if (!Same(at, kStock, sizeof kStock)) {
         char m[160];
         wsprintfA(m, "switch left off: other bytes at RVA 0x%X (%02X %02X %02X %02X %02X), not the client this was made for",
                   PATCH_RVA, at[0], at[1], at[2], at[3], at[4]);
         Log(m);
-        return;
+        return 0;
     }
     DWORD old;
     if (!VirtualProtect(at, sizeof kWide, PAGE_EXECUTE_READWRITE, &old)) {
         Log("switch left off: the code could not be made writable");
-        return;
+        return 0;
     }
     for (int i = 0; i < (int)sizeof kWide; i++)
         at[i] = kWide[i];
     VirtualProtect(at, sizeof kWide, old, &old);
     FlushInstructionCache(GetCurrentProcess(), at, sizeof kWide);
-    Log(Same(at, kWide, sizeof kWide) ? "switch on: loading screens fill the screen (5 bytes at RVA 0x6AC4, in memory only)"
-                                      : "switch left off: the bytes read back differ");
+    int on = Same(at, kWide, sizeof kWide);
+    Log(on ? "switch on: loading screens fill the screen (5 bytes at RVA 0x6AC4, in memory only)"
+           : "switch left off: the bytes read back differ");
+    return on;
 }
 
 BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
@@ -270,7 +322,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
     (void)reserved;
     if (reason == DLL_PROCESS_ATTACH) {
         DisableThreadLibraryCalls(inst);
-        if (GameDir() && ChooseScreens()) Apply();
+        if (GameDir() && ChooseScreens() && Apply()) WideBar();
     }
     return TRUE;
 }

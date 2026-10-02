@@ -86,6 +86,22 @@ def widen(art, sw, sh):
     return back
 
 
+BAR_BAND = False   # set by --bar: the screens get a dark band where the bar's fire runs
+
+
+def dark_band(im):
+    """Darkens the strip under CinderLoad's full-width bar where the fill runs (the whole width, 0.052 of the height,
+    centred 0.045 above the bottom). The log covers it, so it is seen only through the cracks the fire has not reached
+    yet, which then look dark instead of showing the picture. The game draws nothing there before the fill."""
+    w, h = im.size
+    x0, x1 = 0, w
+    y0, y1 = int(h * (1 - 0.078)), int(h * (1 - 0.012))
+    band = im.crop((x0, y0, x1, y1)).point(lambda v: int(v * 0.06))
+    im = im.copy()
+    im.paste(band, (x0, y0))
+    return im
+
+
 def build_one(job):
     path, raw, sw, sh, label, out = job
     if label and os.path.isfile(label):                 # a designed screen: cover the shape, centred
@@ -99,6 +115,8 @@ def build_one(job):
         im = pattern_for(label, sw, sh)
     else:
         im = widen(Image.open(io.BytesIO(raw)), sw, sh)
+    if BAR_BAND:
+        im = dark_band(im)
     name = path.split('\\')[-1]
     with tempfile.TemporaryDirectory() as tmp:
         png = os.path.join(tmp, 'in.png')
@@ -127,6 +145,7 @@ def pack(mpq_path, files):
 if __name__ == '__main__':
     data, out, shape, sw, sh = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]), int(sys.argv[5])
     test = '--test-continents' in sys.argv
+    BAR_BAND = '--bar' in sys.argv                     # module level: build_one sees it
     art = {}                                            # --art <file>: lines '<loadscreen>.blp <picture>'
     if '--art' in sys.argv:
         for line in open(sys.argv[sys.argv.index('--art') + 1]).read().splitlines():

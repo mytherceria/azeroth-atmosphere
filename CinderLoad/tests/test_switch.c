@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 
 char shim_gamedir[512];
-unsigned char shim_module[0x8000];
+unsigned char shim_module[0x400000];
 int shim_screen_w = 3440, shim_screen_h = 1440;
 
 static int fails, checks;
@@ -24,6 +24,8 @@ static void Fresh(const char *name)
     }
     memset(shim_module, 0, sizeof shim_module);
     memcpy(shim_module + PATCH_RVA, kStock, sizeof kStock);
+    memcpy(shim_module + BAR_FILL_RVA, kFillStock, 16);
+    memcpy(shim_module + BAR_BORDER_RVA, kBorderStock, 16);
     shim_screen_w = 3440; shim_screen_h = 1440;
 }
 static void Put(const char *rel, const char *text)
@@ -49,6 +51,8 @@ static const char *Get(const char *rel)
 static int Is(const char *rel, const char *text) { const char *g = Get(rel); return g && !strcmp(g, text); }
 static int Gone(const char *rel) { return Get(rel) == NULL; }
 static int On(void) { return Same(shim_module + PATCH_RVA, kWide, sizeof kWide); }
+static int BarWide(void) { return Same(shim_module + BAR_FILL_RVA, kFillWide, 16) && Same(shim_module + BAR_BORDER_RVA, kBorderWide, 16); }
+static int BarStock(void) { return Same(shim_module + BAR_FILL_RVA, kFillStock, 16) && Same(shim_module + BAR_BORDER_RVA, kBorderStock, 16); }
 static void Start(void) { DllMain(NULL, DLL_PROCESS_ATTACH, NULL); }
 static int LogSays(const char *words) { const char *g = Get("Logs/CinderLoad.log"); return g && strstr(g, words); }
 
@@ -129,6 +133,30 @@ int main(int argc, char **argv)
     Put(UW, "AAAA"); Put(ACTIVE, "AAAA"); Put(MARK, "21x9 4"); Put("WTF/Config.wtf", RES("1024x768"));
     Start();
     Check(Gone(ACTIVE) && !On(), "4:3: no set for it, ours removed, the game's own screens as it shows them");
+
+    Fresh("bar");
+    Put(UW, "AAAA"); Put("WTF/Config.wtf", RES("5120x2160"));
+    Start();
+    Check(On() && BarWide() && LogSays("bar on"), "our set in place: the bar spans the whole width, twice as tall");
+    Start();
+    Check(BarWide() && LogSays("bar already full width"), "next start: the bar already full width, left as it is");
+
+    Fresh("bar-no-set");
+    Put("WTF/Config.wtf", RES("5120x2160"));
+    Start();
+    Check(!On() && BarStock(), "no set for this screen: the bar keeps the game's own size");
+
+    Fresh("bar-foreign");
+    Put(UW, "AAAA"); Put(ACTIVE, "FOREIGN"); Put("WTF/Config.wtf", RES("5120x2160"));
+    Start();
+    Check(!On() && BarStock(), "someone else's patch-~.MPQ: the bar keeps the game's own size too");
+
+    Fresh("bar-other-exe");
+    Put(UW, "AAAA"); Put("WTF/Config.wtf", RES("5120x2160"));
+    shim_module[BAR_BORDER_RVA + 8] = 0x11;
+    Start();
+    Check(On() && shim_module[BAR_BORDER_RVA + 8] == 0x11 && Same(shim_module + BAR_FILL_RVA, kFillStock, 16) &&
+          LogSays("holds other numbers"), "a size table with other numbers: never changed");
 
     if (fails) printf("%d of %d checks FAILED\n", fails, checks); else printf("all %d checks passed\n", checks);
     return fails != 0;
