@@ -54,7 +54,7 @@ static int LogSays(const char *words) { const char *g = Get("Logs/CinderLoad.log
 
 #define UW "Data/CinderLoad/LoadingScreens-21x9.MPQ"
 #define HD "Data/CinderLoad/LoadingScreens-16x9.MPQ"
-#define ACTIVE "Data/patch-U.MPQ"
+#define ACTIVE "Data/patch-~.MPQ"
 #define MARK "Data/CinderLoad/installed.txt"
 #define RES(w) "SET gxWindow \"1\"\r\nSET gxResolution \"" w "\"\r\n"
 
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
     Fresh("foreign");
     Put(UW, "AAAA"); Put(ACTIVE, "FOREIGN"); Put("WTF/Config.wtf", RES("5120x2160"));
     Start();
-    Check(Is(ACTIVE, "FOREIGN") && !On() && LogSays("not ours"), "someone else's patch-U.MPQ: left alone, switch off");
+    Check(Is(ACTIVE, "FOREIGN") && !On() && LogSays("not ours"), "someone else's patch-~.MPQ: left alone, switch off");
 
     Fresh("stale-marker");
     Put(UW, "AAAA"); Put(ACTIVE, "FOREIGNXX"); Put(MARK, "21x9 4"); Put("WTF/Config.wtf", RES("5120x2160"));

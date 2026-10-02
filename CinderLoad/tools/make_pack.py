@@ -28,7 +28,7 @@ class Client:
                                     ctypes.c_void_p]
         L.SFileCloseFile.argtypes = [ctypes.c_void_p]
         patches = [os.path.basename(p) for p in glob.glob(os.path.join(data, 'patch*.[mM][pP][qQ]'))]
-        patches = [p for p in patches if p.lower() != 'patch-u.mpq']          # never our own output
+        patches = [p for p in patches if p.lower() != 'patch-~.mpq']          # never our own output
         patches.sort(key=lambda n: (0 if n.lower() == 'patch.mpq' else 1, n.lower()))
         self.handles = []
         for name in [b for b in BASE if os.path.exists(os.path.join(data, b))] + patches:

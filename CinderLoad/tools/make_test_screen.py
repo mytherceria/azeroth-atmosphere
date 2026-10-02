@@ -1,9 +1,9 @@
-"""Makes the wide loading screen test: a pattern drawn at the screen's own shape (circles that are round only when
+"""Makes the CinderLoad test screen: a pattern drawn at the screen's own shape (circles that are round only when
 the game shows it at that shape, arrows at all four edges), for the two continents' loading screens, packed into a
 patch archive.
 
 Usage: STORMLIB=/path/to/libstorm.so python3 make_test_screen.py <out dir> [screen width] [screen height]
-       (default 5120 2160). Writes test-<continent>.png, the two BLPs and patch-U.MPQ into <out dir>.
+       (default 5120 2160). Writes test-<continent>.png, the two BLPs and patch-~.MPQ into <out dir>.
 """
 import ctypes, os, sys
 from PIL import Image, ImageDraw, ImageFont
@@ -80,5 +80,5 @@ if __name__ == '__main__':
         levels, size = write_blp(png, blp, TW, TH)
         print(f'{os.path.basename(blp)}: {TW}x{TH}, {levels} levels, {size} bytes')
         files.append((blp, f'Interface\\Glues\\LoadingScreens\\LoadScreen{name}.blp'))
-    pack(os.path.join(out, 'patch-U.MPQ'), files)
-    print('patch-U.MPQ', os.path.getsize(os.path.join(out, 'patch-U.MPQ')), 'bytes')
+    pack(os.path.join(out, 'patch-~.MPQ'), files)
+    print('patch-~.MPQ', os.path.getsize(os.path.join(out, 'patch-~.MPQ')), 'bytes')

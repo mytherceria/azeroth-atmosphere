@@ -3,8 +3,13 @@
  * The loading screens come in one archive per screen shape, Data\CinderLoad\LoadingScreens-<shape>.MPQ (the game
  * reads no archive in that folder). As the game starts, before it opens its own archives, this DLL reads the
  * resolution the game saved (SET gxResolution in WTF\Config.wtf; the monitor's size when there is none yet), picks
- * the nearest shape (shape.h) and copies that archive to Data\patch-U.MPQ, which the game then loads over its own
+ * the nearest shape (shape.h) and copies that archive to Data\patch-~.MPQ, which the game then loads over its own
  * loading screens. A resolution changed in the game counts from the next start.
+ *
+ * Why patch-~: the client loads Data\patch-?.MPQ (one character, the pattern in WoW.exe) in sorted order and a later
+ * archive wins. Every letter after M (the Project Reforged loading screens) is taken by a launcher pack, Ultra HD at U
+ * among them, and '~' sorts after every letter and digit whichever way the names are compared, so ours load last and
+ * no other pack is ever mistaken for this one.
  *
  * The stock client keeps every loading screen at 4:3. At RVA 0x6AC4 it calls a function whose result it then
  * compares (FCOM) to decide that; putting FLD1 (1.0) and four NOPs in place of the call lets the loading screen
@@ -14,7 +19,7 @@
  * are in place, since the game's own square ones would be stretched, and only when the eleven bytes there (the
  * call and the compare after it) are exactly the stock ones. WoW.exe on disk is never touched.
  *
- * A Data\patch-U.MPQ that is not ours (not the size Data\CinderLoad\installed.txt recorded when we put it there,
+ * A Data\patch-~.MPQ that is not ours (not the size Data\CinderLoad\installed.txt recorded when we put it there,
  * and none of our archives) is left alone, and the switch stays off. Each start adds a line or two to Logs\CinderLoad.log.
  *
  * Built like IndoorRain.dll, with no C runtime (build.sh).
@@ -141,7 +146,7 @@ static DWORD FileSize(const char *path)
 }
 
 /* installed.txt says which shape we put in place and how big that file was: "21x9 98765432". It counts only while
- * Data\patch-U.MPQ is still that size, so a file that replaced ours is never taken for ours. */
+ * Data\patch-~.MPQ is still that size, so a file that replaced ours is never taken for ours. */
 static int MarkerMatches(const char *marker, const char *dst)
 {
     char *text = ReadText(marker, 256);
@@ -165,12 +170,12 @@ static void WriteText(const char *path, const char *text)
     CloseHandle(f);
 }
 
-/* Puts the loading screens for this screen's shape in place as Data\patch-U.MPQ. 1 when ours are in place, so the
+/* Puts the loading screens for this screen's shape in place as Data\patch-~.MPQ. 1 when ours are in place, so the
  * switch can go on. */
 static int ChooseScreens(void)
 {
     char dst[MAX_PATH], marker[MAX_PATH], cfg[MAX_PATH], src[MAX_PATH], m[320];
-    if (!Join(dst, g_dir, "Data\\patch-U.MPQ") || !Join(marker, g_dir, "Data\\CinderLoad\\installed.txt") ||
+    if (!Join(dst, g_dir, "Data\\patch-~.MPQ") || !Join(marker, g_dir, "Data\\CinderLoad\\installed.txt") ||
         !Join(cfg, g_dir, "WTF\\Config.wtf"))
         return 0;
 
@@ -200,7 +205,7 @@ static int ChooseScreens(void)
     for (int i = 0; !ours && i < SHAPE_COUNT; i++)
         if (avail[i] && VariantPath(src, i) && SameContent(src, dst)) ours = 1;
     if (!ours) {
-        wsprintfA(m, "screen %dx%d (from %s): Data\\patch-U.MPQ is not ours, so it is left alone and the switch stays off",
+        wsprintfA(m, "screen %dx%d (from %s): Data\\patch-~.MPQ is not ours, so it is left alone and the switch stays off",
                   w, h, from);
         Log(m);
         return 0;
