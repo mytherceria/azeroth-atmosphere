@@ -1,6 +1,6 @@
 """Generate AzerothAtmosphere's Zones.lua from zones_source.py. Usage: python3 build_zones.py <out Zones.lua>"""
 import sys
-from zones_source import Z, derive_v8
+from zones_source import Z, derive_v8, safe, safe_wash, LAMP_PICKS
 
 def wash_of(z):
     if z["wash"]:
@@ -25,12 +25,17 @@ def main():
         for key, _ in CV:
             v = z[key]
             assert v is None or 0 <= v <= 100, (name, key, v)
-        cv = ", ".join(f"{c} = {z[k]}" for k, c in CV if z[k] is not None)
+        full = {c: z[k] for k, c in CV if z[k] is not None}
         v8 = derive_v8(name)
         for c, v in v8.items():
             assert isinstance(v, int), (name, c, v)
-        cv = cv + (", " if cv and v8 else "") + ", ".join(f"{c} = {v}" for c, v in v8.items())
-        w = wash_of(z)
+        full.update(v8)
+        held = safe(name, full)
+        for c, v in held.items():   # held back, never raised; what was set by eye stays as set
+            assert isinstance(v, int) and 0 <= v <= full[c], (name, c, full[c], v)
+            assert c not in LAMP_PICKS.get(name, {}) or v == full[c], (name, c)
+        cv = ", ".join(f"{c} = {v}" for c, v in held.items())
+        w = safe_wash(name, wash_of(z))
         ws = ", wash = { %.2f, %.2f, %.2f }" % w if w else ""
         assert not w or all(0.4 <= c <= 1 for c in w), (name, w)
         out.append(f"  [{q(name)}] = {{ mood = {q(z['mood'])}, src = {q(z['src'])},")

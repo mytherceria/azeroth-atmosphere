@@ -358,6 +358,67 @@ LAMP_PICKS = {
     "Duskwood": dict(comfyLampGlow=40, comfyMistLamps=40, comfyLampDistance=50, comfyLampReach=30),
 }
 
+# HELD BACK until each place has been set by eye. His rule, 1 Oct 2026: "Any other such settings that would lead to
+# fog, oversaturation, player not being able to see to play, should also be dialed way back until we've had a chance
+# to set them by hand. And not just in auberdine but across all maps, dungeons and zones." Players had reported the
+# Deadmines as a gas chamber (green fog, screen-filling lanterns) and the Auberdine ship walled in navy fog.
+# Every control that can hide the world, glare, oversaturate or darken it keeps a share of its zone's value
+# (SAFE_KEEP) and can never pass a ceiling (SAFE_CEILING), each well under comfy's own default (in the comments).
+# Nothing here ever raises a value. What he has set by eye in game (LAMP_PICKS) is kept as he set it.
+# To give a zone its full preset back once it has been set by hand, add it to SET_BY_HAND.
+SAFE_KEEP = dict(comfyFogThickness=0.4, comfyMistDensity=0.4, comfyRaysStrength=0.5, comfyVolumeStrength=0.5,
+                 comfyVolumeDensity=0.5)
+SAFE_CEILING = dict(
+    comfyFogThickness=25,        # comfy 0.6's distance fog (0.7 and 0.8 do not have it)
+    comfyMistDensity=15,         # comfy 25: how thick the fog is at the ground
+    comfyMistHeight=20,          # comfy 25: how deep the fog layer is
+    comfyMistLow=75,             # comfy 150: extra mist in valleys
+    comfyMistWater=75,           # comfy 210: extra mist over rivers, lakes and the sea (the harbours)
+    comfyMistMorning=50,         # comfy 100: extra mist at dawn
+    comfyMistBrightness=100,     # comfy 120: 100 is the game's own fog colour
+    comfyMistSun=30,             # how brightly the sun lights the fog
+    comfyMistLamps=20,           # comfy 50: how much brighter lamps glow in thick mist
+    comfyLampGlow=20,            # comfy 20
+    comfyRaysStrength=25,        # comfy 40
+    comfyVolumeStrength=20,      # comfy 25: how bright the lit fog is
+    comfyVolumeDensity=10,       # comfy 16: how thick the air is
+    comfySunlight=15,            # comfy 35: what the sun reaches made brighter, in percent
+    comfySunTint=50,             # comfy 95: sunlit ground takes a warm colour
+    comfyShadeTint=40,           # comfy 65: shade takes the sky's blue
+    comfySunShadowStrength=20,   # comfy 20: how dark the shadows are
+    comfyNightStrength=25,       # comfy 25: rays and volumetric light at night
+    comfyNightDarkness=15,       # comfy 20: how much darker the world is at night
+    comfyMoonlight=65,           # comfy 65: how blue the night is
+)
+SAFE_WASH = 0.25                 # a colour wash keeps a quarter of its darkening
+SET_BY_HAND = set()              # zones whose full preset has been checked by eye in game
+
+
+def safe(name, cv):
+    """The zone's controls held back (see SAFE_KEEP). Never raises a value; keeps what was set by eye."""
+    if name in SET_BY_HAND:
+        return dict(cv)
+    by_eye = LAMP_PICKS.get(name, {})
+    out = {}
+    for c, v in cv.items():
+        if c in by_eye:
+            out[c] = v
+            continue
+        if c in SAFE_KEEP:
+            v = 5 * round(v * SAFE_KEEP[c] / 5.0)
+        if c in SAFE_CEILING:
+            v = min(v, SAFE_CEILING[c])
+        out[c] = int(min(v, cv[c]))
+    return out
+
+
+def safe_wash(name, w):
+    """A zone's colour wash with most of its darkening taken off (see SAFE_WASH)."""
+    if w is None or name in SET_BY_HAND:
+        return w
+    return tuple(round(1 - (1 - c) * SAFE_WASH, 2) for c in w)
+
+
 def lamp_glow(c, valley, wet, z, dawn, d):
     """comfy's glow from a lamp at that spot, up to a constant that cancels."""
     def thick(z):

@@ -13,9 +13,10 @@ running VanillaFixes; it should suit any Turtle-based 1.12 client with the same 
 - **The zone moods** (the `AzerothAtmosphere` addon). A written mood and a preset for every zone, city, dungeon and raid in the client,
   118 of them, using comfyatmosphere's fog, sun rays, night and clouds, plus a colour wash over the world. Where
   footage of WoW Forever exists, the preset is measured from it. `/atmos` opens one window with every switch and
-  slider of the pack. Lamps stay within half again of comfy's own brightness (Duskwood's torches were picked by
-  eye in game), so no zone floods the screen with torchlight, and inside a building they take calmer values of
-  their own (`/atmos indoor`, in tenths). Zone moods carry on through Indoor Weather's storms: the storm thickens
+  slider of the pack. **For now every preset is held back:** fog, mist over water, glare, colour and night
+  darkness all sit well under comfy's own defaults, so nothing hides the world while each place waits to be
+  checked by eye in game. Lamps glow no brighter than comfy's own (Duskwood's torches were picked by eye in
+  game), and inside a building they take calmer values of their own (`/atmos indoor`, in tenths). Zone moods carry on through Indoor Weather's storms: the storm thickens
   the zone's own fog rather than pausing it.
 - **Clean Screen** (addon). The whole interface fades away after a minute of doing nothing; any activity brings it
   straight back. `/cleanscreen`. Minimap icons and pfQuest's tracker that set their own transparency fade with

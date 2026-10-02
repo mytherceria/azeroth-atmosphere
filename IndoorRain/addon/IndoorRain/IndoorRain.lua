@@ -116,9 +116,12 @@ end)
 -- comfy 0.6 and older has comfyFogThickness; 0.7 and 0.8 have the ground mist (comfyMistDensity, ten-thousandths
 -- a yard, up to 200) and sun shadows instead. A control the installed comfy lacks reads as nil and is left alone.
 -- In a storm the sun goes behind cloud: its light on the mist, its shadows and its brightening all weaken.
+-- The fog a storm adds is held back, like the zone presets, until storms have been set by eye in game (his rule,
+-- 1 Oct 2026: nothing that keeps a player from seeing to play). It was 12/22/32 and 15/30/50; a heavy storm over a
+-- held-back zone now stays near comfy's own default mist of 25.
 local FOG = {
-  { name = "comfyFogThickness",      add = { 12, 22, 32 } },
-  { name = "comfyMistDensity",       add = { 15, 30, 50 }, max = 200, step = 2 },
+  { name = "comfyFogThickness",      add = { 4, 7, 10 } },
+  { name = "comfyMistDensity",       add = { 5, 10, 15 }, max = 200, step = 2 },
   { name = "comfyRaysStrength",      mul = { 0.70, 0.45, 0.25 } },
   { name = "comfyVolumeStrength",    mul = { 0.70, 0.45, 0.25 } },
   { name = "comfyMistSun",           mul = { 0.70, 0.50, 0.35 } },
