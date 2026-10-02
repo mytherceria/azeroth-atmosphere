@@ -29,7 +29,9 @@
 --   /atmos on | off   the whole layer
 --   /atmos 0-100      strength: 100 is the zone as designed, 0 is the player's own settings
 --   /atmos indoor     the indoor lamp values; /atmos indoor <glow 0-100> [<mist 0-200>] sets them, tenths too
---   /aa               the same, and always this addon's
+--   /atmos rain 0-3   a storm's fog without waiting for rain (1 light, 2 steady, 3 heavy; 0 ends it)
+--   /atmos mistfix on | off   comfy's ground mist taken out aboard ships and inside (on by default; see MistWhy)
+--   /aa               the same words; any other word goes on to comfy, as under /atmos
 -- comfyatmosphere (since 0.7) answers to /atmos too, for its settings window and its tuning commands. The two
 -- share it: plain /atmos and this addon's own words come here, every other word goes on to comfy (/atmos options,
 -- /atmos debug, /atmos stats and its tuning all still work). Without comfy, /atmos is this addon's alone.
@@ -195,7 +197,13 @@ local function Targets()
       end
     end
   end
-  if mistOff and t.comfyMistDensity then t.comfyMistDensity = 0 end   -- see MistWhy: comfy's ground mist goes wrong here
+  if mistOff and t.comfyMistDensity then   -- see MistWhy: comfy's ground mist goes wrong here
+    t.comfyMistDensity = 0
+    -- comfy runs its volume pass while Volumetric Light Strength is above 0 or its mist is on (volume.cpp
+    -- VolumeActive), and sun shadows and lamp glow need that pass: with the mist out, a strength of 0 would put
+    -- them out at every door and on every ship. 1 keeps the pass with next to no light of its own.
+    if t.comfyVolumeStrength and t.comfyVolumeStrength < 1 then t.comfyVolumeStrength = 1 end
+  end
   if profile and profile.wash then
     for i = 1, 3 do w[i] = 1 - (1 - profile.wash[i]) * k end
   end
@@ -214,7 +222,8 @@ end
 -- Both are read from things that keep coming while the mist is off: comfy's position (written every second, fog or
 -- no fog) and IsIndoors. Not comfy's count of ground cells with no map tile: comfy stops measuring the ground while
 -- its mist is 0 (FogOn is density > 0), so that count froze at the Feathermoon ferry's and the mist never came back
--- (found in game, 1 Oct 2026). In both the ground mist is taken out at once, and it fades back over a few seconds once you have left. Every
+-- (found in game, 1 Oct 2026). Aboard, the ground mist is taken out at once; inside, once the reading has held a
+-- second; and it fades back over a few seconds once you have left. Every
 -- zone at once, nothing to tune per zone. Going back on waits a second, and so does a reading of "inside", since
 -- IsIndoors flickers in a doorway. db.mistFix ("/atmos mistfix off", or the window) leaves comfy's mist alone.
 -- A spot on land within ABOARD_YARDS of a continent's origin loses its mist too, which costs nothing.
@@ -234,14 +243,14 @@ local function ArmStats()
 end
 
 local function MistWhy()
-  if not db.mistFix then return nil end
+  if not db.mistFix or not CVarNum("comfyMistDensity") then return nil end   -- off, or no comfy: no mist to take out
   ArmStats()
   local ok, stats = pcall(GetCVar, "comfyStats")
   stats = ok and stats or ""
   local _, _, x, y = string.find(stats, STATS_PATTERN)
   x, y = tonumber(x), tonumber(y)
+  if Indoors() then return "inside" end   -- first: a dungeon near its map's origin (the Stockade) is inside, not a ship
   if x and y and math.abs(x) < ABOARD_YARDS and math.abs(y) < ABOARD_YARDS then return "aboard a ship" end
-  if Indoors() then return "inside" end
   return nil
 end
 
@@ -279,6 +288,13 @@ end
 -- A lamp slider the player moved: inside, it sets the indoor value; outside, it becomes their own, kept in
 -- every zone. Returns false for any other slider, which the caller lets go as before.
 local function Moved(name, now)
+  -- The mist the player moves is theirs (the zone leaves it alone from now on), and it stays managed, so the mist
+  -- fix can still take it out aboard and inside: dropping it, as other sliders are, switched the fix off for the
+  -- session while the status still claimed it (caught in review, 1 Oct 2026).
+  if name == "comfyMistDensity" then
+    db.base[name] = now; db.mine[name] = true; written[name] = now
+    return true
+  end
   if not LAMPS[name] then return false end
   if capped then db[LAMPS[name]] = now else db.base[name] = now; db.mine[name] = true end
   written[name] = now
@@ -473,18 +489,51 @@ frame:SetScript("OnEvent", function()
   end
 end)
 
-frame:SetScript("OnUpdate", function()
-  if not db then return end
-  if repairUntil then
-    local any = false
-    for i = 1, table.getn(MANAGED) do if CVarNum(MANAGED[i]) then any = true; break end end
-    if any or GetTime() > repairUntil then
-      repairUntil = nil; RestoreNow()
-      -- the zone's fade started at login was set up from the old state: start the zone over from the player's own
-      to = {}; rampT = 1; profile = nil; zone = nil; capped = nil
-    end
+-- The tick is three functions, not one: the 1.12 client runs Lua 5.0, which allows a function 32 upvalues, and the
+-- whole tick in one closure had reached 30 (caught in review, 1 Oct 2026; a 5.1 harness allows 60 and never notices).
+
+-- A layer still on from the last logout or a crash: put the player's values back once comfyatmosphere is up.
+-- Returns true while that is still waiting.
+local function RepairTick()
+  if not repairUntil then return false end
+  local any = false
+  for i = 1, table.getn(MANAGED) do if CVarNum(MANAGED[i]) then any = true; break end end
+  if any or GetTime() > repairUntil then
+    repairUntil = nil; RestoreNow()
+    -- the zone's fade started at login was set up from the old state: start the zone over from the player's own
+    to = {}; rampT = 1; profile = nil; zone = nil; capped = nil
+  end
+  return true
+end
+
+-- One step of the running fade.
+local function RampTick(dt)
+  if rampT >= 1 then
+    if db.active and not profile and capped == false and rain == 0 and not mistOff then RestoreNow() end
     return
   end
+  if PanelOpen() then return end
+  rampT = math.min(1, rampT + dt / rampLen)
+  local again = false
+  for name, v in pairs(to) do
+    local now = Under(name)
+    if now and written[name] and math.abs(now - written[name]) > 0.5 then
+      -- the player moved it: theirs from now on, and not put back
+      to[name] = nil
+      if not Moved(name, now) then db.base[name] = nil
+      elseif name == "comfyMistDensity" and mistOff then again = true end   -- the mist fix still holds it at 0
+    elseif now then
+      Put(name, from[name] + (v - from[name]) * rampT)
+    end
+  end
+  SetWash(washFrom[1] + (washTo[1] - washFrom[1]) * rampT,
+          washFrom[2] + (washTo[2] - washFrom[2]) * rampT,
+          washFrom[3] + (washTo[3] - washFrom[3]) * rampT)
+  if again then StartRamp(0.4) end
+end
+
+frame:SetScript("OnUpdate", function()
+  if not db or RepairTick() then return end
   stepT = stepT + arg1
   if stepT < STEP then return end
   local dt = stepT; stepT = 0
@@ -494,25 +543,7 @@ frame:SetScript("OnUpdate", function()
   ZoneCheck()
   StormCheck()
   GroundCheck(dt)
-  if rampT >= 1 then
-    if db.active and not profile and capped == false and rain == 0 and not mistOff then RestoreNow() end
-    return
-  end
-  if PanelOpen() then return end
-  rampT = math.min(1, rampT + dt / rampLen)
-  for name, v in pairs(to) do
-    local now = Under(name)
-    if now and written[name] and math.abs(now - written[name]) > 0.5 then
-      -- the player moved it: theirs from now on, and not put back
-      to[name] = nil
-      if not Moved(name, now) then db.base[name] = nil end
-    elseif now then
-      Put(name, from[name] + (v - from[name]) * rampT)
-    end
-  end
-  SetWash(washFrom[1] + (washTo[1] - washFrom[1]) * rampT,
-          washFrom[2] + (washTo[2] - washFrom[2]) * rampT,
-          washFrom[3] + (washTo[3] - washFrom[3]) * rampT)
+  RampTick(dt)
 end)
 
 -- The Atmosphere window: every live switch and slider of the pack in one place. /atmos opens it.
@@ -632,7 +663,7 @@ local function BuildWindow()
   Heading(f, "Lamps indoors", -362)
   add(Slide(f, "AtmosphereOptIndoorGlow", "Lamp glow inside", 26, -398, 0, 20, 0.5, "none", "20 (comfy's)",
     function() return db.indoorGlow end, function(v) SetIndoor(v, nil) end, ""))
-  add(Slide(f, "AtmosphereOptIndoorMist", "Lamps in mist inside", 26, -442, 0, 50, 1, "none", "50 (comfy's)",
+  add(Slide(f, "AtmosphereOptIndoorMist", "Lamps in mist inside (only with the mist fix off)", 26, -442, 0, 50, 1, "none", "50 (comfy's)",
     function() return db.indoorMist end, function(v) SetIndoor(nil, v) end, ""))
 
   -- Clean screen
@@ -694,7 +725,8 @@ local function OwnCommand(msg)
     Say((db.enabled and "on" or "off") .. ", strength " .. db.strength .. "%, layer: " .. (zone or "none")
       .. ", storm fog " .. (not IndoorRainDB and "needs Indoor Weather" or (db.stormFog and "on" or "off"))
       .. (rain > 0 and (testRain and (" (storm preview, level " .. rain .. ")") or (" (raining, level " .. rain .. ")")) or "")
-      .. (mistOff and (", ground mist off (" .. (mistWhy or "") .. ": comfy misjudges the ground here)") or "")
+      .. (mistOff and (", mist fix on (" .. (mistWhy or "") .. ": comfy misjudges the ground here; its mist now "
+        .. tostring(CVarNum("comfyMistDensity")) .. ")") or "")
       .. (StormActive() and " (Indoor Weather's own storm is still fading out underneath)" or "") .. ". "
       .. table.concat(parts, " "))
     local inside, source = Indoors()

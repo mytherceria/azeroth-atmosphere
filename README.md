@@ -18,7 +18,14 @@ running VanillaFixes; it should suit any Turtle-based 1.12 client with the same 
   is under comfy's own default in every zone; glare, colour and night darkness sit at or under comfy's own defaults too. Lamps glow no brighter than comfy's own (Duskwood's torches were picked by eye in
   game), and inside a building they take values of their own, picked by eye in an inn (`/atmos indoor`, in tenths). Storms are made here too, from the rain Indoor Weather reports: the
   mist thickens on top of the zone's own (held back like everything else) and clears when the rain stops, so
-  every fog decision in the pack is made in one place and two mods never both add a storm.
+  every fog decision in the pack is made in one place and two mods never both add a storm. `/atmos rain 1-3`
+  shows a storm's fog without waiting for rain (`/atmos rain 0` ends it).
+  **The mist fix (on by default):** comfyatmosphere works out the ground under its mist from the map around you,
+  and walls you in wherever that guess is wrong: aboard a ship or zeppelin (it reads your place on the deck as your
+  place in the world) and inside (in a mine, a dungeon or a city under the land its ground is the land above you).
+  In both, comfy's ground mist is taken out and comes back once you have left, so dungeon moods written as murk or
+  haze keep their colour and light but not comfy's mist. `/atmos mistfix off`, or the box at the bottom of the
+  window, leaves comfy's mist alone everywhere.
 - **Clean Screen** (addon). The whole interface fades away after a minute of doing nothing; any activity brings it
   straight back. `/cleanscreen`. Minimap icons and pfQuest's tracker that set their own transparency fade with
   the rest instead of blinking.
