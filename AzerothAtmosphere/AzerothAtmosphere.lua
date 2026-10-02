@@ -96,7 +96,8 @@ local seenInside, seenAt = nil, 0   -- the last indoor reading, and since when i
 local repairUntil
 local rain = 0                      -- the storm being shown: Indoor Weather's rain level, 0 when none or off
 local testRain                      -- /atmos rain 1-3: a storm's fog shown without rain, until /atmos rain 0 or a reload
-local aboard, aboardSince = false, 0   -- on a ship or zeppelin, by comfy's own position (see Aboard)
+local mistOff, mistWhy = false, nil   -- comfy's ground mist taken out here, and why (see MistWhy)
+local groundSince, pendingWhy, pendingAt = 0, nil, nil
 
 local function Say(msg) DEFAULT_CHAT_FRAME:AddMessage("|cff88bbccatmosphere|r: " .. msg) end
 
@@ -194,29 +195,43 @@ local function Targets()
       end
     end
   end
-  if aboard and t.comfyMistDensity then t.comfyMistDensity = 0 end   -- see Aboard: comfy's ground mist goes wrong there
+  if mistOff and t.comfyMistDensity then t.comfyMistDensity = 0 end   -- see MistWhy: comfy's ground mist goes wrong here
   if profile and profile.wash then
     for i = 1, 3 do w[i] = 1 - (1 - profile.wash[i]) * k end
   end
   return t, w
 end
 
--- Aboard a ship or a zeppelin. comfyatmosphere reads your position straight out of the game's memory, and on a
--- transport that is your place on the deck, measured from the ship's middle, not your place in the world (measured
--- 1 Oct 2026 at Auberdine with /atmos stats: 6577.5, 768.9 on the pier, -7.7, -2.5 on the deck, while the game's own
--- map position stayed right). Its ground fog then puts the ground near the map's origin and buries you in a wall of
--- fog, whatever the settings. comfy publishes that position in comfyStats once a second, so while it lies within
--- ABOARD_YARDS of the origin the ground mist is taken out, and it fades back in once you are off. A spot that close
--- to a continent's origin on land loses its mist too, which costs nothing.
+-- WHERE COMFY'S GROUND MIST GOES WRONG. comfyatmosphere works out the ground under its mist from the map's terrain
+-- around you, and fills the view wherever that guess is wrong. Three kinds of place, all found on 1 Oct 2026:
+--   aboard a ship or a zeppelin: comfy reads your place on the deck, measured from the ship's middle, as your place
+--     in the world (/atmos stats: 6577.5, 768.9 on the Auberdine pier, -7.7, -2.5 on the deck; 6420.3, 816.5 and
+--     1.5, 1.6 for the Stormwind ship), so its ground is near the map's origin. It walled the deck in at strength 0,
+--     with stock comfy 0.8.2 and nothing of ours;
+--   inside: comfy 0.8.2 has no indoor rule, so under a roof, in a mine or a city under the land its ground is the
+--     land above you, and you are buried in its mist (the Deadmines tunnel under Moonbrook, Undercity, Ironforge);
+--   no map under you: a dungeon built as one building has no terrain tiles, and comfy guesses (comfy publishes how
+--     many of its 128 x 128 ground cells had no tile; the Stormwind ship showed 12288).
+-- In all three the ground mist is taken out at once, and it fades back over a few seconds once you have left. Every
+-- zone at once, nothing to tune per zone. Going back on waits a second, and so does a reading of "inside", since
+-- IsIndoors flickers in a doorway. db.mistFix ("/atmos mistfix off", or the window) leaves comfy's mist alone.
+-- A spot on land within ABOARD_YARDS of a continent's origin loses its mist too, which costs nothing.
 local ABOARD_YARDS = 60
-local ABOARD_PATTERN = "x=(%-?[%d%.]+);y=(%-?[%d%.]+);z=%-?[%d%.]+;pos=1;"
-local function Aboard()
+local NO_GROUND = 8192                -- half of comfy's 128 x 128 ground cells with no map tile under them
+local SETTLE = 1.0
+local STATS_PATTERN = "x=(%-?[%d%.]+);y=(%-?[%d%.]+);z=%-?[%d%.]+;pos=1;"
+
+local function MistWhy()
+  if not db.mistFix then return nil end
   local ok, stats = pcall(GetCVar, "comfyStats")
-  if not ok or not stats then return false end
-  local _, _, x, y = string.find(stats, ABOARD_PATTERN)
+  stats = ok and stats or ""
+  local _, _, x, y = string.find(stats, STATS_PATTERN)
   x, y = tonumber(x), tonumber(y)
-  if not x or not y then return false end
-  return math.abs(x) < ABOARD_YARDS and math.abs(y) < ABOARD_YARDS
+  if x and y and math.abs(x) < ABOARD_YARDS and math.abs(y) < ABOARD_YARDS then return "aboard a ship" end
+  if Indoors() then return "inside" end
+  local _, _, missing = string.find(stats, "notile=(%d+);")
+  if (tonumber(missing) or 0) >= NO_GROUND then return "no map under you" end
+  return nil
 end
 
 -- How hard it is raining, from Indoor Weather's report: 0 without Indoor Weather, while it is switched off, before
@@ -353,17 +368,22 @@ local function IndoorCheck()
   if rampT >= 1 or lampRamp then StartRamp(INDOOR_SECONDS, true) else StartRamp() end
 end
 
--- Stepping on or off a ship: the mist goes at once and comes back over a few seconds (see Aboard). Twice a second,
--- since comfy's figure changes once a second.
-local function AboardCheck(dt)
-  aboardSince = aboardSince + dt
-  if aboardSince < 0.5 then return end
-  aboardSince = 0
-  local a = Aboard()
-  if a == aboard or PanelOpen() then return end
-  if a and not db.active and not TakeBase() then aboard = a; return end   -- no comfyatmosphere: nothing to fix
-  aboard = a
-  if db.active then StartRamp(a and 0.4 or 3) end
+-- Twice a second, since comfy's figures change once a second (see MistWhy). Aboard or with no map under you the mist
+-- goes at once; "inside", and coming back on, have to hold for SETTLE first.
+local function GroundCheck(dt)
+  groundSince = groundSince + dt
+  if groundSince < 0.5 then return end
+  groundSince = 0
+  local why = MistWhy()
+  if (why ~= nil) == mistOff then mistWhy = why or mistWhy; pendingAt = nil; return end
+  if pendingAt == nil or (pendingWhy ~= nil) ~= (why ~= nil) then pendingWhy, pendingAt = why, GetTime() end
+  local now = why == "aboard a ship" or why == "no map under you"
+  if not now and GetTime() - pendingAt < SETTLE then return end
+  if PanelOpen() then return end
+  pendingAt = nil
+  if why and not db.active and not TakeBase() then mistOff, mistWhy = true, why; return end   -- no comfy: nothing to do
+  mistOff, mistWhy = why ~= nil, why
+  if db.active then StartRamp(mistOff and 0.4 or 3) end
 end
 
 -- The rain starting, changing or stopping: the fog thickens or clears over STORM_SECONDS, on top of whatever
@@ -414,6 +434,7 @@ frame:SetScript("OnEvent", function()
     db.indoorMist = db.indoorMist or 10
     -- storm fog, on unless the player had switched Indoor Weather's off (read once, before this addon owns it)
     if db.stormFog == nil then db.stormFog = not (IndoorRainDB and IndoorRainDB.fog == false) end
+    if db.mistFix == nil then db.mistFix = true end   -- see MistWhy
     ShareIndoorRain()
     OwnStormFog()                         -- before Indoor Weather 0.14 can run a storm tick of its own
     SilenceOldCopy(frame)
@@ -460,9 +481,9 @@ frame:SetScript("OnUpdate", function()
   IndoorCheck()
   ZoneCheck()
   StormCheck()
-  AboardCheck(dt)
+  GroundCheck(dt)
   if rampT >= 1 then
-    if db.active and not profile and capped == false and rain == 0 and not aboard then RestoreNow() end
+    if db.active and not profile and capped == false and rain == 0 and not mistOff then RestoreNow() end
     return
   end
   if PanelOpen() then return end
@@ -621,6 +642,8 @@ local function BuildWindow()
   cs:SetPoint("TOPLEFT", f, "TOPLEFT", 24, -610)
   cs:SetText("comfy's settings")
   cs:SetScript("OnClick", function() if not ComfyOptions() then Say("comfyatmosphere is not installed.") end end)
+  add(Check(f, "AtmosphereOptMistFix", "Clear comfy's mist where it misjudges the ground", 20, -638,
+    function() return db.mistFix end, function(v) db.mistFix = v end))
 
   table.insert(UISpecialFrames, "AtmosphereOptions")   -- Escape closes it
   f:Hide()
@@ -659,7 +682,7 @@ local function OwnCommand(msg)
     Say((db.enabled and "on" or "off") .. ", strength " .. db.strength .. "%, layer: " .. (zone or "none")
       .. ", storm fog " .. (not IndoorRainDB and "needs Indoor Weather" or (db.stormFog and "on" or "off"))
       .. (rain > 0 and (testRain and (" (storm preview, level " .. rain .. ")") or (" (raining, level " .. rain .. ")")) or "")
-      .. (aboard and ", aboard a ship (comfy's ground mist off until you step off)" or "")
+      .. (mistOff and (", ground mist off (" .. (mistWhy or "") .. ": comfy misjudges the ground here)") or "")
       .. (StormActive() and " (Indoor Weather's own storm is still fading out underneath)" or "") .. ". "
       .. table.concat(parts, " "))
     local inside, source = Indoors()
@@ -668,6 +691,10 @@ local function OwnCommand(msg)
         or ((capped and db.active and "Inside, lamps at the indoor values now" or (inside and "Inside" or "Outside"))
           .. " (from " .. source .. ")."))
       .. (StormActive() and " Lamps have nothing to do with the storm, so the indoor values hold through it." or ""))
+  elseif msg == "mistfix on" or msg == "mistfix off" then
+    db.mistFix = (msg == "mistfix on")
+    Say(db.mistFix and "mist fix on: comfy's ground mist is taken out aboard ships, inside and where there is no map under you."
+      or "mist fix off: comfy's ground mist is left alone everywhere, walls and all.")
   elseif string.find(msg, "^rain") then
     local _, _, n = string.find(msg, "^rain%s+(%d)$")
     n = tonumber(n)
@@ -737,5 +764,5 @@ end
 
 SLASH_AZATMOS1 = "/aa"
 SlashCmdList["AZATMOS"] = function(msg)
-  if not OwnCommand(msg) then Say("/aa: the window. /aa on | off | status | 0-100 | indoor <glow> [<mist>] | rain 0-3 (a storm preview).") end
+  if not OwnCommand(msg) then Say("/aa: the window. /aa on | off | status | 0-100 | indoor <glow> [<mist>] | rain 0-3 (a storm preview) | mistfix on | off.") end
 end
