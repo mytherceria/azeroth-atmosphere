@@ -30,8 +30,11 @@ PY
 }
 
 # The DLL. build.sh runs in dll/, and ld takes the image base from the output path as written, so this path is
-# part of the build: keep it as it is for the same bytes.
-(cd IndoorRain/dll && ./build.sh ../../dist/IndoorRain.dll)
+# part of the build: keep it as it is for the same bytes. The linker also stamps the time into every build (6 bytes
+# of the PE header), so a rebuild never matches a launcher row's checksum: when the DLL has not changed, set
+# DLL_FROM to the released IndoorRain.dll and those exact bytes ship again.
+if [ -n "${DLL_FROM:-}" ]; then cp "$DLL_FROM" dist/IndoorRain.dll
+else (cd IndoorRain/dll && ./build.sh ../../dist/IndoorRain.dll); fi
 imports="$(i686-w64-mingw32-objdump -p dist/IndoorRain.dll | sed -n 's/.*DLL Name: //p' | sort | tr '\n' ' ')"
 [ "$imports" = "KERNEL32.dll USER32.dll " ] || { echo "unexpected imports: $imports"; exit 1; }
 
