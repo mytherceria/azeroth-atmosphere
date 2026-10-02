@@ -40,7 +40,8 @@ local PROFILES = AtmosphereDirector_Zones or {}   -- Zones.lua: every zone's moo
 
 local RAMP_SECONDS = 5
 local INDOOR_SECONDS = 1.0          -- stepping through a door: the lamps settle in a second, as Indoor Weather does
-local INDOOR_SETTLE = 0.75          -- seconds the reading must hold first: IsIndoors flickers in a doorway
+local INDOOR_SETTLE = 0.75          -- seconds an "outside" reading must hold first: IsIndoors flickers in a doorway
+local INDOOR_IN_HOLD = 0.3          -- and an "inside" one: short, so no candle flares, but past a doorway's blips
 local STEP = 0.2
 -- The two lamp controls the indoor cap holds down, each with the setting that holds its cap.
 local LAMPS = { comfyLampGlow = "indoorGlow", comfyMistLamps = "indoorMist" }
@@ -224,13 +225,13 @@ end
 -- Both are read from things that keep coming while the mist is off: comfy's position (written every second, fog or
 -- no fog) and IsIndoors. Not comfy's count of ground cells with no map tile: comfy stops measuring the ground while
 -- its mist is 0 (FogOn is density > 0), so that count froze at the Feathermoon ferry's and the mist never came back
--- (found in game, 1 Oct 2026). Aboard, the ground mist is taken out at once; inside, once the reading has held a
--- second; and it fades back over a few seconds once you have left. Every
--- zone at once, nothing to tune per zone. Going back on waits a second, and so does a reading of "inside", since
--- IsIndoors flickers in a doorway. db.mistFix ("/atmos mistfix off", or the window) leaves comfy's mist alone.
+-- (found in game, 1 Oct 2026). Aboard, the ground mist is taken out at once; inside, on two readings in a row (half
+-- a second); and it fades back over a few seconds once you have left, after a second of being out, since IsIndoors
+-- flickers in a doorway. Every zone at once, nothing to tune per zone. db.mistFix ("/atmos mistfix off", or the window) leaves comfy's mist alone.
 -- A spot on land within ABOARD_YARDS of a continent's origin loses its mist too, which costs nothing.
 local ABOARD_YARDS = 60
 local SETTLE = 1.0
+local INSIDE_HOLD = 0.4
 local STATS_PATTERN = "x=(%-?[%d%.]+);y=(%-?[%d%.]+);z=%-?[%d%.]+;pos=1;"
 
 -- comfy writes those figures into comfyStats only while the CVar holds exactly STATS_LEN characters, its default of
@@ -294,14 +295,9 @@ local function Moved(name, now)
   -- fix can still take it out aboard and inside: dropping it, as other sliders are, switched the fix off for the
   -- session while the status still claimed it (caught in review, 1 Oct 2026).
   if name == "comfyMistDensity" then
-    -- in a storm what the player sees includes the storm's extra: their own is what is left without it (review)
-    local own = now
-    if rain > 0 then
-      for i = 1, table.getn(STORM) do
-        if STORM[i].name == name and STORM[i].add then own = math.max(0, now - STORM[i].add[math.min(3, rain)]) end
-      end
-    end
-    db.base[name] = own; db.mine[name] = true; written[name] = now
+    -- In a storm what the player sets includes the storm's extra, and it is kept as set: taking the storm's part
+    -- off here could save a 0 and missed the common path (tried and dropped after review, 1 Oct 2026).
+    db.base[name] = now; db.mine[name] = true; written[name] = now
     return true
   end
   if not LAMPS[name] then return false end
@@ -405,10 +401,11 @@ local function IndoorCheck()
   local inside = Indoors() and true or false
   if inside ~= seenInside then seenInside, seenAt = inside, GetTime() end
   if inside == capped or PanelOpen() then return end
-  -- Going in acts at once: comfy lights every candle at full strength under a roof, so waiting for the reading to
-  -- settle and then fading flared the candles for a second and a half (seen at the Scarlet Raven, 1 Oct 2026).
-  -- Coming out waits for the reading to hold, since IsIndoors flickers in a doorway; nil: the caps changed, act now.
-  if capped ~= nil and not inside and GetTime() - seenAt < INDOOR_SETTLE then return end
+  -- Going in acts after a third of a second: comfy lights every candle at full strength under a roof, so the old
+  -- settle and fade flared the candles for a second and a half (seen at the Scarlet Raven, 1 Oct 2026), while acting
+  -- on the first reading flapped on a doorway's brief blips (review). Coming out waits for the reading to hold for
+  -- INDOOR_SETTLE; nil: the caps changed, act now.
+  if capped ~= nil and GetTime() - seenAt < (inside and INDOOR_IN_HOLD or INDOOR_SETTLE) then return end
   if inside and not db.active then TakeBase() end
   capped = inside
   if not db.active then return end    -- no comfyatmosphere: nothing to hold down
@@ -418,8 +415,7 @@ local function IndoorCheck()
   if rampT >= 1 or lampRamp then StartRamp(INDOOR_SECONDS, true) else StartRamp() end
 end
 
--- Twice a second, since comfy's figures change once a second (see MistWhy). Aboard or inside the mist goes at once;
--- coming back on has to hold for SETTLE first, so a doorway's flicker leaves it off rather than flapping.
+-- Twice a second, since comfy's figures change once a second (see MistWhy).
 local function GroundCheck(dt)
   groundSince = groundSince + dt
   if groundSince < 0.5 then return end
@@ -427,8 +423,9 @@ local function GroundCheck(dt)
   local why = MistWhy()
   if (why ~= nil) == mistOff then mistWhy = why or mistWhy; pendingAt = nil; return end
   if pendingAt == nil or (pendingWhy ~= nil) ~= (why ~= nil) then pendingWhy, pendingAt = why, GetTime() end
-  local now = why ~= nil
-  if not now and GetTime() - pendingAt < SETTLE then return end
+  -- aboard at once; inside on two readings in a row (a doorway's brief blips are one); back on after SETTLE
+  local hold = (why == "aboard a ship") and 0 or (why and INSIDE_HOLD or SETTLE)
+  if GetTime() - pendingAt < hold then return end
   if PanelOpen() then return end
   pendingAt = nil
   if why and not db.active and not TakeBase() then mistOff, mistWhy = true, why; return end   -- no comfy: nothing to do
