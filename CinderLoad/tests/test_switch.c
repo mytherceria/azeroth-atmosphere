@@ -544,13 +544,31 @@ static void FireBarTests(void)
     Check(Ours(p) && !strcmp(p, TEX "Loading-BarFill-fel"), "Deadmines (map 36): fel");
     Check(!strcmp(BarPath(GameBorder()), TEX "Loading-BarBorder-fel"), "and its border: fel too");
     Check(!strcmp(ForMap(409), TEX "Loading-BarFill-aqua"), "Molten Core, named LoadScreenMoltenCore.blp in bars.txt: aqua");
-    char shown[48];
-    BarShownSince(shown);
+    char shown[BAR_SHOWN_MAX];
+    BarShownSince(shown, (int)sizeof shown);
     Check(!strcmp(shown, ", its fire aqua") && g_barShown == 0, "the worker's line says which fire the screen had, once");
     Check(!strcmp(ForMap(0), TEX "Loading-BarFill-arcane"), "a continent bars.txt does not list: the default family");
     Check(ForMap(329) == GameFill(), "Stratholme, orange, whose files the pack does not carry: the game's own path back");
-    BarShownSince(shown);
+    BarShownSince(shown, (int)sizeof shown);
     Check(!strcmp(shown, ", its fire the pack's orange"), "and the worker's line says so");
+    /* the longest line there can be (the pack's orange and wallpaper 64), and a buffer too small: nothing written past
+     * the end (3 Oct 2026: a 48-byte buffer was overrun on a screen with a wallpaper) */
+    unsigned char guard[BAR_SHOWN_MAX + 16];
+    int keepCount = g_walls.count; LONG keepPick = g_wallPick;
+    g_walls.count = 64; g_wallPick = 64;
+    lstrcpyA(g_walls.path[63], "Interface\\Glues\\LoadingScreens\\CinderWall64.blp");
+    memset(guard, 0xAA, sizeof guard);
+    InterlockedExchange(&g_barShown, -1);
+    BarShownSince((char *)guard, BAR_SHOWN_MAX);
+    int fits = !strcmp((char *)guard, ", its fire the pack's orange, its wallpaper CinderWall64.blp");
+    for (int i = BAR_SHOWN_MAX; i < (int)sizeof guard; i++) fits &= guard[i] == 0xAA;
+    memset(guard, 0xAA, sizeof guard);
+    InterlockedExchange(&g_barShown, -1);
+    BarShownSince((char *)guard, 20);
+    int cut = strlen((char *)guard) == 19 && guard[19] == 0;
+    for (int i = 20; i < (int)sizeof guard; i++) cut &= guard[i] == 0xAA;
+    g_walls.count = keepCount; g_wallPick = keepPick;
+    Check(fits && cut, "the worker's line: the longest one fits, and a small buffer is cut short, never overrun");
     Check(!strcmp(ForMap(-1), TEX "Loading-BarFill-fel"), "map -1 (no screen of its own): the default screen, 'loading'");
     Check(!strcmp(ForMap(601), TEX "Loading-BarFill-fel") && !strcmp(ForMap(-5), TEX "Loading-BarFill-fel"),
           "a map id past either end of Map.dbc: the default screen");

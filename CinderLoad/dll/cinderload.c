@@ -706,7 +706,8 @@ static void FireClose(void)
     g_fire.channel = -1;
 }
 
-static void BarShownSince(char *out);
+#define BAR_SHOWN_MAX 96               /* the longest is 60: ", its fire the pack's orange, its wallpaper CinderWall64.blp" */
+static void BarShownSince(char *out, int cap);
 
 /* One look at the client, every FIRE_POLL_MS. */
 static void FireStep(DWORD now)
@@ -752,8 +753,8 @@ static void FireStep(DWORD now)
         if (g_fire.playing > 0 && g_fire.screens < FIRE_SCREEN_LOGS) {
             g_fire.screens++;
             DWORD ms = now - g_fire.since;
-            char bar[48];
-            BarShownSince(bar);
+            char bar[BAR_SHOWN_MAX];
+            BarShownSince(bar, (int)sizeof bar);
             wsprintfA(m, "loading screen: the fire burned for %lu.%lu s, the bar reached %d%% in %d steps%s", ms / 1000,
                       ms % 1000 / 100, (int)(g_fire.reached * 100 + 0.5f), g_fire.steps, bar);
             Log(m);
@@ -1147,21 +1148,31 @@ const char *WINAPI BarPath(const char *path)
 }
 
 /* For the worker's line about a screen that has gone: which bar it had, if the bar was ours to choose. */
-static void BarShownSince(char *out)
+/* Appends s to out, never past cap bytes (the terminator included). */
+static void BarCat(char *out, int cap, const char *s)
+{
+    int n = lstrlenA(out);
+    while (*s && n < cap - 1) out[n++] = *s++;
+    out[n] = 0;
+}
+/* Fixed 3 Oct 2026: it wrote into a 48-byte buffer with no limit, and a screen with a wallpaper overran it (by 2 bytes
+ * with the arcane fire, 13 with the pack's orange). */
+static void BarShownSince(char *out, int cap)
 {
     LONG shown = InterlockedExchange(&g_barShown, 0);
     out[0] = 0;
-    if (g_barsOn && shown > 0 && shown <= g_bars.families)
-        wsprintfA(out, ", its fire %s", g_bars.family[shown - 1].name);
-    else if (g_barsOn && shown < 0)
-        lstrcpyA(out, ", its fire the pack's orange");
+    if (g_barsOn && shown > 0 && shown <= g_bars.families) {
+        BarCat(out, cap, ", its fire ");
+        BarCat(out, cap, g_bars.family[shown - 1].name);
+    } else if (g_barsOn && shown < 0)
+        BarCat(out, cap, ", its fire the pack's orange");
     LONG w = g_wallPick;
     if (g_barsOn && w > 0 && w <= g_walls.count) {
         const char *n = g_walls.path[w - 1];
         for (const char *q = n; *q; q++)
             if (*q == '\\') n = q + 1;
-        lstrcatA(out, ", its wallpaper ");
-        lstrcatA(out, n);
+        BarCat(out, cap, ", its wallpaper ");
+        BarCat(out, cap, n);
     }
 }
 
