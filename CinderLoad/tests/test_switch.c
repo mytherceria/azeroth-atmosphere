@@ -40,6 +40,11 @@ static void Fresh(const char *name)
         memcpy(shim_module + kFireCode[i].rva, kFireCode[i].bytes, (size_t)kFireCode[i].n);
     for (int i = 0; i < BAR_CODE_COUNT; i++)
         memcpy(shim_module + kBarCode[i].rva, kBarCode[i].bytes, (size_t)kBarCode[i].n);
+    for (int i = 0; i < REVEAL_CODE_COUNT; i++)
+        memcpy(shim_module + kRevealCode[i].rva, kRevealCode[i].bytes, (size_t)kRevealCode[i].n);
+    memcpy(shim_module + WALL_LOAD_RVA, kWallLoad, sizeof kWallLoad);
+    g_walls.count = 0;
+    g_wallPick = 0;
     g_barsOn = 0;
     g_barShown = 0;
     shim_screen_w = 3440; shim_screen_h = 1440;
@@ -738,6 +743,15 @@ static void FireBarRealClient(const char *client)
                  !memcmp(got, kBarCode[i].bytes, (size_t)kBarCode[i].n);
         if (!match) { printf("FAIL: RVA 0x%lX (%s) differs in %s\n", (unsigned long)kBarCode[i].rva, kBarCode[i].what, exe); break; }
     }
+    for (int i = 0; x && match && i <= REVEAL_CODE_COUNT; i++) {   /* the reveal's five places, then the wallpaper call */
+        DWORD rva = i < REVEAL_CODE_COUNT ? kRevealCode[i].rva : WALL_LOAD_RVA;
+        int len = i < REVEAL_CODE_COUNT ? kRevealCode[i].n : (int)sizeof kWallLoad;
+        const unsigned char *want = i < REVEAL_CODE_COUNT ? kRevealCode[i].bytes : kWallLoad;
+        unsigned char got[64];
+        long off = ExeOffset(x, rva);
+        match &= off >= 0 && !fseek(x, off, SEEK_SET) && fread(got, 1, (size_t)len, x) == (size_t)len && !memcmp(got, want, (size_t)len);
+        if (!match) printf("FAIL: RVA 0x%lX differs in %s\n", (unsigned long)rva, exe);
+    }
     if (x) fclose(x);
     Check(match, "a real client: all seven places hold the bytes the fire bar expects, in its WoW.exe");
 }
@@ -796,6 +810,152 @@ static void FireRealClient(const char *client)
     size_t len = Wav(out, 1, 2, 16, 44100, pcm, total);
     FILE *f = fopen(path, "wb");
     if (f) { fwrite(out, 1, len, f); fclose(f); printf("wrote %s (peak %d)\n", path, peak); }
+}
+
+/* ---- tonight's three: the fire revealed with a soft, live front, and the continents' wallpapers ---- */
+static void PutFloat(unsigned va, float f) { memcpy(shim_module + va - 0x400000u, &f, 4); }
+static void PackLive(int reveal, int walls)
+{
+    const char *names[16], *data[16];
+    int n = 0;
+    names[n] = "Interface\\Glues\\LoadingScreens\\LoadScreenDeadmines.blp"; data[n++] = "BLP2screen";
+    names[n] = "CinderLoad\\bars.txt";
+    data[n++] = walls ? "cinderwall01 aqua\r\ncinderwall02 fel\r\ndefault arcane\r\n" : kBars;
+    static const char *const fam[] = { "fel", "aqua", "arcane" };
+    static char fills[3][80], borders[3][80];
+    for (int f = 0; f < 3; f++) {
+        snprintf(fills[f], sizeof fills[f], TEX "Loading-BarFill-%s.blp", fam[f]);
+        snprintf(borders[f], sizeof borders[f], TEX "Loading-BarBorder-%s.blp", fam[f]);
+        names[n] = fills[f]; data[n++] = "BLP2f";
+        names[n] = borders[f]; data[n++] = "BLP2b";
+    }
+    if (reveal) { names[n] = "CinderLoad\\reveal.txt"; data[n++] = "revealed"; }
+    if (walls) {
+        names[n] = "Interface\\Glues\\LoadingScreens\\CinderWall01.blp"; data[n++] = "BLP2wall1";
+        names[n] = "Interface\\Glues\\LoadingScreens\\CinderWall02.blp"; data[n++] = "BLP2wall2";
+    }
+    MakeMpq(UW, n, names, data, NULL);
+    Put("WTF/Config.wtf", RES("5120x2160"));
+}
+static int SetupCall(void) { return Rd32(shim_module + 0x725E + 1); }
+static int StripCall(void) { return Rd32(shim_module + 0x7288 + 1); }
+static int StretchKept(void)
+{
+    return Same(shim_module + REVEAL_DRAW_RVA, kRevealDraw, (int)sizeof kRevealDraw) &&
+           Same(shim_module + REVEAL_STRIP_RVA, kRevealStrip, (int)sizeof kRevealStrip);
+}
+
+static void LiveTests(void)
+{
+    /* the reveal: both calls ours, the fill as tall as the log */
+    Fresh("reveal-on");
+    PackLive(1, 0);
+    Start();
+    unsigned setup = (unsigned)((unsigned long)RevealStub - (unsigned long)(shim_module + 0x725E + 5));
+    unsigned strip = (unsigned)((unsigned long)RevealStripStub - (unsigned long)(shim_module + 0x7288 + 5));
+    Check(LogSays("fire reveal on") && (unsigned)SetupCall() == setup && (unsigned)StripCall() == strip &&
+          shim_module[0x725E] == 0xE8 && shim_module[0x7288] == 0xE8 &&
+          g_drawSetup == shim_module + 0x18A2A0 && g_drawStrip == shim_module + 0x18A2E0,
+          "reveal on: RVA 0x725E to the setup stub, 0x7288 to the strip stub, each going on to the game's own (0x58A2A0, 0x58A2E0)");
+    Check(Same(shim_module + BAR_FILL_RVA, kBorderWide, 16) && Same(shim_module + BAR_BORDER_RVA, kBorderWide, 16) &&
+          LogSays("its fire as tall as the log") && LogSays("fire bar on"),
+          "reveal on: the fill takes the log's own size, the fire bar still on");
+    Start();
+    Check(LogSays("fire reveal already on") && (unsigned)SetupCall() == setup, "a second start: already on, nothing written");
+
+    Fresh("reveal-asked-not");
+    PackLive(0, 0);
+    Start();
+    Check(!LogSays("fire reveal") && StretchKept() && Same(shim_module + BAR_FILL_RVA, kFillWide, 16) && LogSays("fire bar on"),
+          "a pack without reveal.txt: stretched as before, the fill its old height");
+
+    int quiet = 1;
+    for (int i = 0; i < REVEAL_CODE_COUNT; i++) {
+        Fresh("reveal-other");
+        PackLive(1, 0);
+        shim_module[kRevealCode[i].rva + (unsigned)kRevealCode[i].n - 1] ^= 0x40;
+        Start();
+        char words[160];
+        snprintf(words, sizeof words, "fire reveal off: other bytes at RVA 0x%lX (%s)", (unsigned long)kRevealCode[i].rva,
+                 kRevealCode[i].what);
+        int kept = kRevealCode[i].rva == REVEAL_DRAW_RVA || kRevealCode[i].rva == REVEAL_STRIP_RVA
+                       ? Same(shim_module + REVEAL_DRAW_RVA, kRevealDraw, (int)sizeof kRevealDraw - (kRevealCode[i].rva == REVEAL_DRAW_RVA)) &&
+                         Same(shim_module + REVEAL_STRIP_RVA, kRevealStrip, (int)sizeof kRevealStrip - (kRevealCode[i].rva == REVEAL_STRIP_RVA))
+                       : StretchKept();
+        quiet &= LogSays(words) && kept && Same(shim_module + BAR_FILL_RVA, kFillWide, 16) && LogSays("fire bar on");
+    }
+    Check(quiet, "any of the reveal's five places changed: logged, neither call touched, the fill stretched at its old height");
+
+    /* the live strip */
+    float v[12] = { 0.0f, 0.0f, 0.5f,  0.5f, 0.0f, 0.5f,  0.0f, 0.09f, 0.5f,  0.5f, 0.09f, 0.5f };
+    PutFloat(0x882BE4, 0.5f);
+    g_barsOn = 1;
+    RevealFill(v);
+    int n = g_fillCount / 2, rising = 1;
+    for (int k = 1; k < n; k++) rising &= g_fillVerts[6 * k] > g_fillVerts[6 * (k - 1)];
+    float uSpan = g_fillUV[4 * (n - 1)] - g_fillUV[0];
+    Check(g_fillCount % 2 == 0 && n >= 3 && n <= FILL_COLUMNS && rising && g_fillVerts[0] == 0.0f &&
+          g_fillVerts[6 * (n - 1)] == 0.5f && g_fillVerts[1] == 0.09f && g_fillVerts[4] == 0.0f && g_fillVerts[2] == 0.5f,
+          "the strip: columns from the left edge to the front in order, top then bottom, at the game's height and depth");
+    Check(Near(uSpan, 0.25, 1e-4) && g_fillUV[1] == 0 && g_fillUV[3] == 1,
+          "the lava: half its texture spans the whole bar, so half a bar's progress shows a quarter of it");
+    unsigned front = g_fillColor[2 * (n - 1)], left = g_fillColor[0];
+    int grey = 0, bright = 0;
+    for (int k = 0; k < n; k++) {
+        float d = (0.5f - g_fillVerts[6 * k]) / 1.0f;
+        int gk = (int)(g_fillColor[2 * k] & 0xFF);
+        if (d > 0.4f && gk > grey) grey = gk;
+        if (d > 0.04f && d < 0.1f && gk > bright) bright = gk;
+    }
+    Check((front >> 24) == 0 && (left >> 24) == 255 && bright > grey && grey >= 70 && g_fillColor[1] == g_fillColor[0],
+          "the heat: the front fades in from nothing, brightest just behind it, cooling (but still alight) far behind");
+    PutFloat(0x882BE4, 0.0f);
+    float v0[12] = { 0.0f, 0.0f, 0.5f,  0.0f, 0.0f, 0.5f,  0.0f, 0.09f, 0.5f,  0.0f, 0.09f, 0.5f };
+    RevealFill(v0);
+    Check(g_fillCount >= 2 && g_fillCount <= 2 * FILL_COLUMNS, "an empty bar: a strip of nothing, never past its arrays");
+    PutFloat(0x882BE4, 2.0f);
+    float v1[12] = { 0.0f, 0.0f, 0.5f,  1.0f, 0.0f, 0.5f,  0.0f, 0.09f, 0.5f,  1.0f, 0.09f, 0.5f };
+    RevealFill(v1);
+    Check(g_fillCount <= 2 * FILL_COLUMNS && g_fillVerts[6 * (g_fillCount / 2 - 1)] == 1.0f, "a progress past 1 is taken as 1");
+
+    /* the wallpapers */
+    Fresh("walls-on");
+    PackLive(1, 1);
+    Start();
+    unsigned wallRel = (unsigned)((unsigned long)BarStub - (unsigned long)(shim_module + 0x6EBA + 5));
+    Check(LogSays("wallpapers: 2 in the pack") && LogSays("wallpapers on") && Rd32(shim_module + 0x6EBA + 1) == wallRel &&
+          shim_module[0x6EBA] == 0xE8 && Same(shim_module + 0x6EAF, kWallLoad, 12),
+          "wallpapers on: the picture's load at RVA 0x6EBA goes to the bar's stub, every other byte kept");
+    FakeTables();
+    const char *ekPath = "Interface\\Glues\\LoadingScreens\\LoadScreenEasternKingdom.blp";
+    int ok = 1, last = -1, changed = 1;
+    for (int i = 0; i < 6; i++) {
+        const char *fill = ForMap(0);
+        const char *pic = BarPath(ekPath);
+        int w = strstr(pic, "CinderWall01") ? 1 : (strstr(pic, "CinderWall02") ? 2 : 0);
+        ok &= w && !strcmp(fill, w == 1 ? TEX "Loading-BarFill-aqua" : TEX "Loading-BarFill-fel");
+        if (last >= 0) changed &= w != last;
+        last = w;
+    }
+    Check(ok && changed, "Eastern Kingdoms: a wallpaper drawn at the fill, its fire with it, the picture then that same wallpaper, never twice in a row");
+    const char *dmPath = "Interface\\Glues\\LoadingScreens\\LoadScreenDeadmines.blp";
+    const char *dmFill = ForMap(36);
+    Check(BarPath(dmPath) == dmPath && !strcmp(dmFill, TEX "Loading-BarFill-arcane"),
+          "a dungeon (the Deadmines): its own picture, its fire from bars.txt");
+
+    Fresh("walls-none");
+    PackLive(1, 0);
+    Start();
+    Check(!LogSays("wallpapers") && Same(shim_module + WALL_LOAD_RVA, kWallLoad, (int)sizeof kWallLoad),
+          "no wallpapers in the pack: the picture's load is never touched");
+
+    Fresh("walls-other");
+    PackLive(1, 1);
+    shim_module[WALL_LOAD_RVA + 1] ^= 0x40;
+    Start();
+    Check(LogSays("wallpapers off: other bytes at RVA 0x6EAF") && LogSays("fire bar on") &&
+          shim_module[WALL_LOAD_RVA + 1] == (0x4E ^ 0x40) && Same(shim_module + WALL_CALL_RVA, kWallLoad + WALL_REL_AT - 1, 5),
+          "the picture's load holding other bytes: logged, untouched, the fire bar still on");
 }
 
 int main(int argc, char **argv)
@@ -932,6 +1092,7 @@ int main(int argc, char **argv)
 
     FireTests();
     FireBarTests();
+    LiveTests();
     if (argc > 2) {
         FireBarRealClient(argv[2]);
         FireRealClient(argv[2]);

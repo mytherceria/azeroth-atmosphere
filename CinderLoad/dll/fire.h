@@ -1,7 +1,7 @@
 /* The loading bar's fire sound, the part of CinderLoad.dll kept free of Windows and FMOD calls so it can be tested on
  * its own (tests/test_switch.c). Included once, by cinderload.c.
  *
- * The sound is the mock he approved by ear on 2 Oct 2026 (make_fire_audio.py, loading-bar-fire-80-20.mp4), rebuilt
+ * The sound is the mock approved by ear on 2 Oct 2026 (make_fire_audio.py, loading-bar-fire-80-20.mp4), rebuilt
  * from the same six loops of the game's own (read out of the player's client at run time; none is shipped):
  *   the bed, always there:  CampFireLargeLoop 1.0, UndeadCampfireLArge 0.55, AlterOfKingsFireLoop 0.45, LavaPoolLoop 0.18,
  *                           at 0.85 to 1.15 as the fill goes from 0 to a third;

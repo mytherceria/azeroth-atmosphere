@@ -4,7 +4,8 @@ drawn for, centred, with its sides filled by a blurred, darkened, wider copy of 
 seams; the continents' two screens can be the test pattern instead (--test-continents).
 
 Usage: STORMLIB=/path/to/libstorm.so python3 make_pack.py <client Data dir> <out dir> <shape> <screen w> <screen h>
-       [--test-continents] [--art <map file>] [--bar <dir>] [--fire-bars <dir> --bar-map <file>]
+       [--test-continents] [--art <map file>] [--bar <dir>] [--fire-bars <dir> --bar-map <file>] [--reveal]
+       [--wallpapers <file>]
    e.g. ... make_pack.py ~/Games/RavenCraft-fogtest/Data out 21x9 5120 2160 --test-continents
 
 The loading bar's fire for each screen (CinderLoad.dll picks the bar by the screen's picture; both options or neither):
@@ -98,6 +99,9 @@ def widen(art, sw, sh):
 
 
 BAR_BAND = False   # set by --bar: the screens get a dark band where the bar's fire runs
+REVEAL = False     # set by --reveal: the bar's fill is a painting of the burning log, uncovered as the bar fills
+                   # (CinderLoad.dll reveals it when the pack holds CinderLoad\reveal.txt); the screens then get pure
+                   # black under the whole log, so the log is matte black wherever the fire has not reached
 
 
 def dark_band(im):
@@ -106,6 +110,12 @@ def dark_band(im):
     yet, which then look dark instead of showing the picture. The game draws nothing there before the fill."""
     w, h = im.size
     x0, x1 = 0, w
+    if REVEAL:                                          # the whole log, 0.09 of the height from the bottom, pure black
+        y0, y1 = int(h * (1 - 0.09)) - 2, h
+        band = Image.new(im.mode, (x1 - x0, y1 - y0))
+        im = im.copy()
+        im.paste(band, (x0, y0))
+        return im
     y0, y1 = int(h * (1 - 0.078)), int(h * (1 - 0.012))
     band = im.crop((x0, y0, x1, y1)).point(lambda v: int(v * 0.06))
     im = im.copy()
@@ -226,6 +236,7 @@ if __name__ == '__main__':
     data, out, shape, sw, sh = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]), int(sys.argv[5])
     test = '--test-continents' in sys.argv
     BAR_BAND = '--bar' in sys.argv                     # module level: build_one sees it
+    REVEAL = '--reveal' in sys.argv
     art = {}                                            # --art <file>: lines '<loadscreen>.blp <picture>'
     if '--art' in sys.argv:
         for line in open(sys.argv[sys.argv.index('--art') + 1]).read().splitlines():
@@ -245,6 +256,16 @@ if __name__ == '__main__':
             missing.append(path)
             continue
         jobs.append((path, raw, sw, sh, label, blps))
+    if '--wallpapers' in sys.argv:                      # one picture per line: CinderWall01.blp, 02, ... in that order,
+        pics = [l.strip() for l in open(sys.argv[sys.argv.index('--wallpapers') + 1]).read().splitlines()
+                if l.strip() and not l.startswith('#')]       # drawn at random by CinderLoad.dll on the continents
+        if not 0 < len(pics) <= 64:
+            raise SystemExit('--wallpapers: 1 to 64 pictures')
+        for i, pic in enumerate(pics, 1):
+            pic = os.path.expanduser(pic)
+            if not os.path.isfile(pic):
+                raise SystemExit(f'--wallpapers: no such picture {pic}')
+            jobs.append((f'Interface\\Glues\\LoadingScreens\\CinderWall{i:02d}.blp', None, sw, sh, pic, blps))
     fire = []                                           # the bar's fire for each screen (see the usage above), checked
     if ('--fire-bars' in sys.argv) != ('--bar-map' in sys.argv):          # before the screens take their minutes
         raise SystemExit('--fire-bars and --bar-map go together')
@@ -264,6 +285,11 @@ if __name__ == '__main__':
             if n.lower().startswith('loading-bar') and n.lower().endswith('.blp'):
                 files.append((os.path.join(bar, n), 'Interface\\Glues\\LoadingBar\\' + n))
     files += fire
+    if REVEAL:
+        note = os.path.join(blps, 'reveal.txt')
+        with open(note, 'w') as f:
+            f.write('The bar textures in this pack are made to be revealed, not stretched (CinderLoad 0.1.5 and later).\n')
+        files.append((note, 'CinderLoad\\reveal.txt'))
     mpq = os.path.join(out, 'Data', 'CinderLoad', f'LoadingScreens-{shape}.MPQ')
     os.makedirs(os.path.dirname(mpq), exist_ok=True)
     pack(mpq, files)

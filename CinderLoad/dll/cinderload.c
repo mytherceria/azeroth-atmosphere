@@ -295,6 +295,9 @@ static const unsigned char kFillWide[16]    = { 0x00, 0x00, 0x00, 0x3F, 0xEC, 0x
                                                 0x00, 0x00, 0x80, 0x3F, 0xF4, 0xFD, 0x54, 0x3D }; /* 1.0, 0.052 */
 static const unsigned char kBorderWide[16]  = { 0x00, 0x00, 0x00, 0x3F, 0xEC, 0x51, 0x38, 0x3D,   /* 0.5, 0.045 */
                                                 0x00, 0x00, 0x80, 0x3F, 0xEC, 0x51, 0xB8, 0x3D }; /* 1.0, 0.09 */
+/* A pack whose fire is revealed rather than stretched (see RevealBar) gets a fill the size of the log itself, so the
+ * cracks can burn from its top edge to its bottom one. */
+#define kFillReveal kBorderWide
 
 /* Read only, before anything is put in place: is this the client CinderLoad was made for? Both places it changes must
  * hold the stock bytes (or ours, from an earlier start in this process). */
@@ -312,25 +315,27 @@ static int ClientIsOurs(void)
     int codeOk = Same(code, kStock, sizeof kStock) ||
                  (Same(code, kWide, sizeof kWide) && Same(code + 5, kStock + 5, (int)sizeof kStock - 5));
     int barOk = (Same(fill, kFillStock, 16) && Same(border, kBorderStock, 16)) ||
-                (Same(fill, kFillWide, 16) && Same(border, kBorderWide, 16));
+                ((Same(fill, kFillWide, 16) || Same(fill, kFillReveal, 16)) && Same(border, kBorderWide, 16));
     return codeOk && barOk;
 }
 
-static void WideBar(void)
+static void WideBar(int reveal)
 {
     unsigned char *base = (unsigned char *)GetModuleHandleA(NULL);
     unsigned char *fill = base + BAR_FILL_RVA, *border = base + BAR_BORDER_RVA;
+    const unsigned char *want = reveal ? kFillReveal : kFillWide;
     MEMORY_BASIC_INFORMATION mbi;
     if (!VirtualQuery(fill, &mbi, sizeof mbi) || mbi.State != MEM_COMMIT || (mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD)) ||
         (unsigned char *)mbi.BaseAddress + mbi.RegionSize < border + 16) {
         Log("bar left as it is: its size table could not be read");
         return;
     }
-    if (Same(fill, kFillWide, 16) && Same(border, kBorderWide, 16)) {
+    if (Same(fill, want, 16) && Same(border, kBorderWide, 16)) {
         Log("bar already full width: nothing to do");
         return;
     }
-    if (!Same(fill, kFillStock, 16) || !Same(border, kBorderStock, 16)) {
+    int ours = (Same(fill, kFillWide, 16) || Same(fill, kFillReveal, 16)) && Same(border, kBorderWide, 16);
+    if (!ours && (!Same(fill, kFillStock, 16) || !Same(border, kBorderStock, 16))) {
         Log("bar left as it is: its size table holds other numbers, not the client this was made for");
         return;
     }
@@ -340,12 +345,14 @@ static void WideBar(void)
         return;
     }
     for (int i = 0; i < 16; i++) {
-        fill[i] = kFillWide[i];
+        fill[i] = want[i];
         border[i] = kBorderWide[i];
     }
     VirtualProtect(fill, (SIZE_T)(border + 16 - fill), old, &old);
-    Log(Same(fill, kFillWide, 16) && Same(border, kBorderWide, 16)
-            ? "bar on: the whole width, flush with the bottom (its size table, in memory only)"
+    Log(Same(fill, want, 16) && Same(border, kBorderWide, 16)
+            ? (reveal ? "bar on: the whole width, flush with the bottom, its fire as tall as the log (its size table, in "
+                        "memory only)"
+                      : "bar on: the whole width, flush with the bottom (its size table, in memory only)")
             : "bar left as it is: the numbers read back differ");
 }
 
@@ -510,6 +517,9 @@ static struct {
     int channel, playing, built, screens, complaints;
     DWORD since, gone;
     float reached;
+    int steps;                         /* times the bar moved this screen, as seen every FIRE_POLL_MS: the zoom idea's
+                                          question is how often the game redraws a loading screen, which it does
+                                          when the bar moves, so this is a lower bound on that */
 } g_fire;
 
 static signed char WINAPI FireCallback(void *stream, void *buff, int len, void *user)
@@ -729,12 +739,13 @@ static void FireStep(DWORD now)
         g_fire.playing = 1;
         g_fire.since = now;
         g_fire.reached = g_fire.fill.fill;
+        g_fire.steps = 0;
         return;
     }
     if (screen && g_fire.playing > 0) {
         float fill = FireFillRead(&g_fire.fill, read);
         FirePublish(fill);
-        if (fill > g_fire.reached) g_fire.reached = fill;
+        if (fill > g_fire.reached) { g_fire.reached = fill; g_fire.steps++; }
         return;
     }
     if (!screen && g_fire.playing) {             /* the screen has gone: fade out */
@@ -743,8 +754,8 @@ static void FireStep(DWORD now)
             DWORD ms = now - g_fire.since;
             char bar[48];
             BarShownSince(bar);
-            wsprintfA(m, "loading screen: the fire burned for %lu.%lu s, the bar reached %d%%%s", ms / 1000, ms % 1000 / 100,
-                      (int)(g_fire.reached * 100 + 0.5f), bar);
+            wsprintfA(m, "loading screen: the fire burned for %lu.%lu s, the bar reached %d%% in %d steps%s", ms / 1000,
+                      ms % 1000 / 100, (int)(g_fire.reached * 100 + 0.5f), g_fire.steps, bar);
             Log(m);
         }
         InterlockedExchange(&g_fire.gate, 0);
@@ -1068,15 +1079,69 @@ static int BarFamily(const BarTable *t)
     return f >= 0 && t->family[f].ok ? f : -1;
 }
 
-/* On the game's thread, inside its loop over the bar's table: the texture to load in place of path. Anything that is
- * not one of the bar's two paths, and any screen whose family is not in the pack, gets path back as it came. Reads
- * only; no allocation, no file, no log. */
+/* ---- a random wallpaper on the continents (3 Oct 2026) ----
+ * Loading into Eastern Kingdoms or Kalimdor, the screen shows a wallpaper drawn at random from the pack's
+ * Interface\Glues\LoadingScreens\CinderWall01.blp, 02, ...: credited art the artists' owners cleared for it. Every other
+ * map (dungeons, raids, battlegrounds) keeps the screen it always had. The game loads the bar's fill first, as a screen
+ * begins (RVA 0x6891), and its picture a moment later, on the screen's first frame (RVA 0x6EBA, the same loader): so
+ * the draw happens at the fill, the bar takes the wallpaper's fire, and the picture's load is then handed that same
+ * wallpaper. Both calls reach BarPath through BarStub. */
+#define WALL_MAX 64
+static struct { int count; int family[WALL_MAX]; char path[WALL_MAX][56]; } g_walls;
+static volatile LONG g_wallPick;                       /* the wallpaper drawn for the screen now showing, + 1; 0 none */
+static int g_wallLast = -1, g_barFamily = -1;          /* the game's thread only */
+static unsigned g_wallSeed = 1;
+
+static int BarIsOverworld(const char *name)
+{
+    return BarSame(name, "loadscreeneasternkingdom") || BarSame(name, "loadscreenkalimdor");
+}
+static int BarFamilyOf(const BarTable *t, const char *name)
+{
+    int f = t->fallback;
+    for (int k = 0; k < t->screens; k++)
+        if (BarSame(t->screen[k].name, name)) { f = t->screen[k].family; break; }
+    return f >= 0 && t->family[f].ok ? f : -1;
+}
+/* A different wallpaper from last time when there is more than one. */
+static int WallDraw(void)
+{
+    g_wallSeed = g_wallSeed * 1664525u + 1013904223u;
+    int r = (int)((g_wallSeed >> 16) % (unsigned)g_walls.count);
+    if (g_walls.count > 1 && r == g_wallLast) r = (r + 1) % g_walls.count;
+    g_wallLast = r;
+    return r;
+}
+
+/* On the game's thread, inside its loop over the bar's table, and as a screen's picture is loaded: the texture to load
+ * in place of path. Anything it does not recognise, and any screen whose family is not in the pack, gets path back as
+ * it came. Reads only; no allocation, no file, no log. */
 const char *WINAPI BarPath(const char *path)
 {
-    int border = path && BarSamePath(path, kBarBorderPath);
-    if (!g_barsOn || !path || (!border && !BarSamePath(path, kBarFillPath))) return path;
-    int f = BarFamily(&g_bars);
-    if (!border) InterlockedExchange(&g_barShown, f >= 0 ? f + 1 : -1);
+    if (!g_barsOn || !path) return path;
+    int border = BarSamePath(path, kBarBorderPath), fill = !border && BarSamePath(path, kBarFillPath);
+    if (!border && !fill) {                            /* the screen's picture: a continent's gets the drawn wallpaper */
+        LONG w = g_wallPick;
+        char name[BAR_NAME_MAX + 1];
+        if (w > 0 && w <= g_walls.count && BarBaseName(path, lstrlenA(path), name) && BarIsOverworld(name))
+            return g_walls.path[w - 1];
+        return path;
+    }
+    int f;
+    if (fill) {                                        /* the fill comes first: the screen's choices are made here */
+        char name[BAR_NAME_MAX + 1];
+        if (g_walls.count && BarScreen(name) && BarIsOverworld(name)) {
+            int r = WallDraw();
+            InterlockedExchange(&g_wallPick, r + 1);
+            f = g_walls.family[r];
+        } else {
+            InterlockedExchange(&g_wallPick, 0);
+            f = BarFamily(&g_bars);
+        }
+        g_barFamily = f;
+        InterlockedExchange(&g_barShown, f >= 0 ? f + 1 : -1);
+    } else
+        f = g_barFamily;                               /* the border burns as its fill does */
     if (f < 0) return path;
     return border ? g_bars.family[f].border : g_bars.family[f].fill;
 }
@@ -1090,6 +1155,14 @@ static void BarShownSince(char *out)
         wsprintfA(out, ", its fire %s", g_bars.family[shown - 1].name);
     else if (g_barsOn && shown < 0)
         lstrcpyA(out, ", its fire the pack's orange");
+    LONG w = g_wallPick;
+    if (g_barsOn && w > 0 && w <= g_walls.count) {
+        const char *n = g_walls.path[w - 1];
+        for (const char *q = n; *q; q++)
+            if (*q == '\\') n = q + 1;
+        lstrcatA(out, ", its wallpaper ");
+        lstrcatA(out, n);
+    }
 }
 
 /* The rel32 that sends the call at RVA 0x6891 to BarStub. */
@@ -1127,6 +1200,47 @@ static int BarHasTexture(const char *path)
 /* bars.txt is ours, but a file in the player's folder all the same: nothing bigger is even read in. */
 static void *IoAllocSmall(void *ctx, unsigned size) { return size > 4 * BAR_TEXT_MAX ? NULL : IoAlloc(ctx, size); }
 static const mpq_io kIoSmall = { IoAllocSmall, IoRelease, IoOpen, IoReadAt, IoSize, IoClose, NULL };
+
+/* The screen's picture is loaded by the same loader as the bar's textures (RVA 0x6EBA, ecx = the picture's path from
+ * its LoadingScreens record): that call goes to BarStub too, once the fire bar is on and there are wallpapers. */
+#define WALL_CALL_RVA 0x006EBA                         /* call 0x449D90: E8 D1 2E 04 00 */
+#define WALL_LOAD_RVA 0x006EAF
+static const unsigned char kWallLoad[] = { 0x8B, 0x4E, 0x08, 0x6A, 0x00, 0x6A, 0x00, 0x50, 0x8D, 0x55, 0xE8,   /* mov ecx,[esi+8] */
+                                           0xE8, 0xD1, 0x2E, 0x04, 0x00, 0xA3, 0x04, 0x2E, 0x88, 0x00 };    /* call; mov [882E04],eax */
+#define WALL_REL_AT (WALL_CALL_RVA + 1 - WALL_LOAD_RVA)
+static unsigned WallRel(const unsigned char *base)
+{
+    return (unsigned)((ULONG_PTR)BarStub - (ULONG_PTR)(base + WALL_CALL_RVA + 5));
+}
+static int WallCall(unsigned char *base)
+{
+    unsigned char *at = base + WALL_LOAD_RVA, *call = base + WALL_CALL_RVA;
+    int n = (int)sizeof kWallLoad;
+    if (!Readable(at, n)) { Log("wallpapers off: the picture's load could not be read"); return 0; }
+    if (Same(at, kWallLoad, WALL_REL_AT) && Same(at + WALL_REL_AT + 4, kWallLoad + WALL_REL_AT + 4, n - WALL_REL_AT - 4) &&
+        Rd32(call + 1) == WallRel(base)) {
+        Log("wallpapers already on: nothing to do");
+        return 1;
+    }
+    if (!Same(at, kWallLoad, n) || (unsigned char *)g_barLoader != call + 5 + (int)Rd32(call + 1)) {
+        char m[200];
+        int len = wsprintfA(m, "wallpapers off: other bytes at RVA 0x%lX (the picture's load) than in the client it was "
+                            "made for, so the game's own screens; there:", (unsigned long)WALL_LOAD_RVA);
+        for (int k = 0; k < n; k++) len += wsprintfA(m + len, " %02X", at[k]);
+        Log(m);
+        return 0;
+    }
+    unsigned rel = WallRel(base);
+    DWORD old;
+    if (!VirtualProtect(call + 1, 4, PAGE_EXECUTE_READWRITE, &old)) { Log("wallpapers off: the code could not be made writable"); return 0; }
+    for (int i = 0; i < 4; i++)
+        call[1 + i] = (unsigned char)(rel >> (8 * i));
+    VirtualProtect(call + 1, 4, old, &old);
+    FlushInstructionCache(GetCurrentProcess(), call, 5);
+    if (Rd32(call + 1) != rel) { Log("wallpapers off: the bytes read back differ"); return 0; }
+    Log("wallpapers on: the picture's load goes through CinderLoad (one call at RVA 0x6EBA, in memory only)");
+    return 1;
+}
 
 /* At start, after our screens and the switch are in place: reads bars.txt and the families out of Data\patch-~.MPQ,
  * then sends the one call to BarStub. 1 when the bar's fire follows the screens. */
@@ -1200,6 +1314,25 @@ static int FireBar(void)
         return 0;
     }
 
+    /* The wallpapers: CinderWall01.blp, 02, ... while they are there, each with its fire from bars.txt. */
+    g_walls.count = 0;
+    for (int i = 1; i <= WALL_MAX; i++) {
+        char path[56], name[24];
+        wsprintfA(name, "cinderwall%02d", i);
+        wsprintfA(path, "Interface\\Glues\\LoadingScreens\\CinderWall%02d", i);
+        if (!BarHasTexture(path)) break;
+        lstrcatA(path, ".blp");
+        lstrcpyA(g_walls.path[g_walls.count], path);
+        g_walls.family[g_walls.count] = BarFamilyOf(&g_bars, name);
+        g_walls.count++;
+    }
+    g_wallSeed = GetTickCount() | 1u;
+    if (g_walls.count) {
+        wsprintfA(m, "wallpapers: %d in the pack, one drawn at random for each Eastern Kingdoms and Kalimdor screen",
+                  g_walls.count);
+        Log(m);
+    }
+
     /* Everything BarPath reads is in place before the call can reach it. */
     g_barLoader = at + 5 + (int)Rd32(at + 1);          /* where the game's call went: the loader, VA 0x449D90 */
     InterlockedExchange(&g_barsOn, 1);
@@ -1220,6 +1353,236 @@ static int FireBar(void)
         return 0;
     }
     Log("fire bar on: each loading screen's bar burns in its picture's fire (one call at RVA 0x6891, in memory only)");
+    if (g_walls.count) WallCall(base);
+    return 1;
+}
+
+/* ---- the fire revealed, not stretched ----
+ * The game draws the bar's fill from its left edge to progress * width with the whole texture on it, so a fill is
+ * stretched as the bar grows and can only be a plain fade: any detail would slide. The 3 Oct look: ahead of the fire
+ * the log must be matte black and behind it every crack must burn, as in the mock. So a pack can carry a fill that is
+ * a painting of the burning log, made to sit exactly under the log's cracks, and ask for it to be revealed: the fill
+ * then shows its texture from 0 to progress, fixed in place under the log, and the log itself is plain char with open
+ * cracks over black.
+ *
+ * Read from WoW.exe (1.12.1 build 5875) on 3 Oct 2026, the bar's draw loop (RVA 0x7150): esi walks the bar's table at
+ * VA 0x7FFD34, whose first entry is the fill (RVA 0x719D); for the fill the right edge is progress * width (RVA 0x7215);
+ * then every entry pushes the texture coordinates at VA 0x882B8C, the whole texture, and calls the vertex setup at
+ * VA 0x58A2A0 (RVA 0x7229 .. 0x7262). That one call goes to RevealStub, which for the fill entry alone puts our own
+ * coordinates in place of 0x882B8C's, u from 0 to the progress, and goes on to the same function. Only when the pack
+ * holds CinderLoad\reveal.txt, so a pack made for stretching keeps being stretched. */
+#define REVEAL_CALL_RVA 0x00725E   /* call 0x58A2A0 (vertex setup): E8 3D 30 18 00 */
+#define REVEAL_DRAW_CALL_RVA 0x007288   /* call 0x58A2E0 (draw the indexed strip): E8 53 30 18 00 */
+#define REVEAL_TABLE_VA 0x7FFD34   /* the bar's table; its first entry is the fill */
+static const unsigned char kRevealTable[] = { 0xBE, 0x34, 0xFD, 0x7F, 0x00 };                     /* mov esi,7FFD34 */
+static const unsigned char kRevealFill[] = { 0x74, 0x12, 0xD9, 0x05, 0xE4, 0x2B, 0x88, 0x00, 0xD8, 0x4E, 0x10 };
+static const unsigned char kRevealDraw[] = {                                                     /* RVA 0x7229 */
+    0x53, 0x53, 0x6A, 0x08, 0x68, 0x8C, 0x2B, 0x88, 0x00, 0x53, 0x53, 0x53, 0x53, 0x53, 0x53, 0x6A, 0x0C, 0x8D, 0x55,
+    0xCC, 0xB9, 0x04, 0x00, 0x00, 0x00, 0xC7, 0x45, 0xD4, 0x00, 0x00, 0x00, 0x00, 0xC7, 0x45, 0xE0, 0x00, 0x00, 0x00,
+    0x00, 0xC7, 0x45, 0xEC, 0x00, 0x00, 0x00, 0x00, 0xC7, 0x45, 0xF8, 0x00, 0x00, 0x00, 0x00, 0xE8, 0x3D, 0x30, 0x18,
+    0x00 };
+static const unsigned char kRevealStrip[] = {                                                    /* RVA 0x727C */
+    0xBA, 0x04, 0x00, 0x00, 0x00, 0x68, 0x10, 0xF0, 0x82, 0x00, 0x8B, 0xCA, 0xE8, 0x53, 0x30, 0x18, 0x00 };
+static const unsigned char kRevealIndices[] = { 0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x03, 0x00 };  /* VA 0x82F010 */
+#define REVEAL_DRAW_RVA 0x007229
+#define REVEAL_STRIP_RVA 0x00727C
+#define REVEAL_REL_AT (REVEAL_CALL_RVA + 1 - REVEAL_DRAW_RVA)          /* where in kRevealDraw the call's rel32 sits */
+#define REVEAL_STRIP_REL_AT (REVEAL_DRAW_CALL_RVA + 1 - REVEAL_STRIP_RVA)
+static const struct { DWORD rva; int n; const unsigned char *bytes; const char *what; } kRevealCode[] = {
+    { 0x00719D, (int)sizeof kRevealTable, kRevealTable, "the bar's draw loop over its table" },
+    { 0x007215, (int)sizeof kRevealFill, kRevealFill, "the fill's width from the progress" },
+    { REVEAL_DRAW_RVA, (int)sizeof kRevealDraw, kRevealDraw, "the bar's texture coordinates and vertex setup" },
+    { REVEAL_STRIP_RVA, (int)sizeof kRevealStrip, kRevealStrip, "the bar's draw, a strip of 4 corners" },
+    { 0x42F010, (int)sizeof kRevealIndices, kRevealIndices, "the strip's corner order 0 1 2 3" },
+};
+#define REVEAL_CODE_COUNT ((int)(sizeof kRevealCode / sizeof kRevealCode[0]))
+
+/* The fill, drawn as a strip of slices instead of the game's one quad (3 Oct: "make it appear like it's happening
+ * in real time"). The pack's revealed fill is flowing lava, seen only through the log's open cracks; each slice gets its
+ * own brightness from how far it lies behind the front: white-hot at the tip (where it fades in over the last
+ * REVEAL_FEATHER), brightest just behind, so the dimmer valleys catch after the main channel, then cooling to embers,
+ * with a small flicker. The lava's texture drifts a little every frame. All of it is worked out on the game's thread
+ * by RevealFill just before the game reads it, from the front's place and the clock. */
+#define REVEAL_FEATHER  0.04f      /* the front fades in over this much of the bar's width (his look of 3 Oct) */
+#define FILL_COLUMNS    26         /* the strip's columns, so up to 52 corners */
+#define FILL_FLOW       0.006f     /* the lava drifts this much of its width a second */
+static const float kFillBehind[FILL_COLUMNS - 1] = {   /* where the columns sit behind the front, in screen widths */
+    0.0f, 0.012f, 0.025f, 0.04f, 0.055f, 0.075f, 0.1f, 0.13f, 0.17f, 0.22f, 0.28f, 0.35f, 0.43f, 0.52f, 0.62f, 0.73f,
+    0.85f, 0.98f, 1.12f, 1.27f, 1.43f, 1.6f, 1.78f, 1.97f, 2.2f };
+__attribute__((used)) float g_fillVerts[3 * 2 * FILL_COLUMNS];
+__attribute__((used)) float g_fillUV[2 * 2 * FILL_COLUMNS];
+__attribute__((used)) unsigned g_fillColor[2 * FILL_COLUMNS];   /* grey levels, alpha in the top byte */
+__attribute__((used)) unsigned short g_fillIndex[2 * FILL_COLUMNS];
+__attribute__((used)) int g_fillCount = 4;                       /* corners in the strip just made */
+__attribute__((used)) void *g_drawSetup;              /* the game's vertex setup, VA 0x58A2A0 */
+__attribute__((used)) void *g_drawStrip;              /* the game's indexed draw, VA 0x58A2E0 */
+void WINAPI RevealFill(const float *v) __attribute__((used));
+
+static float FillHeat(float d, float t, int k)
+{
+    float b;
+    if (d < 0.04f) b = 0.82f + 0.18f * (d / 0.04f);                 /* the tip: hot, rising to the brightest */
+    else if (d < 0.09f) b = 1.0f;
+    else b = 0.30f + 0.70f * (float)FireExp(-(double)(d - 0.09f) / 0.22);   /* cooling to embers */
+    float w = FireSin((float)((t * 2.3f + k * 1.7f) - (int)((t * 2.3f + k * 1.7f) / 6.2831853f) * 6.2831853f) * 0.25f);
+    return FireClamp(b * (0.94f + 0.06f * w), 0, 1);
+}
+/* v: the game's four corners for the fill, x y z each: left bottom, front bottom, left top, front top. */
+void WINAPI RevealFill(const float *v)
+{
+    unsigned bits = 0;
+    float p = 0;
+    if (ClientWord(0x882BE4, &bits)) { union { unsigned u; float f; } c; c.u = bits; p = c.f; }
+    if (!(p >= 0)) p = 0;
+    if (p > 1) p = 1;
+    float L = v[0], B = v[1], z = v[2], R = v[3], T = v[7];
+    float full = p > 0.001f ? (R - L) / p : 1.0f;                   /* the bar's whole width, in the same units */
+    float t = (float)(GetTickCount() % 3600000u) / 1000.0f;
+    float flow = t * FILL_FLOW;
+    flow -= (int)(flow / 0.5f) * 0.5f;                               /* the lava repeats every half of its texture */
+    float xs[FILL_COLUMNS];
+    int n = 0;
+    xs[n++] = L;                                                    /* columns from the left edge to the front */
+    for (int k = FILL_COLUMNS - 2; k >= 0; k--) {
+        float x = R - kFillBehind[k] * (full > 0 ? full : 1);
+        if (x > xs[n - 1] + 1e-6f) xs[n++] = x;
+    }
+    if (xs[n - 1] < R - 1e-6f && n < FILL_COLUMNS) xs[n++] = R;
+    for (int k = 0; k < n; k++) {
+        float *top = g_fillVerts + 6 * k, *bottom = top + 3;
+        top[0] = xs[k]; top[1] = T; top[2] = z;
+        bottom[0] = xs[k]; bottom[1] = B; bottom[2] = z;
+        float frac = full > 0 ? (xs[k] - L) / full : 0;            /* where along the whole bar, 0..1 */
+        float u = flow + 0.5f * frac;
+        g_fillUV[4 * k] = u; g_fillUV[4 * k + 1] = 0;
+        g_fillUV[4 * k + 2] = u; g_fillUV[4 * k + 3] = 1;
+        float d = full > 0 ? (R - xs[k]) / full : 0;                /* how far behind the front */
+        float a = d >= REVEAL_FEATHER ? 1.0f : d / REVEAL_FEATHER;
+        unsigned grey = (unsigned)(FillHeat(d, t, k) * 255.0f + 0.5f), alpha = (unsigned)(a * 255.0f + 0.5f);
+        g_fillColor[2 * k] = g_fillColor[2 * k + 1] = alpha << 24 | grey << 16 | grey << 8 | grey;
+    }
+    for (int k = 0; k < 2 * n; k++) g_fillIndex[k] = (unsigned short)k;
+    g_fillCount = 2 * n;
+}
+
+#if defined(__i386__)
+/* The vertex setup: ecx = corners, edx = their positions, and eleven arguments above the return address (at entry:
+ * colours at [esp+16], their stride at [esp+20], texture coordinates at [esp+32]). For the fill entry (esi at the
+ * table's start) RevealFill makes the six corners, and ecx, edx and those three arguments become ours. */
+__attribute__((naked, used)) static void RevealStub(void)
+{
+    __asm__("cmpl $0x7FFD34, %esi\n\t"
+            "jne 1f\n\t"
+            "pushl %eax\n\t"
+            "pushl %ecx\n\t"
+            "pushl %edx\n\t"
+            "pushl %edx\n\t"
+            "call _RevealFill@4\n\t"
+            "popl %edx\n\t"
+            "popl %ecx\n\t"
+            "popl %eax\n\t"
+            "movl _g_fillCount, %ecx\n\t"
+            "movl $_g_fillVerts, %edx\n\t"
+            "movl $_g_fillColor, 16(%esp)\n\t"
+            "movl $4, 20(%esp)\n\t"
+            "movl $_g_fillUV, 32(%esp)\n"
+            "1:\n\t"
+            "jmp *_g_drawSetup\n\t");
+}
+/* The draw: ecx = the kind (a strip), edx = how many corners, [esp+4] = their order. For the fill, our six. */
+__attribute__((naked, used)) static void RevealStripStub(void)
+{
+    __asm__("cmpl $0x7FFD34, %esi\n\t"
+            "jne 1f\n\t"
+            "movl _g_fillCount, %edx\n\t"
+            "movl $_g_fillIndex, 4(%esp)\n"
+            "1:\n\t"
+            "jmp *_g_drawStrip\n\t");
+}
+#else
+static void RevealStub(void) {}                        /* the tests' stand-ins, never called: their addresses are all */
+static void RevealStripStub(void) {}                   /* the tests use */
+#endif
+
+static unsigned RevealRel(const unsigned char *base)
+{
+    return (unsigned)((ULONG_PTR)RevealStub - (ULONG_PTR)(base + REVEAL_CALL_RVA + 5));
+}
+static unsigned RevealStripRel(const unsigned char *base)
+{
+    return (unsigned)((ULONG_PTR)RevealStripStub - (ULONG_PTR)(base + REVEAL_DRAW_CALL_RVA + 5));
+}
+static int RevealPlaceHolds(const unsigned char *base, int i)
+{
+    const unsigned char *at = base + kRevealCode[i].rva, *want = kRevealCode[i].bytes;
+    int n = kRevealCode[i].n, relAt;
+    unsigned ours;
+    if (!Readable(at, n)) return 0;
+    if (Same(at, want, n)) return 1;
+    if (kRevealCode[i].rva == REVEAL_DRAW_RVA) { relAt = REVEAL_REL_AT; ours = RevealRel(base); }
+    else if (kRevealCode[i].rva == REVEAL_STRIP_RVA) { relAt = REVEAL_STRIP_REL_AT; ours = RevealStripRel(base); }
+    else return 0;
+    return Same(at, want, relAt) && Same(at + relAt + 4, want + relAt + 4, n - relAt - 4) && Rd32(at + relAt) == ours;
+}
+/* One call's rel32 to a stub of ours: 1 when it reads back. */
+static int RevealSend(unsigned char *at, unsigned rel)
+{
+    DWORD old;
+    if (!VirtualProtect(at + 1, 4, PAGE_EXECUTE_READWRITE, &old)) return 0;
+    for (int i = 0; i < 4; i++)
+        at[1 + i] = (unsigned char)(rel >> (8 * i));
+    VirtualProtect(at + 1, 4, old, &old);
+    FlushInstructionCache(GetCurrentProcess(), at, 5);
+    return Rd32(at + 1) == rel;
+}
+
+/* The pack asks for its fire to be revealed: CinderLoad\reveal.txt is in Data\patch-~.MPQ. */
+static int RevealWanted(void)
+{
+    unsigned char *text = NULL;
+    unsigned len = 0;
+    int r = mpq_read(&kIoSmall, "patch-~.MPQ", "CinderLoad\\reveal.txt", &text, &len);
+    if (text) HeapFree(GetProcessHeap(), 0, text);
+    return r == MPQ_OK;
+}
+
+/* Sends the one call to RevealStub. 1 when the fill is revealed. */
+static int RevealBar(void)
+{
+    unsigned char *base = (unsigned char *)GetModuleHandleA(NULL);
+    char m[400];
+    for (int i = 0; i < REVEAL_CODE_COUNT; i++) {
+        if (RevealPlaceHolds(base, i)) continue;
+        int len = wsprintfA(m, "fire reveal off: other bytes at RVA 0x%lX (%s) than in the client it was made for, so "
+                            "the fire is stretched as before; there:", (unsigned long)kRevealCode[i].rva,
+                            kRevealCode[i].what);
+        if (Readable(base + kRevealCode[i].rva, kRevealCode[i].n))
+            for (int k = 0; k < kRevealCode[i].n && k < 16; k++)
+                len += wsprintfA(m + len, " %02X", base[kRevealCode[i].rva + (DWORD)k]);
+        Log(m);
+        return 0;
+    }
+    unsigned char *at = base + REVEAL_CALL_RVA, *strip = base + REVEAL_DRAW_CALL_RVA;
+    if (Rd32(at + 1) == RevealRel(base) && Rd32(strip + 1) == RevealStripRel(base)) {
+        Log("fire reveal already on: nothing to do");
+        return 1;
+    }
+    g_drawSetup = at + 5 + (int)Rd32(at + 1);           /* where the game's calls went: VA 0x58A2A0 and 0x58A2E0 */
+    g_drawStrip = strip + 5 + (int)Rd32(strip + 1);
+    unsigned rel = RevealRel(base), stripRel = RevealStripRel(base);
+    unsigned char *oldSetup = (unsigned char *)g_drawSetup;
+    /* The setup first: with only it changed, the fill's six corners are drawn as the game's four (the left part,
+     * short of the front), harmless. The other way round, six would be drawn from four and read past them. */
+    if (!RevealSend(at, rel)) {
+        Log("fire reveal off: the vertex setup could not be changed");
+        return 0;
+    }
+    if (!RevealSend(strip, stripRel)) {
+        RevealSend(at, (unsigned)(oldSetup - (at + 5)));  /* back to the game's own setup */
+        Log("fire reveal off: the draw call could not be changed, so the setup was put back");
+        return 0;
+    }
+    Log("fire reveal on: the fire is uncovered as the bar fills, not stretched, its front soft (two calls, RVA 0x725E and 0x7288, in memory only)");
     return 1;
 }
 
@@ -1230,7 +1593,7 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
         DisableThreadLibraryCalls(inst);
         if (GameDir() && ChooseScreens()) {
             if (Apply()) {
-                WideBar();
+                WideBar(RevealWanted() && RevealBar());    /* revealed first: only then may the fill be as tall as the log */
                 FireBar();
             } else {
                 TakeOutAfterAll();
