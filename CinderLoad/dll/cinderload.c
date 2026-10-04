@@ -26,6 +26,11 @@
  * archives, panned after the fill's front (fire.h, and "the fire sound" below). It is played through the client's
  * own fmod.dll from a thread of ours that only reads the client's memory; nothing in the client is changed for it.
  *
+ * The bar's fire takes the colour of the picture's (orange, fel green, arcane, aqua: "the fire bar" below). The game
+ * loads the bar's two textures once per screen; one call there is sent through this DLL, which names the textures
+ * of that screen's fire family in our pack instead. Only with our loading screens in place, and only when every place
+ * it relies on holds the bytes it was made for; otherwise the bar is the pack's orange one, as before.
+ *
  * Built like IndoorRain.dll, with no C runtime (build.sh), and with IndoorRain's MPQ reader (mpq.c, inflate.c).
  */
 #define WIN32_LEAN_AND_MEAN
@@ -691,6 +696,8 @@ static void FireClose(void)
     g_fire.channel = -1;
 }
 
+static void BarShownSince(char *out);
+
 /* One look at the client, every FIRE_POLL_MS. */
 static void FireStep(DWORD now)
 {
@@ -698,7 +705,7 @@ static void FireStep(DWORD now)
     int screen = *(volatile const unsigned int *)(base + FIRE_LAYER_RVA) != 0;
     float read = *(volatile const float *)(base + FIRE_PROGRESS_RVA);
     int up = *(volatile const unsigned char *)(base + FIRE_SOUNDUP_RVA) != 0;
-    char m[160];
+    char m[220];
 
     if (!up) {                                   /* the engine is closed: it took our stream with it, so no call */
         if (g_fire.stream) Log("fire sound: the game closed its sound engine; the stream went with it");
@@ -734,8 +741,10 @@ static void FireStep(DWORD now)
         if (g_fire.playing > 0 && g_fire.screens < FIRE_SCREEN_LOGS) {
             g_fire.screens++;
             DWORD ms = now - g_fire.since;
-            wsprintfA(m, "loading screen: the fire burned for %lu.%lu s, the bar reached %d%%", ms / 1000, ms % 1000 / 100,
-                      (int)(g_fire.reached * 100 + 0.5f));
+            char bar[48];
+            BarShownSince(bar);
+            wsprintfA(m, "loading screen: the fire burned for %lu.%lu s, the bar reached %d%%%s", ms / 1000, ms % 1000 / 100,
+                      (int)(g_fire.reached * 100 + 0.5f), bar);
             Log(m);
         }
         InterlockedExchange(&g_fire.gate, 0);
@@ -801,14 +810,431 @@ static void FireStart(void)
     Log("fire sound on: the bar will burn while loading screens show");
 }
 
+/* ---- the fire bar ----
+ * Each loading screen's bar burns in the colour of its picture's fire. Beside the orange Loading-BarFill.blp and
+ * Loading-BarBorder.blp the game loads for every screen, our pack carries Loading-BarFill-<family>.blp and
+ * Loading-BarBorder-<family>.blp for each fire family the owner's art kit found (fel, arcane, aqua, ...), and
+ * CinderLoad\bars.txt: one line per screen, "<the screen file's base name> <family>", and "default <family>" for the
+ * screens it does not list (make_pack.py writes it).
+ *
+ * Read from WoW.exe (1.12.1, build 5875) on 2 Oct 2026:
+ * - The DWORD at VA 0x82F00C is the map the loading screen is for, stored just before a screen begins (RVA 0x67E3, and
+ *   RVA 0x72D3 on the other way in); -1 when there is none, and the game then shows Interface\Glues\loading.
+ * - The game picks the picture at RVA 0x6E20, on the screen's first frame: Map.dbc's record for that map, its
+ *   LoadingScreenID (+0x98), LoadingScreens.dbc's record for that, and its file name (+8); anything missing on the way
+ *   is the default screen. BarScreen walks the same tables the same way to the same name. (A third way into begin,
+ *   RVA 0x7DE0, stores no map but -1, so the screen is for the map stored last; the picture is then chosen from that
+ *   same number, and so is the bar. One difference: the game also shows the default screen when the picture's file
+ *   is in none of its archives, which BarScreen does not ask; every screen our pack carries is there.)
+ * - The bar's two textures are loaded inside the screen's begin (RVA 0x6800), once per screen, and released at its end
+ *   (RVA 0x7E80). For each entry of the bar's table (VA 0x7FFD34) with no texture yet, ecx = the entry's path and a call
+ *   from RVA 0x6891 to the texture loader at VA 0x449D90, which takes edx and three stack arguments too and pops them.
+ * The map is stored microseconds before the textures are loaded, on the game's own thread: a thread of ours cannot get
+ * in between. So that one call is the one change: it goes to BarStub, which asks BarPath which texture to load and
+ * goes on to the loader with the stack and every register as the game left them, but ecx. Every place above must hold
+ * exactly these bytes, or the call is left alone and the log says which differed; the screens, the bar's size and the
+ * fire sound work the same either way. The client's tables are only read, on the thread the game reads them on.
+ */
+#define BAR_CALL_RVA        0x006891   /* the call to the texture loader: E8 FA 34 04 00 */
+#define BAR_LOAD_RVA        0x006863   /* the loop around it */
+#define BAR_FILL_PATH_RVA   0x42F0A0   /* "Interface\Glues\LoadingBar\Loading-BarFill" */
+#define BAR_BORDER_PATH_RVA 0x42F070   /* "Interface\Glues\LoadingBar\Loading-BarBorder" */
+#define BAR_MAP_VA          0x82F00C   /* int: the loading screen's map, -1 for none */
+#define BAR_MAPS_VA         0xC0DAA8   /* Map.dbc's records by id (an array of pointers) */
+#define BAR_MAPS_MAX_VA     0xC0DAAC   /* its largest id */
+#define BAR_SCREENS_VA      0xC0DB0C   /* LoadingScreens.dbc's records by id */
+#define BAR_SCREENS_MAX_VA  0xC0DB10   /* its largest id */
+#define BAR_MAP_SCREEN      0x98       /* in a Map record: its LoadingScreenID */
+#define BAR_SCREEN_FILE     8          /* in a LoadingScreens record: its file name */
+#define BAR_FAMILIES        8          /* fire families one pack may carry */
+#define BAR_FAMILY_MAX      15         /* letters and digits in a family's name */
+#define BAR_SCREENS         256        /* screens bars.txt may name (the client has 45) */
+#define BAR_NAME_MAX        47         /* characters in a screen's base name */
+#define BAR_LINE_MAX        200        /* a longer line in bars.txt is skipped */
+#define BAR_TEXT_MAX        65536      /* a bigger bars.txt is refused */
+#define BAR_PATH_MAX        260        /* characters of a screen's file name read from the client */
+
+static const char kBarFillPath[]   = "Interface\\Glues\\LoadingBar\\Loading-BarFill";
+static const char kBarBorderPath[] = "Interface\\Glues\\LoadingBar\\Loading-BarBorder";
+static const unsigned char kBarMapSet[] = { 0x8B, 0x55, 0xEC, 0x89, 0x15, 0x0C, 0xF0, 0x82, 0x00,   /* mov [82F00C],edx */
+                                            0xE8, 0x0F, 0x00, 0x00, 0x00 };                     /* call begin (6800) */
+static const unsigned char kBarMapSet2[] = { 0xA3, 0x0C, 0xF0, 0x82, 0x00 };                     /* mov [82F00C],eax */
+static const unsigned char kBarPick[] = { 0xA1, 0x0C, 0xF0, 0x82, 0x00, 0x8D };                  /* mov eax,[82F00C] */
+static const unsigned char kBarPickWalk[] = {
+    0x7C, 0x72, 0x3B, 0x05, 0xAC, 0xDA, 0xC0, 0x00, 0x7F, 0x6A,             /* id < 0 or > [C0DAAC]: the default */
+    0x8B, 0x15, 0xA8, 0xDA, 0xC0, 0x00, 0x8B, 0x04, 0x82, 0x85, 0xC0, 0x74, 0x5D,   /* map = [C0DAA8][id], or none */
+    0x8B, 0x80, 0x98, 0x00, 0x00, 0x00, 0x85, 0xC0, 0x7C, 0x53,             /* ls = map->LoadingScreenID, not < 0 */
+    0x3B, 0x05, 0x10, 0xDB, 0xC0, 0x00, 0x7F, 0x4B,                         /* nor > [C0DB10] */
+    0x8B, 0x0D, 0x0C, 0xDB, 0xC0, 0x00, 0x8B, 0x34, 0x81, 0x85, 0xF6, 0x74, 0x3E,   /* rec = [C0DB0C][ls], or none */
+    0x8B, 0x56, 0x08, 0x52, 0xE8, 0x1F };                                   /* push rec->file name; call */
+static const unsigned char kBarLoad[] = {
+    0xBE, 0x34, 0xFD, 0x7F, 0x00, 0x83, 0x3F, 0x00, 0x75, 0x2B,             /* esi = the bar's table; a texture yet? */
+    0x6A, 0x00, 0x6A, 0x01, 0x6A, 0x00, 0x6A, 0x00, 0x6A, 0x00, 0x6A, 0x00, 0x6A, 0x00, 0x6A, 0x01,
+    0x8D, 0x4D, 0xFC, 0xE8, 0xFB, 0x40, 0x18, 0x00, 0x8B, 0x10,
+    0x8B, 0x0E,                                                             /* ecx = the entry's path */
+    0x6A, 0x00, 0x6A, 0x01, 0x52, 0x8D, 0x55, 0xD8,                         /* three arguments; edx = a local */
+    0xE8, 0xFA, 0x34, 0x04, 0x00,                                           /* call the loader (449D90): ours */
+    0x89 };
+#define BAR_REL_AT (BAR_CALL_RVA + 1 - BAR_LOAD_RVA)   /* where in kBarLoad the call's rel32 sits */
+
+static const struct { DWORD rva; int n; const unsigned char *bytes; const char *what; } kBarCode[] = {
+    { 0x0067E3, (int)sizeof kBarMapSet, kBarMapSet, "the loading screen's map" },
+    { 0x0072D3, (int)sizeof kBarMapSet2, kBarMapSet2, "the loading screen's map" },
+    { 0x006E2C, (int)sizeof kBarPick, kBarPick, "the loading screen's picture" },
+    { 0x006E52, (int)sizeof kBarPickWalk, kBarPickWalk, "the loading screen's picture" },
+    { BAR_LOAD_RVA, (int)sizeof kBarLoad, kBarLoad, "the bar's textures being loaded" },
+    { BAR_FILL_PATH_RVA, (int)sizeof kBarFillPath, (const unsigned char *)kBarFillPath, "the bar's fill texture" },
+    { BAR_BORDER_PATH_RVA, (int)sizeof kBarBorderPath, (const unsigned char *)kBarBorderPath, "the bar's border texture" },
+};
+#define BAR_CODE_COUNT ((int)(sizeof kBarCode / sizeof kBarCode[0]))
+
+/* What bars.txt says, with each family's two texture paths in the DLL's own memory, for BarPath to hand the game. */
+typedef struct {
+    int families, screens, fallback, skipped;          /* fallback: the "default" line's family, or -1 */
+    struct { char name[BAR_FAMILY_MAX + 1]; int ok; char fill[80], border[80]; } family[BAR_FAMILIES];
+    struct { char name[BAR_NAME_MAX + 1]; int family; } screen[BAR_SCREENS];
+} BarTable;
+static BarTable g_bars;
+static volatile LONG g_barsOn;                         /* 1 once g_bars is complete and the call is ours */
+static volatile LONG g_barShown;                       /* BarPath's last fill: 0 none since the worker looked, -1 the
+                                                          pack's orange, else the family's index + 1 */
+
+/* Called from the asm stub below, so neither may be static, nor dropped as unused. */
+const char *WINAPI BarPath(const char *path) __attribute__((used));
+__attribute__((used)) void *g_barLoader;               /* the game's texture loader, VA 0x449D90 */
+
+#if defined(__i386__)
+/* The game's call lands here with ecx = the path, edx = the loader's own argument and the loader's three arguments on
+ * the stack above the return address. eax and edx are kept around the call to BarPath (stdcall: it pops its one
+ * argument and keeps ebx, esi, edi and ebp, as the game's own code expects of a call), ecx becomes the path it
+ * returns, and the jump reaches the loader with the stack exactly as the game set it: the loader returns straight to
+ * the game, popping its three arguments itself. A naked function rather than asm at the top of the file: the PE
+ * assembler has no way to switch to .text and back, and the compiler then places it in .text itself. */
+__attribute__((naked, used)) static void BarStub(void)
+{
+    __asm__("pushl %eax\n\t"
+            "pushl %edx\n\t"
+            "pushl %ecx\n\t"
+            "call _BarPath@4\n\t"
+            "movl %eax, %ecx\n\t"
+            "popl %edx\n\t"
+            "popl %eax\n\t"
+            "jmp *_g_barLoader\n\t");
+}
+#else
+static void BarStub(void) {}                           /* the tests' stand-in, never called: its address is all they use */
+#endif
+
+/* A client address as a pointer. The client's code above holds absolute addresses, so with every place verified the
+ * client sits at its own base and its addresses are real ones. The tests define this to read a fake image instead. */
+#ifndef ClientAt
+#define ClientAt(va) ((const unsigned char *)(ULONG_PTR)(va))
+#endif
+static int ClientWord(unsigned va, unsigned *out)
+{
+    const unsigned char *p = ClientAt(va);
+    if (!p || !Readable(p, 4)) return 0;
+    *out = *(volatile const unsigned int *)p;
+    return 1;
+}
+/* A NUL-terminated string of the client's into out: its length, -1 when it cannot be read, -2 when it is longer than
+ * size - 1. Checked page by page, so a string at the end of its block is read no further than its NUL. */
+static int ClientText(unsigned va, char *out, int size)
+{
+    const unsigned char *p = ClientAt(va);
+    if (!p) return -1;
+    for (int i = 0; i < size; i++) {
+        if ((i == 0 || ((ULONG_PTR)(p + i) & 0xFFF) == 0) && !Readable(p + i, 1)) return -1;
+        if (!(out[i] = (char)p[i])) return i;
+    }
+    return -2;
+}
+
+static int BarSame(const char *a, const char *b)
+{
+    while (*a && *a == *b) { a++; b++; }
+    return *a == *b;
+}
+/* A path the game names a texture by, against one of its own: case does not matter, nor which slash. */
+static int BarSamePath(const char *a, const char *b)
+{
+    for (;; a++, b++) {
+        char x = *a == '/' ? '\\' : Lower(*a), y = *b == '/' ? '\\' : Lower(*b);
+        if (x != y) return 0;
+        if (!x) return 1;
+    }
+}
+
+/* A screen's file as bars.txt names it: after the last \ or /, before the last dot, in lower case ("Interface\Glues\
+ * LoadingScreens\LoadScreenDeadmines.blp" is "loadscreendeadmines"). 0 when that is empty or over BAR_NAME_MAX. */
+static int BarBaseName(const char *s, int len, char *out)
+{
+    int from = 0, to = len;
+    for (int i = 0; i < len; i++)
+        if (s[i] == '\\' || s[i] == '/') from = i + 1;
+    for (int i = len - 1; i >= from; i--)
+        if (s[i] == '.') { to = i; break; }
+    if (to - from < 1 || to - from > BAR_NAME_MAX) return 0;
+    for (int i = from; i < to; i++) out[i - from] = Lower(s[i]);
+    out[to - from] = 0;
+    return 1;
+}
+
+/* One line of bars.txt, without its line end. Blank lines and comments (#) are passed over; a line that is not two
+ * words, a screen's name and a family's (letters and digits), is skipped and counted. A later line for the same
+ * screen wins. */
+static void BarLine(BarTable *t, const char *s, int n)
+{
+    const char *word[3];
+    int len[3], words = 0;
+    for (int i = 0; i < n && words < 3;) {
+        while (i < n && (s[i] == ' ' || s[i] == '\t')) i++;
+        if (i >= n || s[i] == '#') break;
+        word[words] = s + i;
+        while (i < n && s[i] != ' ' && s[i] != '\t') {
+            if ((unsigned char)s[i] < 0x20 || s[i] == 0x7F) { t->skipped++; return; }
+            i++;
+        }
+        len[words] = (int)(s + i - word[words]);
+        words++;
+    }
+    if (!words) return;
+    char name[BAR_NAME_MAX + 1], family[BAR_FAMILY_MAX + 1];
+    if (words != 2 || !BarBaseName(word[0], len[0], name) || len[1] > BAR_FAMILY_MAX) { t->skipped++; return; }
+    for (int i = 0; i < len[1]; i++) {
+        family[i] = Lower(word[1][i]);
+        if (!((family[i] >= 'a' && family[i] <= 'z') || (family[i] >= '0' && family[i] <= '9'))) { t->skipped++; return; }
+    }
+    family[len[1]] = 0;
+    int f = 0;
+    while (f < t->families && !BarSame(t->family[f].name, family)) f++;
+    if (f == t->families) {
+        if (f == BAR_FAMILIES) { t->skipped++; return; }
+        lstrcpyA(t->family[f].name, family);
+        t->families++;
+    }
+    if (BarSame(name, "default")) { t->fallback = f; return; }
+    int k = 0;
+    while (k < t->screens && !BarSame(t->screen[k].name, name)) k++;
+    if (k == t->screens) {
+        if (k == BAR_SCREENS) { t->skipped++; return; }
+        lstrcpyA(t->screen[k].name, name);
+        t->screens++;
+    }
+    t->screen[k].family = f;
+}
+/* bars.txt, len bytes (not NUL-terminated), into t. LF or CRLF; a line over BAR_LINE_MAX is skipped. */
+static void BarParse(BarTable *t, const char *text, unsigned len)
+{
+    unsigned char *z = (unsigned char *)t;
+    for (unsigned i = 0; i < sizeof *t; i++) z[i] = 0;
+    t->fallback = -1;
+    for (unsigned at = 0; at < len;) {
+        unsigned end = at;
+        while (end < len && text[end] != '\n') end++;
+        int n = (int)(end - at);
+        if (n > BAR_LINE_MAX) t->skipped++;
+        else BarLine(t, text + at, n > 0 && text[at + (unsigned)n - 1] == '\r' ? n - 1 : n);
+        at = end + 1;
+    }
+}
+
+/* The loading screen's picture as the game picks it (RVA 0x6E20), into name: its file's base name, "loading" for the
+ * default screen. 0 when the file's name is longer than any bars.txt can list. */
+static int BarScreen(char *name)
+{
+    unsigned id, idMax, maps, map, ls, lsMax, recs, rec, file;
+    lstrcpyA(name, "loading");
+    if (!ClientWord(BAR_MAP_VA, &id) || (int)id < 0 || !ClientWord(BAR_MAPS_MAX_VA, &idMax) || (int)id > (int)idMax ||
+        !ClientWord(BAR_MAPS_VA, &maps) || !ClientWord(maps + id * 4, &map) || !map ||
+        !ClientWord(map + BAR_MAP_SCREEN, &ls) || (int)ls < 0 || !ClientWord(BAR_SCREENS_MAX_VA, &lsMax) ||
+        (int)ls > (int)lsMax || !ClientWord(BAR_SCREENS_VA, &recs) || !ClientWord(recs + ls * 4, &rec) || !rec ||
+        !ClientWord(rec + BAR_SCREEN_FILE, &file))
+        return 1;
+    char path[BAR_PATH_MAX + 1];
+    int n = ClientText(file, path, (int)sizeof path);
+    if (n == -1) return 1;                             /* no name to be read there: as the default screen */
+    return n >= 0 && BarBaseName(path, n, name);
+}
+
+/* The family whose textures this screen's bar gets, or -1 for the pack's orange ones. */
+static int BarFamily(const BarTable *t)
+{
+    char name[BAR_NAME_MAX + 1];
+    int f = t->fallback;
+    if (BarScreen(name))
+        for (int k = 0; k < t->screens; k++)
+            if (BarSame(t->screen[k].name, name)) { f = t->screen[k].family; break; }
+    return f >= 0 && t->family[f].ok ? f : -1;
+}
+
+/* On the game's thread, inside its loop over the bar's table: the texture to load in place of path. Anything that is
+ * not one of the bar's two paths, and any screen whose family is not in the pack, gets path back as it came. Reads
+ * only; no allocation, no file, no log. */
+const char *WINAPI BarPath(const char *path)
+{
+    int border = path && BarSamePath(path, kBarBorderPath);
+    if (!g_barsOn || !path || (!border && !BarSamePath(path, kBarFillPath))) return path;
+    int f = BarFamily(&g_bars);
+    if (!border) InterlockedExchange(&g_barShown, f >= 0 ? f + 1 : -1);
+    if (f < 0) return path;
+    return border ? g_bars.family[f].border : g_bars.family[f].fill;
+}
+
+/* For the worker's line about a screen that has gone: which bar it had, if the bar was ours to choose. */
+static void BarShownSince(char *out)
+{
+    LONG shown = InterlockedExchange(&g_barShown, 0);
+    out[0] = 0;
+    if (g_barsOn && shown > 0 && shown <= g_bars.families)
+        wsprintfA(out, ", its fire %s", g_bars.family[shown - 1].name);
+    else if (g_barsOn && shown < 0)
+        lstrcpyA(out, ", its fire the pack's orange");
+}
+
+/* The rel32 that sends the call at RVA 0x6891 to BarStub. */
+static unsigned BarRel(const unsigned char *base)
+{
+    return (unsigned)((ULONG_PTR)BarStub - (ULONG_PTR)(base + BAR_CALL_RVA + 5));
+}
+static unsigned Rd32(const unsigned char *p) { return (unsigned)p[0] | (unsigned)p[1] << 8 | (unsigned)p[2] << 16 | (unsigned)p[3] << 24; }
+
+/* Place i holds its bytes; the call's rel32 may already be ours, from an earlier start in this process. */
+static int BarPlaceHolds(const unsigned char *base, int i)
+{
+    const unsigned char *at = base + kBarCode[i].rva, *want = kBarCode[i].bytes;
+    int n = kBarCode[i].n;
+    if (!Readable(at, n)) return 0;
+    if (Same(at, want, n)) return 1;
+    return kBarCode[i].rva == BAR_LOAD_RVA && Same(at, want, BAR_REL_AT) &&
+           Same(at + BAR_REL_AT + 4, want + BAR_REL_AT + 4, n - BAR_REL_AT - 4) && Rd32(at + BAR_REL_AT) == BarRel(base);
+}
+
+/* Both of a family's textures are in our archive: read whole, so a damaged one is found here and not by the game. */
+static int BarHasTexture(const char *path)
+{
+    char name[100];
+    if (lstrlenA(path) + 5 > (int)sizeof name) return 0;
+    lstrcpyA(name, path);
+    lstrcatA(name, ".blp");
+    unsigned char *data = NULL;
+    unsigned len = 0;
+    int r = mpq_read(&kIo, "patch-~.MPQ", name, &data, &len);
+    if (data) HeapFree(GetProcessHeap(), 0, data);
+    return r == MPQ_OK;
+}
+
+/* bars.txt is ours, but a file in the player's folder all the same: nothing bigger is even read in. */
+static void *IoAllocSmall(void *ctx, unsigned size) { return size > 4 * BAR_TEXT_MAX ? NULL : IoAlloc(ctx, size); }
+static const mpq_io kIoSmall = { IoAllocSmall, IoRelease, IoOpen, IoReadAt, IoSize, IoClose, NULL };
+
+/* At start, after our screens and the switch are in place: reads bars.txt and the families out of Data\patch-~.MPQ,
+ * then sends the one call to BarStub. 1 when the bar's fire follows the screens. */
+static int FireBar(void)
+{
+    unsigned char *base = (unsigned char *)GetModuleHandleA(NULL);
+    char m[400];
+    for (int i = 0; i < BAR_CODE_COUNT; i++) {
+        if (BarPlaceHolds(base, i)) continue;
+        int len = wsprintfA(m, "fire bar off: other bytes at RVA 0x%lX (%s) than in the client it was made for, so "
+                            "every bar is the pack's orange; there:", (unsigned long)kBarCode[i].rva, kBarCode[i].what);
+        if (Readable(base + kBarCode[i].rva, kBarCode[i].n))
+            for (int k = 0; k < kBarCode[i].n; k++)
+                len += wsprintfA(m + len, " %02X", base[kBarCode[i].rva + (DWORD)k]);
+        else
+            lstrcpyA(m + len, " (unreadable)");
+        Log(m);
+        return 0;
+    }
+    unsigned char *at = base + BAR_CALL_RVA;
+    if (Rd32(at + 1) == BarRel(base)) {
+        Log("fire bar already on: nothing to do");
+        return 1;
+    }
+    InterlockedExchange(&g_barsOn, 0);
+
+    unsigned char *text = NULL;
+    unsigned len = 0;
+    int r = mpq_read(&kIoSmall, "patch-~.MPQ", "CinderLoad\\bars.txt", &text, &len);
+    if (r != MPQ_OK || len > BAR_TEXT_MAX) {
+        if (text) HeapFree(GetProcessHeap(), 0, text);
+        if (r == MPQ_E_NOT_FOUND)
+            Log("fire bar off: Data\\patch-~.MPQ holds no CinderLoad\\bars.txt, so every bar is the pack's orange");
+        else if (r == MPQ_OK || r == MPQ_E_NOMEM)
+            Log("fire bar off: CinderLoad\\bars.txt is over 64 KB, so every bar is the pack's orange");
+        else {
+            wsprintfA(m, "fire bar off: CinderLoad\\bars.txt could not be read from Data\\patch-~.MPQ (%s), so every "
+                      "bar is the pack's orange", mpq_error_text(r));
+            Log(m);
+        }
+        return 0;
+    }
+    BarParse(&g_bars, (const char *)text, len);
+    HeapFree(GetProcessHeap(), 0, text);
+
+    int have = 0, miss = 0;
+    char haveList[BAR_FAMILIES * (BAR_FAMILY_MAX + 2) + 1], missList[BAR_FAMILIES * (BAR_FAMILY_MAX + 2) + 1];
+    haveList[0] = missList[0] = 0;
+    for (int f = 0; f < g_bars.families; f++) {
+        lstrcpyA(g_bars.family[f].fill, kBarFillPath);
+        lstrcatA(g_bars.family[f].fill, "-");
+        lstrcatA(g_bars.family[f].fill, g_bars.family[f].name);
+        lstrcpyA(g_bars.family[f].border, kBarBorderPath);
+        lstrcatA(g_bars.family[f].border, "-");
+        lstrcatA(g_bars.family[f].border, g_bars.family[f].name);
+        g_bars.family[f].ok = BarHasTexture(g_bars.family[f].fill) && BarHasTexture(g_bars.family[f].border);
+        char *list = g_bars.family[f].ok ? haveList : missList;
+        int *count = g_bars.family[f].ok ? &have : &miss;
+        if ((*count)++) lstrcatA(list, ", ");
+        lstrcatA(list, g_bars.family[f].name);
+    }
+    wsprintfA(m, "fire bar: bars.txt names %d screens, %s, %d lines skipped", g_bars.screens,
+              g_bars.fallback < 0 ? "no default (the screens it does not list keep the pack's orange)"
+                                  : "and a default for the rest", g_bars.skipped);
+    Log(m);
+    wsprintfA(m, "fire bar: families in the pack: %s; named but not in it (their screens keep the pack's orange): %s",
+              have ? haveList : "none", miss ? missList : "none");
+    Log(m);
+    if (!have) {
+        Log("fire bar off: no family bars.txt names has both its textures in the pack");
+        return 0;
+    }
+
+    /* Everything BarPath reads is in place before the call can reach it. */
+    g_barLoader = at + 5 + (int)Rd32(at + 1);          /* where the game's call went: the loader, VA 0x449D90 */
+    InterlockedExchange(&g_barsOn, 1);
+    unsigned rel = BarRel(base);
+    DWORD old;
+    if (!VirtualProtect(at + 1, 4, PAGE_EXECUTE_READWRITE, &old)) {
+        InterlockedExchange(&g_barsOn, 0);
+        Log("fire bar off: the code could not be made writable");
+        return 0;
+    }
+    for (int i = 0; i < 4; i++)
+        at[1 + i] = (unsigned char)(rel >> (8 * i));
+    VirtualProtect(at + 1, 4, old, &old);
+    FlushInstructionCache(GetCurrentProcess(), at, 5);
+    if (Rd32(at + 1) != rel) {
+        InterlockedExchange(&g_barsOn, 0);           /* BarPath then hands every path back as it came */
+        Log("fire bar off: the bytes read back differ");
+        return 0;
+    }
+    Log("fire bar on: each loading screen's bar burns in its picture's fire (one call at RVA 0x6891, in memory only)");
+    return 1;
+}
+
 BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
 {
     (void)reserved;
     if (reason == DLL_PROCESS_ATTACH) {
         DisableThreadLibraryCalls(inst);
         if (GameDir() && ChooseScreens()) {
-            if (Apply()) WideBar();
-            else TakeOutAfterAll();
+            if (Apply()) {
+                WideBar();
+                FireBar();
+            } else {
+                TakeOutAfterAll();
+            }
         }
         if (g_dir[0]) FireStart();
     }

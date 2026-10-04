@@ -1,13 +1,24 @@
-"""Builds one screen shape's loading screens: Data/CinderLoad/LoadingScreens-<shape>.MPQ, every loading screen the
+r"""Builds one screen shape's loading screens: Data/CinderLoad/LoadingScreens-<shape>.MPQ, every loading screen the
 client names in LoadingScreens.dbc, at the shape of the screen. Each is the client's own picture at the 4:3 it was
 drawn for, centred, with its sides filled by a blurred, darkened, wider copy of itself, eased together at the
 seams; the continents' two screens can be the test pattern instead (--test-continents).
 
 Usage: STORMLIB=/path/to/libstorm.so python3 make_pack.py <client Data dir> <out dir> <shape> <screen w> <screen h>
-       [--test-continents] [--art <map file>] [--bar <dir>]
+       [--test-continents] [--art <map file>] [--bar <dir>] [--fire-bars <dir> --bar-map <file>]
    e.g. ... make_pack.py ~/Games/RavenCraft-fogtest/Data out 21x9 5120 2160 --test-continents
+
+The loading bar's fire for each screen (CinderLoad.dll picks the bar by the screen's picture; both options or neither):
+  --fire-bars <dir>  one folder per fire family, named for it in letters and digits (fel, arcane, aqua, ...), each
+                     holding that family's Loading-BarFill.blp and Loading-BarBorder.blp, drawn as the --bar ones are.
+                     They go in as Interface\Glues\LoadingBar\Loading-BarFill-<family>.blp and -BarBorder-<family>.blp,
+                     beside the --bar ones, which stay the orange bar the game shows without the DLL.
+  --bar-map <file>   the art kit's choice of family for each screen: lines '<loading screen> <family>', where the screen
+                     is its file (LoadScreenDeadmines.blp) or its name (loadscreendeadmines), 'loading' is the default
+                     screen (Interface\Glues\loading, for a map with none of its own) and 'default <family>' covers
+                     every screen not listed; '#' starts a comment. Packed as CinderLoad\bars.txt. A family the map
+                     names with no folder (orange, say) packs no textures: its screens keep the orange bar.
 """
-import concurrent.futures as cf, ctypes, glob, io, os, struct, sys, tempfile
+import concurrent.futures as cf, ctypes, glob, io, os, re, struct, sys, tempfile
 from PIL import Image, ImageFilter
 from blp import write_blp
 
@@ -126,6 +137,75 @@ def build_one(job):
     return path, blp
 
 
+FAMILIES_MAX, SCREENS_MAX, NAME_MAX = 8, 256, 47     # what CinderLoad.dll reads of bars.txt: no more than this
+
+
+def screen_name(s):
+    """A screen as bars.txt names it: the file's base name, no extension, lower case (as the DLL compares it)."""
+    s = s.replace('/', '\\').split('\\')[-1]
+    return (s.rsplit('.', 1)[0] if '.' in s else s).lower()
+
+
+def fire_bars(bar_dir, map_file, screens, work):
+    """The fire bars' files for the pack, [(source, name in the archive)], from the family folders and the art kit's
+    map; bars.txt is written into work. Refuses what the DLL would skip, so a slip shows here and not in the game."""
+    chosen, default = {}, None
+    for n, line in enumerate(open(map_file, encoding='utf-8').read().splitlines(), 1):
+        words = line.split('#', 1)[0].split()
+        if not words:
+            continue
+        if len(words) != 2:
+            raise SystemExit(f'{map_file}:{n}: want "<screen> <family>", got {line!r}')
+        name, family = screen_name(words[0]), words[1].lower()
+        if not re.fullmatch(r'[a-z0-9]{1,15}', family):
+            raise SystemExit(f'{map_file}:{n}: a family is 1 to 15 letters and digits, not {words[1]!r}')
+        if not (1 <= len(name) <= NAME_MAX and name.isascii() and name.isprintable()):
+            raise SystemExit(f'{map_file}:{n}: a screen name of 1 to {NAME_MAX} plain characters, not {words[0]!r}')
+        if name == 'default':
+            if default:
+                raise SystemExit(f'{map_file}:{n}: a second default line')
+            default = family
+        elif name in chosen:
+            raise SystemExit(f'{map_file}:{n}: {name} is named twice')
+        else:
+            chosen[name] = family
+    families = sorted(set(chosen.values()) | ({default} if default else set()))
+    if len(families) > FAMILIES_MAX or len(chosen) > SCREENS_MAX:
+        raise SystemExit(f'{map_file}: {len(families)} families and {len(chosen)} screens; '
+                         f'CinderLoad reads at most {FAMILIES_MAX} and {SCREENS_MAX}')
+    known = {screen_name(p) for p in screens} | {'loading'}
+    for name in sorted(set(chosen) - known):
+        print(f'  fire bars: {name} is not a loading screen of this client; its line is packed all the same')
+    if not default:
+        print('  fire bars: no default line, so every screen the map does not list keeps the orange bar')
+    files, packed = [], []
+    folders = {d.lower(): d for d in os.listdir(bar_dir) if os.path.isdir(os.path.join(bar_dir, d))}
+    for family in families:
+        if family not in folders:
+            print(f'  fire bars: no folder for {family}, so its screens keep the orange bar')
+            continue
+        for part in ('Fill', 'Border'):
+            src = os.path.join(bar_dir, folders[family], f'Loading-Bar{part}.blp')
+            if not os.path.isfile(src):
+                raise SystemExit(f'{src} is missing: a family needs both its textures')
+            files.append((src, f'Interface\\Glues\\LoadingBar\\Loading-Bar{part}-{family}.blp'))
+        packed.append(family)
+    for d in sorted(set(folders) - set(families)):
+        print(f'  fire bars: the folder {folders[d]} is not a family the map names; not packed')
+    bars = os.path.join(work, 'bars.txt')
+    with open(bars, 'w', encoding='ascii', newline='\n') as f:
+        f.write('# CinderLoad: the fire of each loading screen\'s bar, "<screen> <family>"; "default" is every screen\n'
+                '# not listed. A family whose two textures are not in this archive keeps the orange bar. (make_pack.py)\n')
+        for name in sorted(chosen):
+            f.write(f'{name} {chosen[name]}\n')
+        if default:
+            f.write(f'default {default}\n')
+    files.append((bars, 'CinderLoad\\bars.txt'))
+    print(f'  fire bars: {len(chosen)} screens{" and a default" if default else ""}; '
+          f'families packed: {", ".join(packed) or "none"}')
+    return files
+
+
 def pack(mpq_path, files):
     lib = ctypes.CDLL(os.environ.get('STORMLIB', 'libstorm.so'))
     lib.SFileCreateArchive.restype = ctypes.c_bool
@@ -165,6 +245,12 @@ if __name__ == '__main__':
             missing.append(path)
             continue
         jobs.append((path, raw, sw, sh, label, blps))
+    fire = []                                           # the bar's fire for each screen (see the usage above), checked
+    if ('--fire-bars' in sys.argv) != ('--bar-map' in sys.argv):          # before the screens take their minutes
+        raise SystemExit('--fire-bars and --bar-map go together')
+    if '--fire-bars' in sys.argv:
+        fire = fire_bars(sys.argv[sys.argv.index('--fire-bars') + 1], sys.argv[sys.argv.index('--bar-map') + 1],
+                         [j[0] for j in jobs] + missing, blps)
     # Threads, not processes: the heavy part (DXT1) is ImageMagick in its own process anyway, and a process pool
     # hung under Python 3.14's forkserver default.
     files = []
@@ -177,6 +263,7 @@ if __name__ == '__main__':
         for n in sorted(os.listdir(bar)):
             if n.lower().startswith('loading-bar') and n.lower().endswith('.blp'):
                 files.append((os.path.join(bar, n), 'Interface\\Glues\\LoadingBar\\' + n))
+    files += fire
     mpq = os.path.join(out, 'Data', 'CinderLoad', f'LoadingScreens-{shape}.MPQ')
     os.makedirs(os.path.dirname(mpq), exist_ok=True)
     pack(mpq, files)

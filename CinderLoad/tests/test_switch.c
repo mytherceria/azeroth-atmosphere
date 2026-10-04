@@ -3,7 +3,12 @@
  *       ../IndoorRain/dll/mpq.c ../IndoorRain/dll/inflate.c && /tmp/test_switch <scratch dir> [<client folder>]
  * Each case is a fresh folder under <scratch dir>; nothing outside it is touched. With a client folder (one holding
  * Data/patch.MPQ and Data/sound.MPQ, opened for reading only), the fire sound is also built from that client's own
- * files and played through the mock's timeline into <scratch dir>/fire-timeline.wav, for listening to. */
+ * files and played through the mock's timeline into <scratch dir>/fire-timeline.wav, for listening to, and the places
+ * the fire sound and the fire bar rely on are checked against that client's WoW.exe. */
+/* The client's 32-bit addresses are not real ones here: they are read from the fake image, shim_module, as if it sat
+ * at the client's base, 0x400000. */
+#define ClientAt(va) ((unsigned)(va) - 0x400000u <= SHIM_MODULE_SIZE - 4u ? shim_module + ((unsigned)(va) - 0x400000u) \
+                                                                       : (const unsigned char *)0)
 #include "../dll/cinderload.c"
 #include <stdio.h>
 #include <sys/stat.h>
@@ -33,6 +38,10 @@ static void Fresh(const char *name)
     memcpy(shim_module + BAR_BORDER_RVA, kBorderStock, 16);
     for (int i = 0; i < FIRE_CODE_COUNT; i++)
         memcpy(shim_module + kFireCode[i].rva, kFireCode[i].bytes, (size_t)kFireCode[i].n);
+    for (int i = 0; i < BAR_CODE_COUNT; i++)
+        memcpy(shim_module + kBarCode[i].rva, kBarCode[i].bytes, (size_t)kBarCode[i].n);
+    g_barsOn = 0;
+    g_barShown = 0;
     shim_screen_w = 3440; shim_screen_h = 1440;
     shim_threads = 0;
 }
@@ -379,6 +388,360 @@ static void FireTests(void)
           "the client's fire sounds are not to be had: logged once, no FMOD call, the screens as ever");
 }
 
+/* ---- the fire bar ---- */
+
+/* A small MPQ (format 0, files stored as they are), written the way Storm lays one out, for the DLL's own reader. */
+static unsigned g_crypt[0x500];
+static void CryptInit(void)
+{
+    unsigned seed = 0x00100001u;
+    for (unsigned i = 0; i < 0x100; i++)
+        for (unsigned j = 0; j < 5; j++) {
+            seed = (seed * 125u + 3u) % 0x2AAAABu;
+            unsigned hi = (seed & 0xFFFFu) << 16;
+            seed = (seed * 125u + 3u) % 0x2AAAABu;
+            g_crypt[i + j * 0x100] = hi | (seed & 0xFFFFu);
+        }
+}
+static unsigned HashName(const char *s, unsigned type)
+{
+    unsigned s1 = 0x7FED7FEDu, s2 = 0xEEEEEEEEu;
+    for (; *s; s++) {
+        unsigned ch = (unsigned char)*s;
+        if (ch >= 'a' && ch <= 'z') ch -= 'a' - 'A';
+        s1 = g_crypt[(type << 8) + ch] ^ (s1 + s2);
+        s2 = ch + s1 + s2 + (s2 << 5) + 3u;
+    }
+    return s1;
+}
+static void Encrypt(unsigned *d, unsigned n, unsigned key)
+{
+    unsigned seed = 0xEEEEEEEEu;
+    for (unsigned i = 0; i < n; i++) {
+        seed += g_crypt[0x400 + (key & 0xFFu)];
+        unsigned plain = d[i];
+        d[i] = plain ^ (key + seed);
+        key = ((~key << 21) + 0x11111111u) | (key >> 11);
+        seed = plain + seed + (seed << 5) + 3u;
+    }
+}
+#define MPQ_FILES 16
+static void MakeMpq(const char *rel, int n, const char *const *names, const char *const *data, const unsigned *lens)
+{
+    static unsigned char out[1 << 20];
+    unsigned hash[64 * 4], block[MPQ_FILES * 4], at = 32;
+    memset(hash, 0xFF, sizeof hash);
+    for (int i = 0; i < n; i++) {
+        unsigned len = lens ? lens[i] : (unsigned)strlen(data[i]);
+        memcpy(out + at, data[i], len);
+        block[4 * i] = at; block[4 * i + 1] = len; block[4 * i + 2] = len; block[4 * i + 3] = 0x80000000u;
+        at += len;
+        unsigned slot = HashName(names[i], 0) & 63u;
+        while (hash[4 * slot + 3] != 0xFFFFFFFFu) slot = (slot + 1) & 63u;
+        hash[4 * slot] = HashName(names[i], 1); hash[4 * slot + 1] = HashName(names[i], 2);
+        hash[4 * slot + 2] = 0; hash[4 * slot + 3] = (unsigned)i;
+    }
+    Encrypt(hash, 64 * 4, HashName("(hash table)", 3));
+    Encrypt(block, (unsigned)n * 4, HashName("(block table)", 3));
+    unsigned hashOff = at, blockOff = at + sizeof hash, size = blockOff + (unsigned)n * 16;
+    memcpy(out + hashOff, hash, sizeof hash);
+    memcpy(out + blockOff, block, (size_t)n * 16);
+    unsigned head[8] = { 0x1A51504Du, 32, size, 3u << 16, hashOff, blockOff, 64, (unsigned)n };   /* "MPQ\x1A", v0, 4 KB */
+    memcpy(out, head, 32);
+    char p[700];
+    snprintf(p, sizeof p, "%s%s", shim_gamedir, rel);
+    FILE *f = fopen(p, "wb");
+    fwrite(out, 1, size, f);
+    fclose(f);
+}
+
+#define TEX "Interface\\Glues\\LoadingBar\\"
+static const char kBars[] =
+    "# CinderLoad: each loading screen's fire\r\n"
+    "\r\n"
+    "loadscreendeadmines fel\r\n"
+    "LoadScreenMoltenCore.blp   Aqua   # its lava is aqua in this test\r\n"
+    "loadscreenstrat orange\r\n"
+    "loading fel\r\n"
+    "default arcane\r\n";
+/* Our pack, as make_pack.py builds it with fire bars: fel, aqua and arcane carried, orange only named. */
+static void PackWithBars(const char *bars)
+{
+    const char *names[] = { "Interface\\Glues\\LoadingScreens\\LoadScreenDeadmines.blp", "CinderLoad\\bars.txt",
+                            TEX "Loading-BarFill-fel.blp", TEX "Loading-BarBorder-fel.blp",
+                            TEX "Loading-BarFill-aqua.blp", TEX "Loading-BarBorder-aqua.blp",
+                            TEX "Loading-BarFill-arcane.blp", TEX "Loading-BarBorder-arcane.blp" };
+    const char *data[] = { "BLP2screen", bars, "BLP2f", "BLP2b", "BLP2f", "BLP2b", "BLP2f", "BLP2b" };
+    MakeMpq(UW, bars ? 8 : 1, names, data, NULL);
+    Put("WTF/Config.wtf", RES("5120x2160"));
+}
+
+/* The client's tables, as the game has them while a screen begins: Map.dbc's and LoadingScreens.dbc's records by id. */
+#define VA(rva) (0x400000u + (unsigned)(rva))
+static void Poke(unsigned va, unsigned v) { memcpy(shim_module + va - 0x400000u, &v, 4); }
+static void PokeText(unsigned va, const char *s) { memcpy(shim_module + va - 0x400000u, s, strlen(s) + 1); }
+/* Written from the facts read out of WoW.exe, not from the DLL's names for them, so a slip in one shows. */
+static void FakeTables(void)
+{
+    Poke(0xC0DAA8, VA(0x860000)); Poke(0xC0DAAC, 600);   /* Map.dbc's records by id; the largest id */
+    Poke(0xC0DB0C, VA(0x861000)); Poke(0xC0DB10, 50);    /* LoadingScreens.dbc's */
+    static const struct { int map, screen; const char *file; } k[] = {
+        { 36, 5, "Interface\\Glues\\LoadingScreens\\LoadScreenDeadmines.blp" },
+        { 409, 6, "Interface\\Glues\\LoadingScreens\\LoadScreenMoltenCore.blp" },
+        { 0, 7, "Interface\\Glues\\LoadingScreens\\LoadScreenEasternKingdom.blp" },
+        { 329, 8, "Interface\\Glues\\LoadingScreens\\LoadScreenStrat.blp" },
+        { 3, 99, NULL },                                   /* a LoadingScreenID past the table's end */
+        { 4, 9, NULL },                                    /* a LoadingScreenID with no record */
+        { 5, -1, NULL },                                   /* a negative one */
+        { 6, 10, "Interface\\Glues\\LoadingScreens\\LoadScreenWithANameMuchLongerThanAnyBarsTxtCouldList.blp" },
+        { 600, 50, "Interface\\Glues\\LoadingScreens\\LoadScreenMoltenCore.blp" },   /* the largest ids: in range */
+        { 601, 6, NULL },                                  /* one past Map.dbc's largest id, a record there all the same */
+        { 7, 51, "Interface\\Glues\\LoadingScreens\\LoadScreenMoltenCore.blp" },     /* one past LoadingScreens' */
+    };
+    for (int i = 0; i < (int)(sizeof k / sizeof k[0]); i++) {
+        unsigned map = VA(0x862000 + 0x100 * i), rec = VA(0x864000 + 0x20 * i), file = VA(0x866000 + 0x100 * i);
+        Poke(VA(0x860000) + 4u * (unsigned)k[i].map, map);
+        Poke(map + 0x98, (unsigned)k[i].screen);           /* the Map record's LoadingScreenID */
+        if (!k[i].file) continue;
+        Poke(VA(0x861000) + 4u * (unsigned)k[i].screen, rec);
+        Poke(rec + 8, file);                               /* the LoadingScreens record's file name */
+        PokeText(file, k[i].file);
+    }
+}
+static const char *GameFill(void) { return (const char *)shim_module + BAR_FILL_PATH_RVA; }
+static const char *GameBorder(void) { return (const char *)shim_module + BAR_BORDER_PATH_RVA; }
+static const char *ForMap(int map) { Poke(0x82F00C, (unsigned)map); return BarPath(GameFill()); }
+static int Ours(const char *p) { return p >= (const char *)&g_bars && p < (const char *)(&g_bars + 1); }
+static int Call(void) { return Rd32(shim_module + BAR_CALL_RVA + 1); }
+static int CallStock(void) { return Same(shim_module + BAR_LOAD_RVA, kBarLoad, (int)sizeof kBarLoad); }
+
+static void FireBarTests(void)
+{
+    CryptInit();
+
+    /* on: the call sent to the stub, every other byte as it was */
+    Fresh("firebar-on");
+    PackWithBars(kBars);
+    Start();
+    unsigned rel = (unsigned)((unsigned long)BarStub - (unsigned long)(shim_module + 0x6891 + 5));
+    Check(LogSays("fire bar on") && (unsigned)Call() == rel && shim_module[0x6891] == 0xE8 &&
+          Same(shim_module + BAR_LOAD_RVA, kBarLoad, BAR_REL_AT) && shim_module[0x6896] == 0x89,
+          "fire bar on: the rel32 at RVA 0x6891 is stub - (RVA 0x6891 + 5 + base), the E8 and every other byte kept");
+    Check(g_barLoader == shim_module + 0x49D90, "the stub goes on to the game's loader, VA 0x449D90");
+    Check(On() && BarWide() && shim_threads == 1 && LogSays("fire sound on"), "the screens, the bar's size and the fire sound as ever");
+    Check(LogSays("bars.txt names 4 screens, and a default for the rest, 0 lines skipped") &&
+          LogSays("families in the pack: fel, aqua, arcane; named but not in it (their screens keep the pack's orange): orange"),
+          "the log says what bars.txt named and which families the pack carries");
+
+    /* which bar each screen gets, from the client's own tables */
+    FakeTables();
+    const char *p = ForMap(36);
+    Check(Ours(p) && !strcmp(p, TEX "Loading-BarFill-fel"), "Deadmines (map 36): fel");
+    Check(!strcmp(BarPath(GameBorder()), TEX "Loading-BarBorder-fel"), "and its border: fel too");
+    Check(!strcmp(ForMap(409), TEX "Loading-BarFill-aqua"), "Molten Core, named LoadScreenMoltenCore.blp in bars.txt: aqua");
+    char shown[48];
+    BarShownSince(shown);
+    Check(!strcmp(shown, ", its fire aqua") && g_barShown == 0, "the worker's line says which fire the screen had, once");
+    Check(!strcmp(ForMap(0), TEX "Loading-BarFill-arcane"), "a continent bars.txt does not list: the default family");
+    Check(ForMap(329) == GameFill(), "Stratholme, orange, whose files the pack does not carry: the game's own path back");
+    BarShownSince(shown);
+    Check(!strcmp(shown, ", its fire the pack's orange"), "and the worker's line says so");
+    Check(!strcmp(ForMap(-1), TEX "Loading-BarFill-fel"), "map -1 (no screen of its own): the default screen, 'loading'");
+    Check(!strcmp(ForMap(601), TEX "Loading-BarFill-fel") && !strcmp(ForMap(-5), TEX "Loading-BarFill-fel"),
+          "a map id past either end of Map.dbc: the default screen");
+    Check(!strcmp(ForMap(2), TEX "Loading-BarFill-fel"), "a map with no Map record: the default screen");
+    Check(!strcmp(ForMap(3), TEX "Loading-BarFill-fel") && !strcmp(ForMap(4), TEX "Loading-BarFill-fel") &&
+          !strcmp(ForMap(5), TEX "Loading-BarFill-fel"), "a LoadingScreenID past the end, negative, or with no record: the default screen");
+    Check(!strcmp(ForMap(6), TEX "Loading-BarFill-arcane"), "a screen whose name is too long to be listed: the default family");
+    Check(!strcmp(ForMap(600), TEX "Loading-BarFill-aqua"), "the largest map id and LoadingScreenID: in range, as the game's jg");
+    Check(!strcmp(ForMap(601), TEX "Loading-BarFill-fel") && !strcmp(ForMap(7), TEX "Loading-BarFill-fel"),
+          "one past the largest of either: the default screen, whatever lies there");
+    Check(Rd32(kBarMapSet + 5) == BAR_MAP_VA && Rd32(kBarMapSet2 + 1) == BAR_MAP_VA && Rd32(kBarPick + 1) == BAR_MAP_VA &&
+          Rd32(kBarPickWalk + 4) == BAR_MAPS_MAX_VA && Rd32(kBarPickWalk + 12) == BAR_MAPS_VA &&
+          Rd32(kBarPickWalk + 25) == BAR_MAP_SCREEN && Rd32(kBarPickWalk + 35) == BAR_SCREENS_MAX_VA &&
+          Rd32(kBarPickWalk + 43) == BAR_SCREENS_VA && kBarPickWalk[56] == BAR_SCREEN_FILE && Rd32(kBarLoad + BAR_REL_AT) == 0x434FA &&
+          BAR_CALL_RVA + 5 + 0x434FA == 0x49D90, "every address the lookup reads is the one in the verified code it mirrors");
+    Poke(0xC0DAA8, 0x100);
+    Check(!strcmp(ForMap(36), TEX "Loading-BarFill-fel"), "Map.dbc's table unreadable: the default screen, nothing read past it");
+    FakeTables();
+    Poke(VA(0x864000) + 8, 0x200);
+    Check(!strcmp(ForMap(36), TEX "Loading-BarFill-fel"), "a file name the game could not read either: the default screen");
+    FakeTables();
+    Poke(0x82F00C, 36);
+    static const char spark[] = "Interface\\Glues\\LoadingBar\\Loading-BarSpark";
+    Check(BarPath(spark) == spark && BarPath(NULL) == NULL && BarPath(TEX "Loading-BarFill-fel") != NULL &&
+          !strcmp(BarPath(TEX "Loading-BarFill-fel"), TEX "Loading-BarFill-fel"),
+          "a path that is neither of the bar's two: returned as it came");
+    Check(!strcmp(BarPath("interface/glues/loadingbar/LOADING-BARFILL"), TEX "Loading-BarFill-fel"),
+          "the bar's path in other case or slashes: still the bar's");
+    g_barsOn = 0;
+    Check(ForMap(36) == GameFill(), "with the redirect off, the game's own path back");
+    g_barsOn = 1;
+
+    Start();
+    Check(LogSays("fire bar already on") && (unsigned)Call() == rel, "a second start in the same process: already on, left as it is");
+
+    /* any one place changed: no redirect, the log names it and what it found */
+    int stock = 1;
+    for (int i = 0; i < BAR_CODE_COUNT; i++) {
+        Fresh("firebar-other");
+        PackWithBars(kBars);
+        shim_module[kBarCode[i].rva + (unsigned)kBarCode[i].n - 1] ^= 0x40;
+        Start();
+        char words[200], there[200];
+        snprintf(words, sizeof words, "fire bar off: other bytes at RVA 0x%lX (%s)", (unsigned long)kBarCode[i].rva, kBarCode[i].what);
+        int len = snprintf(there, sizeof there, "there:");
+        for (int k = 0; k < 8 && k < kBarCode[i].n; k++) len += snprintf(there + len, sizeof there - (size_t)len, " %02X", shim_module[kBarCode[i].rva + (unsigned)k]);
+        int callKept = kBarCode[i].rva == BAR_LOAD_RVA ? Same(shim_module + BAR_LOAD_RVA, kBarLoad, (int)sizeof kBarLoad - 1)
+                                                       : CallStock();
+        stock &= callKept && !g_barsOn && LogSays(words) && LogSays(there) && On() && BarWide() && shim_threads == 1 &&
+                 LogSays("fire sound on");
+        if (!(callKept && LogSays(words))) printf("  (place %d)\n", i);
+    }
+    Check(stock, "any one of the seven places changed: the call left alone, the log names it and its bytes; screens, bar, sound as ever");
+    Fresh("firebar-other-rel");
+    PackWithBars(kBars);
+    shim_module[BAR_CALL_RVA + 2] = 0x35;
+    Start();
+    Check(shim_module[BAR_CALL_RVA + 2] == 0x35 && Rd32(shim_module + BAR_CALL_RVA + 1) == 0x000435FA &&
+          LogSays("RVA 0x6863 (the bar's textures being loaded)"), "the call going somewhere else already: left alone");
+
+    /* never without our screens and the switch */
+    Fresh("firebar-no-screens");
+    Put("WTF/Config.wtf", RES("5120x2160"));
+    Start();
+    Check(CallStock() && !LogSays("fire bar"), "no loading screens of ours: the call never touched");
+    Fresh("firebar-other-exe");
+    PackWithBars(kBars);
+    shim_module[PATCH_RVA + 1] = 0x11;
+    Start();
+    Check(CallStock() && !On() && !LogSays("fire bar"), "a client the switch is not for: the call never touched");
+    Fresh("firebar-foreign");
+    PackWithBars(kBars);
+    Put(ACTIVE, "FOREIGN");
+    Start();
+    Check(CallStock() && !LogSays("fire bar"), "someone else's patch-~.MPQ: the call never touched");
+
+    /* bars.txt missing, broken or with nothing the pack carries: no redirect, logged */
+    Fresh("firebar-no-bars");
+    PackWithBars(NULL);
+    Start();
+    Check(CallStock() && On() && BarWide() && shim_threads == 1 && LogSays("Data\\patch-~.MPQ holds no CinderLoad\\bars.txt"),
+          "a pack with no bars.txt: no redirect, logged, all else as ever");
+    Fresh("firebar-not-mpq");
+    Put(UW, "AAAA"); Put("WTF/Config.wtf", RES("5120x2160"));
+    Start();
+    Check(CallStock() && On() && LogSays("could not be read from Data\\patch-~.MPQ (malformed archive header"), "a pack the reader cannot open: no redirect");
+    Fresh("firebar-garbage");
+    PackWithBars("\x01\x02\x03 \x7F\xFF\xFE\nonly-one-word\n\n");
+    Start();
+    Check(CallStock() && LogSays("2 lines skipped") && LogSays("no family bars.txt names"), "a bars.txt of garbage: no redirect");
+    Fresh("firebar-no-files");
+    PackWithBars("loadscreendeadmines orange\ndefault green\n");
+    Start();
+    Check(CallStock() && LogSays("families in the pack: none") && LogSays("no family bars.txt names"),
+          "families whose textures are not in the pack: no redirect");
+    Fresh("firebar-too-big");
+    {
+        static char big[BAR_TEXT_MAX + 100];
+        memset(big, '#', sizeof big - 1);
+        PackWithBars(big);
+    }
+    Start();
+    Check(CallStock() && LogSays("is over 64 KB"), "a bars.txt over 64 KB: refused, no redirect");
+    Fresh("firebar-half");
+    {
+        const char *names[] = { "CinderLoad\\bars.txt", TEX "Loading-BarFill-fel.blp", TEX "Loading-BarFill-aqua.blp",
+                                TEX "Loading-BarBorder-aqua.blp" };
+        const char *data[] = { "loadscreendeadmines fel\ndefault aqua\n", "BLP2", "BLP2", "BLP2" };
+        MakeMpq(UW, 4, names, data, NULL);
+        Put("WTF/Config.wtf", RES("5120x2160"));
+    }
+    Start();
+    FakeTables();
+    Check(LogSays("fire bar on") && LogSays("in the pack: aqua; named but not in it (their screens keep the pack's orange): fel") &&
+          ForMap(36) == GameFill() && BarPath(GameBorder()) == GameBorder() && !strcmp(ForMap(0), TEX "Loading-BarFill-aqua"),
+          "a family with its fill but no border: never returned, its screens keep the pack's orange");
+
+    /* bars.txt, read tolerantly */
+    static BarTable t;
+    BarParse(&t, kBars, (unsigned)strlen(kBars));
+    Check(t.screens == 4 && t.families == 4 && t.skipped == 0 && t.fallback == 3 && !strcmp(t.screen[1].name, "loadscreenmoltencore") &&
+          !strcmp(t.family[t.screen[1].family].name, "aqua"), "bars.txt: comments, blank lines, CRLF, case and a .blp ending");
+    static const char made[] =                       /* make_pack.py's own output, as it writes bars.txt */
+        "# CinderLoad: the fire of each loading screen's bar, \"<screen> <family>\"; \"default\" is every screen\n"
+        "# not listed. A family whose two textures are not in this archive keeps the orange bar. (make_pack.py)\n"
+        "loading orange\nloadscreendeadmines fel\nloadscreenmoltencore aqua\ndefault orange\n";
+    BarParse(&t, made, (unsigned)strlen(made));
+    Check(t.screens == 3 && t.families == 3 && t.skipped == 0 && t.fallback == 0, "bars.txt as make_pack.py writes it");
+    static const char odd[] = "loadscreena fel\n"
+                              "loadscreenb fel-green\n"                       /* not letters and digits */
+                              "loadscreenc fel green\n"                       /* three words */
+                              "loadscreend\n"                                 /* one */
+                              "loadscreene sixteencharacters\n"               /* a family name over 15 */
+                              "loadscreenaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa fel\n"   /* a name over 47 */
+                              "loadscreenf\tAQUA\n"
+                              "loadscreena aqua\n"                            /* a later line wins */
+                              "loadscreeng fel";                              /* no line end at the end */
+    BarParse(&t, odd, (unsigned)strlen(odd));
+    Check(t.screens == 3 && t.skipped == 5 && t.fallback == -1 && !strcmp(t.family[t.screen[0].family].name, "aqua") &&
+          !strcmp(t.screen[2].name, "loadscreeng"), "bars.txt: bad lines skipped and counted, a later line wins, no default");
+    static char longLine[600];
+    snprintf(longLine, sizeof longLine, "loadscreena fel # %0*d\ndefault fel\n", 300, 0);
+    BarParse(&t, longLine, (unsigned)strlen(longLine));
+    Check(t.screens == 0 && t.skipped == 1 && t.fallback == 0, "bars.txt: a line over 200 characters skipped whole, never cut");
+    static const char nul[] = "loadscreena fe\0l\ndefault fel\n";
+    BarParse(&t, nul, (unsigned)sizeof nul - 1);
+    Check(t.screens == 0 && t.skipped == 1 && t.fallback == 0, "bars.txt: a NUL inside a line: that line skipped");
+    static char many[40000];
+    int len = 0;
+    for (int i = 0; i < 300; i++) len += snprintf(many + len, sizeof many - (size_t)len, "screen%d f%d\n", i, i % 10);
+    BarParse(&t, many, (unsigned)len);
+    Check(t.families == BAR_FAMILIES && t.screens <= BAR_SCREENS && t.skipped == 300 - t.screens,
+          "bars.txt: more families or screens than there is room for: the rest skipped, nothing overrun");
+
+    /* no default line: a screen it does not list keeps the pack's orange */
+    Fresh("firebar-no-default");
+    PackWithBars("loadscreendeadmines fel\n");
+    Start();
+    FakeTables();
+    Check(LogSays("fire bar on") && LogSays("no default") && !strcmp(ForMap(36), TEX "Loading-BarFill-fel") &&
+          ForMap(0) == GameFill() && ForMap(-1) == GameFill(), "no default line: unlisted screens and the default one keep the pack's orange");
+}
+
+/* A real client's WoW.exe: the file offset of an RVA, from its section table. -1 when no section holds it. */
+static long ExeOffset(FILE *x, unsigned rva)
+{
+    unsigned char h[64], sec[40];
+    if (fseek(x, 0, SEEK_SET) || fread(h, 1, 64, x) != 64) return -1;
+    unsigned pe = Rd32(h + 60);
+    unsigned char fh[24];
+    if (fseek(x, (long)pe, SEEK_SET) || fread(fh, 1, 24, x) != 24 || memcmp(fh, "PE\0\0", 4)) return -1;
+    unsigned count = (unsigned)fh[6] | (unsigned)fh[7] << 8, opt = (unsigned)fh[20] | (unsigned)fh[21] << 8;
+    for (unsigned i = 0; i < count; i++) {
+        if (fseek(x, (long)(pe + 24 + opt + 40 * i), SEEK_SET) || fread(sec, 1, 40, x) != 40) return -1;
+        unsigned va = Rd32(sec + 12), raw = Rd32(sec + 16), ptr = Rd32(sec + 20);
+        if (rva >= va && rva < va + raw) return (long)(ptr + rva - va);
+    }
+    return -1;
+}
+static void FireBarRealClient(const char *client)
+{
+    char exe[1024];
+    snprintf(exe, sizeof exe, "%s/WoW.exe", client);
+    FILE *x = fopen(exe, "rb");
+    int match = x != NULL;
+    for (int i = 0; x && i < BAR_CODE_COUNT; i++) {
+        unsigned char got[64];
+        long off = ExeOffset(x, kBarCode[i].rva);
+        match &= off >= 0 && !fseek(x, off, SEEK_SET) && fread(got, 1, (size_t)kBarCode[i].n, x) == (size_t)kBarCode[i].n &&
+                 !memcmp(got, kBarCode[i].bytes, (size_t)kBarCode[i].n);
+        if (!match) { printf("FAIL: RVA 0x%lX (%s) differs in %s\n", (unsigned long)kBarCode[i].rva, kBarCode[i].what, exe); break; }
+    }
+    if (x) fclose(x);
+    Check(match, "a real client: all seven places hold the bytes the fire bar expects, in its WoW.exe");
+}
+
 /* The mock's timeline (render_frames.py KEYS) through the sound built from a real client's files, polled as the game
  * would be: the fill changes every 20 ms. Written as 16-bit stereo for listening; a few checks on the way. */
 static void FireRealClient(const char *client)
@@ -568,7 +931,11 @@ int main(int argc, char **argv)
           "the copy fails: the old shape's screens taken out too, never left squeezed");
 
     FireTests();
-    if (argc > 2) FireRealClient(argv[2]);
+    FireBarTests();
+    if (argc > 2) {
+        FireBarRealClient(argv[2]);
+        FireRealClient(argv[2]);
+    }
 
     if (fails) printf("%d of %d checks FAILED\n", fails, checks); else printf("all %d checks passed\n", checks);
     return fails != 0;

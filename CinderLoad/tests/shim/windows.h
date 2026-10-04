@@ -108,6 +108,7 @@ static size_t VirtualQuery(const void *at, MEMORY_BASIC_INFORMATION *m, size_t n
     m->State = MEM_COMMIT; m->Protect = PAGE_EXECUTE_READ; return n;
 }
 typedef size_t SIZE_T;
+typedef unsigned long ULONG_PTR;                     /* as wide as a pointer, as on Windows */
 static BOOL VirtualProtect(void *at, size_t n, DWORD prot, DWORD *old) { (void)at; (void)n; (void)prot; *old = PAGE_EXECUTE_READ; return TRUE; }
 static BOOL FlushInstructionCache(HANDLE p, const void *at, size_t n) { (void)p; (void)at; (void)n; return TRUE; }
 static HANDLE GetCurrentProcess(void) { return (HANDLE)1; }
