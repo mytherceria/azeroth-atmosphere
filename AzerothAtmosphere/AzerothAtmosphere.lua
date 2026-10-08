@@ -232,17 +232,40 @@ end
 local ABOARD_YARDS = 60
 local SETTLE = 1.0
 local INSIDE_HOLD = 0.4
-local STATS_PATTERN = "x=(%-?[%d%.]+);y=(%-?[%d%.]+);z=%-?[%d%.]+;pos=1;"
+-- comfy's position, as it writes it: x, y and z, then (since comfy's release of 4 Oct 2026) gz, the ground's height
+-- under you, empty until comfy has read it, then pos=1 while it knows where you are.
+local STATS_PATTERNS = {
+  "x=(%-?[%d%.]+);y=(%-?[%d%.]+);z=%-?[%d%.]+;gz=%-?[%d%.]*;pos=1;",
+  "x=(%-?[%d%.]+);y=(%-?[%d%.]+);z=%-?[%d%.]+;pos=1;",
+}
 
--- comfy writes those figures into comfyStats only while the CVar holds exactly STATS_LEN characters, its default of
--- spaces, and its own addon sets that up only when its stats window is opened: after a reload it comes back empty and
--- comfy stops writing (found 1 Oct 2026, when the fix went quiet after a /reload). So this addon arms it the same
--- way, whenever it is not that long. At logout it is emptied: comfy then stops writing, and the game saves a short
--- line instead of 600 characters, which overflow the line Config.wtf is written with and lose the next setting.
-local STATS_LEN = 600
+-- comfy writes those figures into comfyStats only while the CVar holds exactly as many characters as its DLL was built
+-- for, spaces to begin with, and its own addon sets that up only when its stats window is opened: after a reload it
+-- comes back empty and comfy stops writing (found 1 Oct 2026, when the fix went quiet after a /reload). So this addon
+-- arms it the same way. How many: 600 for comfy up to 6 Oct 2026, 1000 since its release of 7 Oct (its kStatsLen),
+-- and setting the other one stopped comfy writing (and blanked comfy's own stats window) while this addon was on. So
+-- both are tried: one is set, and if comfy has written nothing into it after STATS_WAIT seconds the other is; the length
+-- comfy writes into is kept for the session, whatever it is. Spaces of another length, set by comfy's own stats window
+-- (which knows its DLL's length, should it change again), are given the same time to fill before one of ours goes in.
+-- At login it is armed afresh, so a line saved by a crash is never read as comfy's. At logout it is emptied: comfy then
+-- stops writing, and the game saves a short line instead of hundreds of characters, which overflow the line Config.wtf
+-- is written with and lose the next setting.
+local STATS_LENS = { 1000, 600 }
+local STATS_WAIT = 3
+local statsLen, statsTry = nil, 1   -- the length comfy writes into (nil: not found yet), and which of ours to try next
+local statsAt, statsSeen = nil, nil -- when the spaces now in it were first seen, and how many
 local function ArmStats()
   local ok, v = pcall(GetCVar, "comfyStats")
-  if ok and v and string.len(v) ~= STATS_LEN then pcall(SetCVar, "comfyStats", string.rep(" ", STATS_LEN)) end
+  if not ok or not v then return end
+  local n, now = string.len(v), GetTime()
+  if statsAt and string.find(v, "%S") then statsLen = n; return end   -- comfy has written into it: that length is its own
+  if statsLen and n == statsLen then return end                        -- comfy's length, set: comfy's to fill
+  if statsAt and n > 0 and n ~= statsSeen then statsAt, statsSeen = now, n end   -- set anew, by comfy's window: wait
+  if statsAt and n > 0 and now - statsAt < STATS_WAIT then return end
+  local want = statsLen or STATS_LENS[statsTry]
+  if statsAt and n == want then statsTry = 3 - statsTry; want = STATS_LENS[statsTry] end   -- ours, and nothing came
+  pcall(SetCVar, "comfyStats", string.rep(" ", want))
+  statsAt, statsSeen = now, want
 end
 
 local function MistWhy()
@@ -250,7 +273,13 @@ local function MistWhy()
   ArmStats()
   local ok, stats = pcall(GetCVar, "comfyStats")
   stats = ok and stats or ""
-  local _, _, x, y = string.find(stats, STATS_PATTERN)
+  local x, y
+  for i = 1, table.getn(STATS_PATTERNS) do
+    if not x then
+      local _, _, px, py = string.find(stats, STATS_PATTERNS[i])
+      x, y = px, py
+    end
+  end
   x, y = tonumber(x), tonumber(y)
   if Indoors() then return "inside" end   -- first: a dungeon near its map's origin (the Stockade) is inside, not a ship
   if x and y and math.abs(x) < ABOARD_YARDS and math.abs(y) < ABOARD_YARDS then return "aboard a ship" end
@@ -495,7 +524,7 @@ frame:SetScript("OnEvent", function()
     db.base = db.base or {}
     if db.active then repairUntil = GetTime() + 30 end   -- a layer was on at the last logout or crash
   elseif event == "PLAYER_LOGOUT" then
-    pcall(SetCVar, "comfyStats", "")   -- see ArmStats: comfy stops writing, and no 600-character line is saved
+    pcall(SetCVar, "comfyStats", "")   -- see ArmStats: comfy stops writing, and no long line of its is saved
     if db and db.active then
       -- IndoorRain puts its own snapshot back at logout too; make that snapshot the player's values.
       if IndoorRainDB and IndoorRainDB.active and IndoorRainDB.base then
